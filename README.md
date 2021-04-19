@@ -59,6 +59,11 @@ unzip vosk-model-small-it-0.4.zip
 cd ..
 ```
 
+### 2. Demo audio files
+
+The repo contains in `audio/` directory, few English language speech audio files, coming from Mozilla Deespeech repo.
+Useful to make some tests and comparisons. Source: https://github.com/mozilla/DeepSpeech/releases/download/v0.9.3/audio-0.9.3.tar.gz
+
 
 ## VoskJs Command line usage examples
 
@@ -175,14 +180,14 @@ freeModel(model)
 
 ## Notes
 
-1. Latency
+1. **Latency**
 
    Vosk ASR is pretty fast; runtime latency for file `./audio/2830-3980-0043.wav`
    using English large model, is just 428 ms. 
 
    Weirdly the English small model perforom worst, with 598ms. Not clear to me. 
 
-2. Comparison with Mozilla DeepSpeech
+2. **Comparison with Mozilla DeepSpeech**
 
    For the comparison I used my simple nodejs interface to Deepspech: 
    https://github.com/solyarisoftware/DeepSpeechJs 
@@ -210,14 +215,14 @@ freeModel(model)
    ```
 
    Result shows that Mozilla DeepSpeech latency here is 1022ms whereas Vosk latency is 428ms. 
-   So Vosk speeech recognition is ~238% faster than Deepspeech!
+   **Vosk speeech recognition is ~238% faster than Deepspeech!**
 
-
-3. Async functions convenience
+3. **Async functions architecture**
 
    Considering a server environment, so far is not clear to me how convenient is to have the transcript as an async function. 
    I have to measure the CPU(s) involved each time the transcript is called, to eventually decide a different architecture, as using thread workers.
-   IOpen point to be verified.
+   Open point to be verified.
+
 
 ## License
 

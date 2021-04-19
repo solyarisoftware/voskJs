@@ -1,2 +1,4 @@
 node_modules/
-models/
+
+models/*
+!models/README.md
