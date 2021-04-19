@@ -8,6 +8,7 @@ const wav = require('wav')
 const { getArgs } = require('./getArgs')
 
 const DEBUG = true
+const SAMPLE_RATE = 16000.0
 
 
 /**
@@ -38,10 +39,7 @@ const DEBUG = true
 function initModel(modelDirectory, logLevel=0) {
   return new Promise( (resolve, reject) => {
 
-    let start, end
-
-    if (DEBUG) 
-      start = new Date()
+    const start = new Date()
 
     // set vosk log level
     vosk.setLogLevel(logLevel)
@@ -62,7 +60,7 @@ function initModel(modelDirectory, logLevel=0) {
     const model = new vosk.Model(modelDirectory)
 
     if (DEBUG) {
-      end = new Date() - start
+      const end = new Date() - start
       console.log()
       console.log(`init elapsed       : ${end}ms`)
     }  
@@ -97,8 +95,7 @@ function initModel(modelDirectory, logLevel=0) {
 function transcript(fileName, model) {
   return new Promise( (resolve, reject) => {
 
-    let start, end
-    start = new Date()
+    const start = new Date()
 
     // validate audiofile existence, async
     fs.access(fileName, (err) => {
@@ -106,16 +103,16 @@ function transcript(fileName, model) {
         return reject(`${err}: file ${fileName} not found.`)
     })
 
-    const rec = new vosk.Recognizer({model: model, sampleRate: 16000.0})
+    const rec = new vosk.Recognizer( {model, sampleRate: SAMPLE_RATE } )
     const wfStream = fs.createReadStream(fileName, {'highWaterMark': 4096})
     const wfReader = new wav.Reader()
 
     wfStream.pipe(wfReader)
-    wfReader.on('format', async ({ audioFormat, sampleRate, channels }) => {
+    wfReader.on('format', async ( { audioFormat, sampleRate, channels } ) => {
         
-      if (audioFormat != 1 || channels != 1) {
+      if (audioFormat != 1 || channels != 1 || sampleRate != SAMPLE_RATE) {
         //throw new Error('Audio file must be WAV format mono PCM.')
-        return reject(`${fileName}: audio file must be WAV format mono PCM.`)
+        return reject(`${fileName}: audio file must be WAV format mono PCM with sample rate: ${SAMPLE_RATE}.`)
       }
 
       for await (const data of new Readable().wrap(wfReader)) {
@@ -132,7 +129,7 @@ function transcript(fileName, model) {
       rec.free()
       
       if (DEBUG) {
-        end = new Date() - start
+        const end = new Date() - start
         console.log(`transcript elapsed : ${end}ms`)
         console.log()
       }  
