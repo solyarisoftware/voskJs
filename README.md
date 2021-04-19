@@ -59,7 +59,7 @@ unzip vosk-model-small-it-0.4.zip
 cd ..
 ```
 
-### 2. Demo audio files
+### 3. Demo audio files
 
 The repo contains in `audio/` directory, few English language speech audio files, coming from Mozilla Deespeech repo.
 Useful to make some tests and comparisons. Source: https://github.com/mozilla/DeepSpeech/releases/download/v0.9.3/audio-0.9.3.tar.gz
