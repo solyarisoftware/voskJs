@@ -5,7 +5,8 @@ With some examples and notes.
 
 ## What's Vosk?
 
-Vosk is an open-source speech recognition engine/toolkit. Documentation:
+Vosk is an open-source speech recognition engine/toolkit, by Nikolay V. Shmyrev. 
+Documentation:
 
 - https://alphacephei.com/vosk/
 - https://github.com/alphacep/vosk-api

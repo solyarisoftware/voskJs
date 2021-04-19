@@ -51,6 +51,12 @@ function initModel(modelDirectory, logLevel=0) {
       console.log(`log level          : ${logLevel}`)
       console.log()
     }
+
+    // validate model directory existence, async
+    fs.access(modelDirectory, (err) => {
+      if (err) 
+        return reject(`${err}: file ${modelDirectory} not found.`)
+    })
     
     // create new run time model from the specified directory 
     const model = new vosk.Model(modelDirectory)
@@ -93,6 +99,12 @@ function transcript(fileName, model) {
 
     let start, end
     start = new Date()
+
+    // validate audiofile existence, async
+    fs.access(fileName, (err) => {
+      if (err) 
+        return reject(`${err}: file ${fileName} not found.`)
+    })
 
     const rec = new vosk.Recognizer({model: model, sampleRate: 16000.0})
     const wfStream = fs.createReadStream(fileName, {'highWaterMark': 4096})
@@ -152,9 +164,7 @@ function helpAndExit(programName) {
   console.log()
   console.log('usage:')
   console.log()
-  console.log(`    ${programName} \\ `)
-  console.log('         --model=<model directory> \\ ')
-  console.log('         --audio=<audio file name>')
+  console.log(`    ${programName} --model=<model directory> --audio=<audio file name>`)
   console.log()    
   console.log('example:')
   console.log()
@@ -197,7 +207,7 @@ async function main() {
 
   // get command line arguments 
   const { args } = getArgs()
-  const { modelDirectory, audioFile } = checkArgs(args, `node ${path.basename(__filename)}`)
+  const { modelDirectory, audioFile } = checkArgs(args, `node ${path.basename(__filename, '.js')}`)
 
   // create a runtime model
   const model = await initModel(modelDirectory)
