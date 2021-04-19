@@ -69,20 +69,15 @@ Useful to make some tests and comparisons. Source: https://github.com/mozilla/De
 ## VoskJs Command line usage examples
 
 ```bash
-$ node voskjs.js 
+$ node voskjs
 
 usage:
 
-    node voskjs \ 
-         --model=<model directory> \ 
-         --audio=<audio file name>
+    node voskjs --model=<model directory> --audio=<audio file name>
 
 example:
 
     node voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2
-
-$ node voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2
-
 ```
 
 ### Transcript using English language, large model

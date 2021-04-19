@@ -1,6 +1,6 @@
 {
-  "name": "vosk",
-  "version": "0.0.8",
+  "name": "voskjs",
+  "version": "0.0.9",
   "description": "Vosk ASR engine runtime transcript NodeJs native client.",
   "main": "voskjs.js",
   "scripts": {
