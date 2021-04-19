@@ -1,7 +1,6 @@
 # VoskJs
 
-Vosk ASR engine runtime transcript NodeJs native client.
-With some examples and notes.
+Vosk ASR engine runtime transcript NodeJs client (not suitable for server appplications).
 
 ## What's Vosk?
 
@@ -21,8 +20,11 @@ The goal of the simple project is to:
    - `transcript()`
    - `freeModel()`
 
-   In that way you can embed the voskjs module in your nodejs "server" program, 
+   In that way you can embed the voskjs module in your nodejs program, 
    accessing async functions with best performance at runtime.
+
+   > because the async functions approach, the solution is suitable for and embedded system, 
+   > not a server with multiple concurrent requests.
 
 2. voskjs program could be easily used as command line test system.
 
@@ -152,25 +154,24 @@ transcript elapsed : 598ms
 ```javascript
 const { initModel, transcript, freemodel } = require('voskjs')
 
-const modelDirectory = 'models/vosk-model-en-us-aspire-0.2'
+const englishModelDirectory = 'models/vosk-model-en-us-aspire-0.2'
 const audioFile = 'audio/2830-3980-0043.wav'
 
 // create a runtime model
-const model = await initModel(modelDirectory)
+const englishModel = await initModel(englishModelDirectory)
 
 // speech recognition from an audio file
 try {
-  const result = await transcript(audioFile, model) 
+  const result = await transcript(audioFile, englishModel) 
 
   console.log(result)
-  console.log()
 }  
 catch(error) {
   console.error(error) 
 }  
 
 // free the runtime model
-freeModel(model)
+freeModel(englishModel)
 ```
 
 
@@ -183,7 +184,7 @@ freeModel(model)
 
    Weirdly the English small model perforom worst, with 598ms. Not clear to me. 
 
-2. **Comparison with Mozilla DeepSpeech**
+2. **Comparison between Vosk and Mozilla DeepSpeech (latencies)**
 
    For the comparison I used my simple nodejs interface to Deepspech: 
    https://github.com/solyarisoftware/DeepSpeechJs 
@@ -211,14 +212,19 @@ freeModel(model)
    ```
 
    Result shows that Mozilla DeepSpeech latency here is 1022ms whereas Vosk latency is 428ms. 
-   **Vosk speeech recognition is ~238% faster than Deepspeech!**
+   
+   > Vosk speeech recognition is ~238% faster than Deepspeech!
 
 3. **Async functions architecture**
 
    Considering a server environment, so far is not clear to me how convenient is to have the transcript as an async function. 
    I have to measure the CPU(s) involved each time the transcript is called, to eventually decide a different architecture, as using thread workers.
-   Open point to be verified.
+   Open point. See also: [What's the Vosk CPU usage at run-time?](https://github.com/alphacep/vosk-api/issues/498)
 
+## Todo
+
+To build a server based angine, with multiple concurrent requests, 
+the single thread async functions approach must be substituted using an alternative worker thread architecture.
 
 ## License
 
