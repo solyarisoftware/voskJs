@@ -154,11 +154,13 @@ transcript elapsed : 598ms
 ## Use Voskjs module function in your program
 
 1. Download this repo 
+
    ```bash
    cd && git clone https://github.com/solyarisoftware/voskJs
    ```
 
 2. Embed the voskjs module in your program 
+
    ```javascript
    const { initModel, transcript, freemodel } = require('~/voskJs/voskjs')
 
@@ -180,9 +182,7 @@ transcript elapsed : 598ms
 
    // free the runtime model
    freeModel(englishModel)
-```
-
-> Coming soon: npm package
+   ```
 
 ## Notes
 
