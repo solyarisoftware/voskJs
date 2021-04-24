@@ -21,10 +21,12 @@ The goal of the simple project is to:
    - `freeModel()`
 
    In that way you can embed the voskjs module in your nodejs program, 
-   accessing async functions with best performance at runtime.
+   accessing async functions for a corret behavior on an usual sigle thread nodejs program.
 
-   > because the async functions approach, the solution is suitable for and embedded system, 
-   > not a server with multiple concurrent requests.
+   > NOTE:
+   > This solution is suitable for singe user (sequential) requests, for an embedded system, 
+   > not a server with multiple concurrent users requests. 
+   > For this last case I'll soon provide a seprated server-based solution using nodejs workers threads
 
 2. voskjs program could be easily used as command line test system.
 
@@ -151,29 +153,36 @@ transcript elapsed : 598ms
 
 ## Use Voskjs module function in your program
 
-```javascript
-const { initModel, transcript, freemodel } = require('voskjs')
+1. Download this repo 
+   ```bash
+   cd && git clone https://github.com/solyarisoftware/voskJs
+   ```
 
-const englishModelDirectory = 'models/vosk-model-en-us-aspire-0.2'
-const audioFile = 'audio/2830-3980-0043.wav'
+2. Embed the voskjs module in your program 
+   ```javascript
+   const { initModel, transcript, freemodel } = require('~/voskJs/voskjs')
 
-// create a runtime model
-const englishModel = await initModel(englishModelDirectory)
+   const englishModelDirectory = 'models/vosk-model-en-us-aspire-0.2'
+   const audioFile = 'audio/2830-3980-0043.wav'
 
-// speech recognition from an audio file
-try {
-  const result = await transcript(audioFile, englishModel) 
+   // create a runtime model
+   const englishModel = await initModel(englishModelDirectory)
 
-  console.log(result)
-}  
-catch(error) {
-  console.error(error) 
-}  
+   // speech recognition from an audio file
+   try {
+     const result = await transcript(audioFile, englishModel) 
 
-// free the runtime model
-freeModel(englishModel)
+     console.log(result)
+   }  
+   catch(error) {
+     console.error(error) 
+   }  
+
+   // free the runtime model
+   freeModel(englishModel)
 ```
 
+> Coming soon: npm package
 
 ## Notes
 
@@ -212,19 +221,24 @@ freeModel(englishModel)
    ```
 
    Result shows that Mozilla DeepSpeech latency here is 1022ms whereas Vosk latency is 428ms. 
-   
+ 
    > Vosk speeech recognition is ~238% faster than Deepspeech!
 
-3. **Async functions architecture**
+3. **Single-user VS Multi-user multi-core architecture**
 
-   Considering a server environment, so far is not clear to me how convenient is to have the transcript as an async function. 
-   I have to measure the CPU(s) involved each time the transcript is called, to eventually decide a different architecture, as using thread workers.
-   Open point. See also: [What's the Vosk CPU usage at run-time?](https://github.com/alphacep/vosk-api/issues/498)
+   The current solution embed vosk API into async functions. That's ok for a single-user / embedded system nodejs program. 
+
+   Vosk transcript is a cpu-bound task that occupy a single core at 100% cpu for some hundreds of msecs.
+   See also: [What's the Vosk CPU usage at run-time?](https://github.com/alphacep/vosk-api/issues/498)
+ 
+   So to manage concurrent user requests (a server) a different architecture, using thread workers, must be developed.
 
 ## Todo
 
-To build a server based angine, with multiple concurrent requests, 
-the single thread async functions approach must be substituted using an alternative worker thread architecture.
+ - To build a server based angine, with multiple concurrent requests, 
+   the single thread async functions approach must be substituted using an alternative worker thread architecture.
+
+- Deliver a npm package
 
 ## License
 
