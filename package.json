@@ -1,6 +1,6 @@
 {
   "name": "voskjs",
-  "version": "0.0.12",
+  "version": "0.0.14",
   "description": "Vosk ASR engine runtime transcript NodeJs native client.",
   "main": "voskjs.js",
   "scripts": {
@@ -9,7 +9,7 @@
   "author": "Giorgio Robino <giorgio.robino@gmail.com> (http://convcomp.it/)",
   "license": "MIT",
   "dependencies": {
-    "vosk": "^0.3.24",
+    "vosk": "^0.3.25",
     "wav": "^1.0.2"
   }
 }

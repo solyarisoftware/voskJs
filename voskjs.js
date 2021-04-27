@@ -62,7 +62,7 @@ function initModel(modelDirectory, logLevel=0) {
     if (DEBUG) {
       const end = new Date() - start
       console.log()
-      console.log(`init elapsed       : ${end}ms`)
+      console.log(`init model elapsed : ${end}ms`)
     }  
 
     return resolve(model)
@@ -117,7 +117,16 @@ function transcript(fileName, model) {
 
       for await (const data of new Readable().wrap(wfReader)) {
 
-        const end_of_speech = rec.acceptWaveform(data)
+        //
+        // From vosk version 0.3.25
+        // the acceptWaveformAsync function runs in a dedicated thread.
+        // That wold improve performances in case of cocurrent requests 
+        // from the caller (server) program  
+        //
+        // Previous vosk version 0.3.25
+        // const end_of_speech = rec.acceptWaveform(data)
+        //
+        const end_of_speech = await rec.acceptWaveformAsync(data)
 
         if (end_of_speech) {
           console.log(rec.result())
@@ -208,6 +217,8 @@ async function main() {
 
   // create a runtime model
   const model = await initModel(modelDirectory)
+
+  // console.dir(model)
 
   // speech recognition from an audio file
   try {
