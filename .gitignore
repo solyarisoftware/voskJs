@@ -2,3 +2,5 @@ node_modules/
 
 models/*
 !models/README.md
+
+tmp/

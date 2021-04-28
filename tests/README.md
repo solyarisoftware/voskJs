@@ -147,3 +147,111 @@ transcript elapsed : 550ms
  Result shows that Mozilla DeepSpeech latency here is 1022ms whereas Vosk latency is 428ms. 
 
  > Vosk speeech recognition is ~238% faster than Deepspeech!
+
+
+## Multithread stress test (single thread)
+
+```bash
+$ /usr/bin/time -f "%e" pidstat 1 -u -e node stressTest 1
+Linux 5.8.0-50-generic (giorgio-HP-Laptop-17-by1xxx) 	28/04/2021 	_x86_64_	(8 CPU)
+
+CPU cores in this host  : 8
+requests to be spawned  : 1
+
+model directory         : ../models/vosk-model-en-us-aspire-0.2
+speech file name        : ../audio/2830-3980-0043.wav
+
+
+log level          : 0
+
+LOG (VoskAPI:ReadDataFiles():model.cc:194) Decoding params beam=13 max-active=7000 lattice-beam=6
+LOG (VoskAPI:ReadDataFiles():model.cc:197) Silence phones 1:2:3:4:5:6:7:8:9:10:11:12:13:14:15
+LOG (VoskAPI:RemoveOrphanNodes():nnet-nnet.cc:948) Removed 1 orphan nodes.
+LOG (VoskAPI:RemoveOrphanComponents():nnet-nnet.cc:847) Removing 2 orphan components.
+LOG (VoskAPI:Collapse():nnet-utils.cc:1488) Added 1 components, removed 2
+LOG (VoskAPI:CompileLooped():nnet-compile-looped.cc:345) Spent 0.00668192 seconds in looped compilation.
+LOG (VoskAPI:ReadDataFiles():model.cc:221) Loading i-vector extractor from ../models/vosk-model-en-us-aspire-0.2/ivector/final.ie
+LOG (VoskAPI:ComputeDerivedVars():ivector-extractor.cc:183) Computing derived variables for iVector extractor
+LOG (VoskAPI:ComputeDerivedVars():ivector-extractor.cc:204) Done.
+LOG (VoskAPI:ReadDataFiles():model.cc:246) Loading HCLG from ../models/vosk-model-en-us-aspire-0.2/graph/HCLG.fst
+
+08:54:25      UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
+08:54:26     1000    253795   51,00   82,00    0,00    0,00  133,00     2  node
+LOG (VoskAPI:ReadDataFiles():model.cc:265) Loading words from ../models/vosk-model-en-us-aspire-0.2/graph/words.txt
+LOG (VoskAPI:ReadDataFiles():model.cc:273) Loading winfo ../models/vosk-model-en-us-aspire-0.2/graph/phones/word_boundary.int
+LOG (VoskAPI:ReadDataFiles():model.cc:281) Loading CARPA model from ../models/vosk-model-en-us-aspire-0.2/rescore/G.carpa
+08:54:27     1000    253795   79,00   21,00    0,00    0,00  100,00     2  node
+
+init model elapsed : 2195ms
+transcript elapsed : 439ms
+
+
+Average:     1000    253795   65,00   51,50    0,00    0,00  116,50     -  node
+2.95
+```
+
+## Multithread stress test (10 requests in parallel)
+
+```bash
+$ /usr/bin/time -f "%e" pidstat 1 -u -e node stressTest 10
+Linux 5.8.0-50-generic (giorgio-HP-Laptop-17-by1xxx) 	28/04/2021 	_x86_64_	(8 CPU)
+
+CPU cores in this host  : 8
+warning: number of requested tasks (10) is higher than number of available cores (8)
+requests to be spawned  : 10
+
+model directory         : ../models/vosk-model-en-us-aspire-0.2
+speech file name        : ../audio/2830-3980-0043.wav
+
+
+log level          : 0
+
+LOG (VoskAPI:ReadDataFiles():model.cc:194) Decoding params beam=13 max-active=7000 lattice-beam=6
+LOG (VoskAPI:ReadDataFiles():model.cc:197) Silence phones 1:2:3:4:5:6:7:8:9:10:11:12:13:14:15
+LOG (VoskAPI:RemoveOrphanNodes():nnet-nnet.cc:948) Removed 1 orphan nodes.
+LOG (VoskAPI:RemoveOrphanComponents():nnet-nnet.cc:847) Removing 2 orphan components.
+LOG (VoskAPI:Collapse():nnet-utils.cc:1488) Added 1 components, removed 2
+LOG (VoskAPI:CompileLooped():nnet-compile-looped.cc:345) Spent 0.00680518 seconds in looped compilation.
+LOG (VoskAPI:ReadDataFiles():model.cc:221) Loading i-vector extractor from ../models/vosk-model-en-us-aspire-0.2/ivector/final.ie
+LOG (VoskAPI:ComputeDerivedVars():ivector-extractor.cc:183) Computing derived variables for iVector extractor
+LOG (VoskAPI:ComputeDerivedVars():ivector-extractor.cc:204) Done.
+LOG (VoskAPI:ReadDataFiles():model.cc:246) Loading HCLG from ../models/vosk-model-en-us-aspire-0.2/graph/HCLG.fst
+
+08:45:20      UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
+08:45:21     1000    252999   56,44   75,25    0,00    0,00  131,68     0  node
+LOG (VoskAPI:ReadDataFiles():model.cc:265) Loading words from ../models/vosk-model-en-us-aspire-0.2/graph/words.txt
+LOG (VoskAPI:ReadDataFiles():model.cc:273) Loading winfo ../models/vosk-model-en-us-aspire-0.2/graph/phones/word_boundary.int
+LOG (VoskAPI:ReadDataFiles():model.cc:281) Loading CARPA model from ../models/vosk-model-en-us-aspire-0.2/rescore/G.carpa
+08:45:22     1000    252999   79,00   21,00    0,00    0,00  100,00     0  node
+
+init model elapsed : 2218ms
+08:45:23     1000    252999  233,00   32,00    0,00    0,00  265,00     0  node
+08:45:24     1000    252999  383,00    3,00    0,00    0,00  386,00     3  node
+transcript elapsed : 1623ms
+
+transcript elapsed : 1734ms
+
+transcript elapsed : 1837ms
+
+transcript elapsed : 1934ms
+
+transcript elapsed : 2040ms
+
+transcript elapsed : 2128ms
+
+transcript elapsed : 2227ms
+
+transcript elapsed : 2369ms
+
+transcript elapsed : 2471ms
+
+08:45:25     1000    252999   99,00    2,00    0,00    0,00  101,00     0  node
+transcript elapsed : 2566ms
+
+
+Average:     1000    252999  169,86   26,75    0,00    0,00  196,61     -  node
+5.15
+```
+---
+
+[top](#) | [home](../README.md)

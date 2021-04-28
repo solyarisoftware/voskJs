@@ -5,7 +5,7 @@ const path = require('path')
 const { Readable } = require('stream')
 const wav = require('wav')
 
-const { getArgs } = require('./getArgs')
+const { getArgs } = require('./lib/getArgs')
 
 const DEBUG = true
 const SAMPLE_RATE = 16000.0
@@ -77,8 +77,10 @@ function initModel(modelDirectory, logLevel=0) {
  * @async
  * @public
  *
- * @param {String} fileName
- * @param {ModelObject} model
+ * @param {String}      fileName     the name of speech file, in WAV format
+ * @param {ModelObject} model        the Vosk model returned by InitModel()
+ * @param {Boolean}     multiThreads if true, an external (Vosk engine) thread is spawn
+ *                                   that's need for in server architecture
  *
  * @return {Promise<ModelObject>} 
  * @example 
@@ -92,7 +94,7 @@ function initModel(modelDirectory, logLevel=0) {
  *  }
  *
  */ 
-function transcript(fileName, model) {
+function transcript(fileName, model, multiThreads=true) {
   return new Promise( (resolve, reject) => {
 
     const start = new Date()
@@ -126,7 +128,9 @@ function transcript(fileName, model) {
         // Previous vosk version 0.3.25
         // const end_of_speech = rec.acceptWaveform(data)
         //
-        const end_of_speech = await rec.acceptWaveformAsync(data)
+        const end_of_speech = multiThreads ? 
+          await rec.acceptWaveformAsync(data) : 
+          rec.acceptWaveform(data)
 
         if (end_of_speech) {
           console.log(rec.result())

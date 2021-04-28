@@ -28,7 +28,7 @@ The goal of the simple project is to:
    > not a server with multiple concurrent users requests. 
    > For this last case I'll soon provide a separated server-based solution using nodejs workers threads
 
-2. `voskjs` program can be easily used as command line test system (some tests [here](tests.md)).
+2. `voskjs` program can be easily used as command line test system (some tests [here](tests/README.md)).
 
 ## Install 
 
@@ -122,7 +122,7 @@ example:
 
 ## Tests
 
-Some tests / notes [here](tests.md)
+Some tests / notes [here](tests/README.md)
 
 
 ## Notes
@@ -136,10 +136,8 @@ Some tests / notes [here](tests.md)
 
 2. Comparison between Vosk and Mozilla DeepSpeech (latencies)
 
-   For the comparison I used my simple nodejs interface to Deepspech: 
-   https://github.com/solyarisoftware/DeepSpeechJs 
-
-   See results [here](tests.md)
+   For the comparison I used [DeepSpeechJs](https://github.com/solyarisoftware/DeepSpeechJs), 
+   my simple nodejs interface to Deepspech. See results [here](tests/README.md).
 
 
 3. Single-user VS Multi-user multi-core architecture
@@ -162,7 +160,12 @@ Some tests / notes [here](tests.md)
 
 ## Change log
 
+- 0.0.15 
+
+  Added tests directory, containing some stress tests results
+
 - 0.0.14 
+ 
   Transcript function updated to integrate Vosk version 0.3.25 (`npm install vosk@latest`), 
   where the function `rec.acceptWaveformAsync` now run on a separated external thread!
 
@@ -171,4 +174,7 @@ Some tests / notes [here](tests.md)
 
 MIT (c) Giorgio Robino 
 
+
 ---
+
+[top](#)
