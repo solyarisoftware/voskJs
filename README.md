@@ -2,6 +2,11 @@
 
 Vosk ASR engine runtime transcript NodeJs client.
 
+VoskJs can be used for speech recognition processing in different scenarios:
+- Single-user/standalone programs (e.g. perfect for single-user embedded systems) 
+- Multi-user/multi-core server architectures 
+
+
 ## What's Vosk?
 
 Vosk is an open-source speech recognition engine/toolkit, by Nikolay V. Shmyrev. 
@@ -14,7 +19,7 @@ Documentation:
 
 The goal of the simple project is to:
 
-1. create a function easy layer on top of already existing Vosk nodejs binding, supplying 3 functions: 
+1. Create an easy function layer on top of already existing Vosk nodejs binding, supplying 3 functions: 
 
    - `loadModel()`
    - `transcript()`
@@ -23,12 +28,11 @@ The goal of the simple project is to:
    In that way you can embed the voskjs module in your nodejs program, 
    accessing async functions for a correct behavior on an usual sigle thread nodejs program.
 
-   > NOTE:
-   > This solution is suitable for single user (sequential) requests, for an embedded system, 
-   > not a server with multiple concurrent users requests. 
-   > For this last case I'll soon provide a separated server-based solution using nodejs workers threads
+2. Use `voskjs` command line program to test Vosk transcript with specific models (some tests [here](tests/README.md)).
 
-2. `voskjs` program can be easily used as command line test system (some tests [here](tests/README.md)).
+
+3. Setup a simple HTTP server to transcript speech files. Usage and examples [here](examples/) 
+
 
 ## Install 
 
@@ -87,7 +91,7 @@ example:
 ```
 
 
-## Use Voskjs module function in your program
+## Voskjs usage examples 
 
 1. Download this repo 
 
@@ -95,30 +99,8 @@ example:
    cd && git clone https://github.com/solyarisoftware/voskJs
    ```
 
-2. Embed the voskjs module in your program 
+2. Some examples [here](examples) 
 
-   ```javascript
-   const { initModel, transcript, freemodel } = require('~/voskJs/voskjs')
-
-   const englishModelDirectory = 'models/vosk-model-en-us-aspire-0.2'
-   const audioFile = 'audio/2830-3980-0043.wav'
-
-   // create a runtime model
-   const englishModel = await initModel(englishModelDirectory)
-
-   // speech recognition from an audio file
-   try {
-     const result = await transcript(audioFile, englishModel) 
-
-     console.log(result)
-   }  
-   catch(error) {
-     console.error(error) 
-   }  
-
-   // free the runtime model
-   freeModel(englishModel)
-   ```
 
 ## Tests
 
@@ -129,8 +111,8 @@ Some tests / notes [here](tests/README.md)
 
 1. Latency
 
-   Vosk ASR is pretty fast; runtime latency for file `./audio/2830-3980-0043.wav`
-   using English large model, is just 428 ms. 
+   Vosk ASR is fast! Runtime latency for file `./audio/2830-3980-0043.wav`
+   using English large model, is just 428 ms on my laptop. 
 
    Weirdly the English small model perforom worst, with 598ms. Not clear to me. 
 
@@ -140,34 +122,32 @@ Some tests / notes [here](tests/README.md)
    my simple nodejs interface to Deepspech. See results [here](tests/README.md).
 
 
-3. Single-user VS Multi-user multi-core architecture
-
-   The current solution embed vosk API into async functions. That's ok for a single-user / embedded system nodejs program. 
-
-   Vosk transcript is a cpu-bound task that occupy a single core at 100% cpu for some hundreds of msecs.
-   See also: [What's the Vosk CPU usage at run-time?](https://github.com/alphacep/vosk-api/issues/498)
- 
-   So to manage concurrent user requests (a server) a different architecture, using thread workers, must be developed.
-
-
 ## To do
 
- - To build a server based angine, with multiple concurrent requests, 
-   the single thread async functions approach must be substituted using an alternative worker thread architecture.
-
+- Improve the HTTP server
+- Improve stress / performances tests (especially for the HTTP server)
 - Deliver a npm package
 
 
 ## Change log
 
-- 0.0.15 
+- 0.1.0 
+  Added a simple HTTP sever
 
+- 0.0.15 
   Added tests directory, containing some stress tests results
 
 - 0.0.14 
- 
   Transcript function updated to integrate Vosk version 0.3.25 (`npm install vosk@latest`), 
   where the function `rec.acceptWaveformAsync` now run on a separated external thread!
+
+
+## Acknowledgemnts
+
+Thanks to Nicolay V. Shmyrev, author of Vosk project, also for the help about nodeJs API bindings for multithreading management. 
+See also: 
+- [What's the Vosk CPU usage at run-time?](https://github.com/alphacep/vosk-api/issues/498)
+- [How to set-up a Vosk multi-threads server architecture in NodeJs](https://github.com/alphacep/vosk-api/issues/502) 
 
 
 ## License
