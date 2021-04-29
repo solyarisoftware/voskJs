@@ -20,11 +20,25 @@ function unixTimeMsecs() {
 }  
 
 
+/**
+ * log
+ *
+ * @param {String} text
+ * @param {String} type
+ * @return {Number} timestamp
+ *
+ */
 function log(text, type) {
+
+  const time = unixTimeMsecs()
+
   if (type)
-    console.log(`${unixTimeMsecs()} ${type} ${text}`)
+    console.log(`${time} ${type} ${text}`)
   else
-    console.log(`${unixTimeMsecs()} ${text}`)
+    console.log(`${time} ${text}`)
+
+  return time
+
 }
 
 
@@ -70,7 +84,8 @@ function requestListener(req, res) {
   // This function is called once the body has been fully received
   req.on('end', async () => {
 
-    log(`request ${body}`)
+    // log request body and assign to the request an identifier (timestamp)
+    const requestId = log(`request ${body}`)
 
     let parsedBody
 
@@ -78,14 +93,14 @@ function requestListener(req, res) {
       parsedBody = JSON.parse(body)
     }
     catch (error) {
-      return errorResponse(`cannot parse request body ${error}`, 400, res)
+      return errorResponse(`id ${requestId} cannot parse request body ${error}`, 400, res)
     }
 
     //
     // validate body data
     //
     if ( !parsedBody.speech || !parsedBody.model ) 
-      return errorResponse('invalid body data', 405, res)
+      return errorResponse(`id ${requestId} invalid body data ${body}`, 405, res)
 
     try {
       // speech recognition of an audio file
@@ -96,16 +111,17 @@ function requestListener(req, res) {
       // return JSON data structure
       const json = JSON.stringify({
         ... parsedBody,
+        ... { requestId },
         ... { latency },
         ... transcriptData.result 
         })
 
-      log(`transcript latency: ${latency}ms`)
-      log(`response ${json}`)
+      log(`id ${requestId} transcript latency ${latency}ms`)
+      log(`response id ${requestId} ${json}`)
       res.end(json)
     }  
     catch (error) {
-      return errorResponse(`transcript function ${error}`, 415, res)
+      return errorResponse(`id ${requestId} transcript function ${error}`, 415, res)
     }  
 
   })
