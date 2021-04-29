@@ -62,23 +62,11 @@ transcript elapsed : 424ms
 
 ## Transcript using English language, small model
 
-```
+```bash
 $ /usr/bin/time --verbose node voskjs  --audio=audio/2830-3980-0043.wav --model=models/vosk-model-small-en-us-0.15
-
-log level          : 0
-
-LOG (VoskAPI:ReadDataFiles():model.cc:194) Decoding params beam=10 max-active=3000 lattice-beam=2
-LOG (VoskAPI:ReadDataFiles():model.cc:197) Silence phones 1:2:3:4:5:6:7:8:9:10
-LOG (VoskAPI:RemoveOrphanNodes():nnet-nnet.cc:948) Removed 0 orphan nodes.
-LOG (VoskAPI:RemoveOrphanComponents():nnet-nnet.cc:847) Removing 0 orphan components.
-LOG (VoskAPI:CompileLooped():nnet-compile-looped.cc:345) Spent 0.024765 seconds in looped compilation.
-LOG (VoskAPI:ReadDataFiles():model.cc:221) Loading i-vector extractor from models/vosk-model-small-en-us-0.15/ivector/final.ie
-LOG (VoskAPI:ComputeDerivedVars():ivector-extractor.cc:183) Computing derived variables for iVector extractor
-LOG (VoskAPI:ComputeDerivedVars():ivector-extractor.cc:204) Done.
-LOG (VoskAPI:ReadDataFiles():model.cc:251) Loading HCL and G from models/vosk-model-small-en-us-0.15/graph/HCLr.fst models/vosk-model-small-en-us-0.15/graph/Gr.fst
-LOG (VoskAPI:ReadDataFiles():model.cc:273) Loading winfo models/vosk-model-small-en-us-0.15/graph/phones/word_boundary.int
-
-init model elapsed : 292ms
+```
+```
+load model elapsed : 292ms
 transcript elapsed : 550ms
 
 {
@@ -113,7 +101,6 @@ transcript elapsed : 550ms
 	Signals delivered: 0
 	Page size (bytes): 4096
 	Exit status: 0
-
 ```
 
 
@@ -126,7 +113,8 @@ transcript elapsed : 550ms
 
  ```bash
  $ node deepSpeechTranscriptNative ./models/deepspeech-0.9.3-models.pbmm ./models/deepspeech-0.9.3-models.scorer ./audio/2830-3980-0043.wav 
-
+ ```
+ ```
  usage: node deepSpeechTranscriptNative [<model pbmm file>] [<model scorer file>] [<audio file>]
  using: node deepSpeechTranscriptNative ./models/deepspeech-0.9.3-models.pbmm ./models/deepspeech-0.9.3-models.scorer ./audio/2830-3980-0043.wav
 
@@ -153,104 +141,65 @@ transcript elapsed : 550ms
 
 ```bash
 $ /usr/bin/time -f "%e" pidstat 1 -u -e node stressTest 1
-Linux 5.8.0-50-generic (giorgio-HP-Laptop-17-by1xxx) 	28/04/2021 	_x86_64_	(8 CPU)
+```
+```
+Linux 5.8.0-50-generic (giorgio-HP-Laptop-17-by1xxx) 	29/04/2021 	_x86_64_	(8 CPU)
 
-CPU cores in this host  : 8
-requests to be spawned  : 1
+CPU cores in this host : 8
+requests to be spawned : 1
 
-model directory         : ../models/vosk-model-en-us-aspire-0.2
-speech file name        : ../audio/2830-3980-0043.wav
-
-
-log level          : 0
-
-LOG (VoskAPI:ReadDataFiles():model.cc:194) Decoding params beam=13 max-active=7000 lattice-beam=6
-LOG (VoskAPI:ReadDataFiles():model.cc:197) Silence phones 1:2:3:4:5:6:7:8:9:10:11:12:13:14:15
-LOG (VoskAPI:RemoveOrphanNodes():nnet-nnet.cc:948) Removed 1 orphan nodes.
-LOG (VoskAPI:RemoveOrphanComponents():nnet-nnet.cc:847) Removing 2 orphan components.
-LOG (VoskAPI:Collapse():nnet-utils.cc:1488) Added 1 components, removed 2
-LOG (VoskAPI:CompileLooped():nnet-compile-looped.cc:345) Spent 0.00668192 seconds in looped compilation.
-LOG (VoskAPI:ReadDataFiles():model.cc:221) Loading i-vector extractor from ../models/vosk-model-en-us-aspire-0.2/ivector/final.ie
-LOG (VoskAPI:ComputeDerivedVars():ivector-extractor.cc:183) Computing derived variables for iVector extractor
-LOG (VoskAPI:ComputeDerivedVars():ivector-extractor.cc:204) Done.
-LOG (VoskAPI:ReadDataFiles():model.cc:246) Loading HCLG from ../models/vosk-model-en-us-aspire-0.2/graph/HCLG.fst
-
-08:54:25      UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
-08:54:26     1000    253795   51,00   82,00    0,00    0,00  133,00     2  node
-LOG (VoskAPI:ReadDataFiles():model.cc:265) Loading words from ../models/vosk-model-en-us-aspire-0.2/graph/words.txt
-LOG (VoskAPI:ReadDataFiles():model.cc:273) Loading winfo ../models/vosk-model-en-us-aspire-0.2/graph/phones/word_boundary.int
-LOG (VoskAPI:ReadDataFiles():model.cc:281) Loading CARPA model from ../models/vosk-model-en-us-aspire-0.2/rescore/G.carpa
-08:54:27     1000    253795   79,00   21,00    0,00    0,00  100,00     2  node
-
-init model elapsed : 2195ms
-transcript elapsed : 439ms
+model directory        : ../models/vosk-model-en-us-aspire-0.2
+speech file name       : ../audio/2830-3980-0043.wav
 
 
-Average:     1000    253795   65,00   51,50    0,00    0,00  116,50     -  node
-2.95
+17:45:21      UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
+17:45:22     1000    346431   53,00   79,00    0,00    0,00  132,00     0  node
+17:45:23     1000    346431   86,00   14,00    0,00    0,00  100,00     0  node
+load model latency     : 2119ms
+
+transcript latency     : 417ms
+
+Average:     1000    346431   69,50   46,50    0,00    0,00  116,00     -  node
+2.89
 ```
 
 ## Multithread stress test (10 requests in parallel)
 
 ```bash
 $ /usr/bin/time -f "%e" pidstat 1 -u -e node stressTest 10
-Linux 5.8.0-50-generic (giorgio-HP-Laptop-17-by1xxx) 	28/04/2021 	_x86_64_	(8 CPU)
+```
+```
+Linux 5.8.0-50-generic (giorgio-HP-Laptop-17-by1xxx) 	29/04/2021 	_x86_64_	(8 CPU)
 
-CPU cores in this host  : 8
+CPU cores in this host : 8
 warning: number of requested tasks (10) is higher than number of available cores (8)
-requests to be spawned  : 10
+requests to be spawned : 10
 
-model directory         : ../models/vosk-model-en-us-aspire-0.2
-speech file name        : ../audio/2830-3980-0043.wav
-
-
-log level          : 0
-
-LOG (VoskAPI:ReadDataFiles():model.cc:194) Decoding params beam=13 max-active=7000 lattice-beam=6
-LOG (VoskAPI:ReadDataFiles():model.cc:197) Silence phones 1:2:3:4:5:6:7:8:9:10:11:12:13:14:15
-LOG (VoskAPI:RemoveOrphanNodes():nnet-nnet.cc:948) Removed 1 orphan nodes.
-LOG (VoskAPI:RemoveOrphanComponents():nnet-nnet.cc:847) Removing 2 orphan components.
-LOG (VoskAPI:Collapse():nnet-utils.cc:1488) Added 1 components, removed 2
-LOG (VoskAPI:CompileLooped():nnet-compile-looped.cc:345) Spent 0.00680518 seconds in looped compilation.
-LOG (VoskAPI:ReadDataFiles():model.cc:221) Loading i-vector extractor from ../models/vosk-model-en-us-aspire-0.2/ivector/final.ie
-LOG (VoskAPI:ComputeDerivedVars():ivector-extractor.cc:183) Computing derived variables for iVector extractor
-LOG (VoskAPI:ComputeDerivedVars():ivector-extractor.cc:204) Done.
-LOG (VoskAPI:ReadDataFiles():model.cc:246) Loading HCLG from ../models/vosk-model-en-us-aspire-0.2/graph/HCLG.fst
-
-08:45:20      UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
-08:45:21     1000    252999   56,44   75,25    0,00    0,00  131,68     0  node
-LOG (VoskAPI:ReadDataFiles():model.cc:265) Loading words from ../models/vosk-model-en-us-aspire-0.2/graph/words.txt
-LOG (VoskAPI:ReadDataFiles():model.cc:273) Loading winfo ../models/vosk-model-en-us-aspire-0.2/graph/phones/word_boundary.int
-LOG (VoskAPI:ReadDataFiles():model.cc:281) Loading CARPA model from ../models/vosk-model-en-us-aspire-0.2/rescore/G.carpa
-08:45:22     1000    252999   79,00   21,00    0,00    0,00  100,00     0  node
-
-init model elapsed : 2218ms
-08:45:23     1000    252999  233,00   32,00    0,00    0,00  265,00     0  node
-08:45:24     1000    252999  383,00    3,00    0,00    0,00  386,00     3  node
-transcript elapsed : 1623ms
-
-transcript elapsed : 1734ms
-
-transcript elapsed : 1837ms
-
-transcript elapsed : 1934ms
-
-transcript elapsed : 2040ms
-
-transcript elapsed : 2128ms
-
-transcript elapsed : 2227ms
-
-transcript elapsed : 2369ms
-
-transcript elapsed : 2471ms
-
-08:45:25     1000    252999   99,00    2,00    0,00    0,00  101,00     0  node
-transcript elapsed : 2566ms
+model directory        : ../models/vosk-model-en-us-aspire-0.2
+speech file name       : ../audio/2830-3980-0043.wav
 
 
-Average:     1000    252999  169,86   26,75    0,00    0,00  196,61     -  node
-5.15
+17:45:32      UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
+17:45:33     1000    346959   48,00   83,00    0,00    0,00  131,00     6  node
+17:45:34     1000    346959   82,00   18,00    0,00    0,00  100,00     6  node
+load model latency     : 2117ms
+
+17:45:35     1000    346959  248,00   34,00    0,00    0,00  282,00     3  node
+transcript latency     : 1630ms
+17:45:36     1000    346959  365,00    4,00    0,00    0,00  369,00     3  node
+transcript latency     : 1738ms
+transcript latency     : 2451ms
+transcript latency     : 1830ms
+transcript latency     : 1920ms
+transcript latency     : 2202ms
+transcript latency     : 1998ms
+transcript latency     : 2084ms
+transcript latency     : 2294ms
+transcript latency     : 2501ms
+17:45:37     1000    346959   88,00   13,00    0,00    0,00  101,00     3  node
+
+Average:     1000    346959  166,20   30,40    0,00    0,00  196,60     -  node
+5.03
 ```
 ---
 

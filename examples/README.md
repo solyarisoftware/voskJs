@@ -94,16 +94,6 @@ $ node httpServer.js
 
 1619687592873 Press Ctrl-C to shutdown
 1619687592875 Model directory: ../models/vosk-model-small-en-us-0.15
-LOG (VoskAPI:ReadDataFiles():model.cc:194) Decoding params beam=10 max-active=3000 lattice-beam=2
-LOG (VoskAPI:ReadDataFiles():model.cc:197) Silence phones 1:2:3:4:5:6:7:8:9:10
-LOG (VoskAPI:RemoveOrphanNodes():nnet-nnet.cc:948) Removed 0 orphan nodes.
-LOG (VoskAPI:RemoveOrphanComponents():nnet-nnet.cc:847) Removing 0 orphan components.
-LOG (VoskAPI:CompileLooped():nnet-compile-looped.cc:345) Spent 0.0411849 seconds in looped compilation.
-LOG (VoskAPI:ReadDataFiles():model.cc:221) Loading i-vector extractor from ../models/vosk-model-small-en-us-0.15/ivector/final.ie
-LOG (VoskAPI:ComputeDerivedVars():ivector-extractor.cc:183) Computing derived variables for iVector extractor
-LOG (VoskAPI:ComputeDerivedVars():ivector-extractor.cc:204) Done.
-LOG (VoskAPI:ReadDataFiles():model.cc:251) Loading HCL and G from ../models/vosk-model-small-en-us-0.15/graph/HCLr.fst ../models/vosk-model-small-en-us-0.15/graph/Gr.fst
-LOG (VoskAPI:ReadDataFiles():model.cc:273) Loading winfo ../models/vosk-model-small-en-us-0.15/graph/phones/word_boundary.int
 1619687594074 init model latency: 1198ms
 1619687594095 Server httpServer.js running at http://localhost:3000
 1619687594095 Endpoint POST http://localhost:3000/transcript

@@ -1,5 +1,9 @@
 # Change log
 
+- 0.2.1
+  - added function logLevel
+  - httpServer error responses improvements
+
 - 0.2.0
   - function initModel is renamed loadModel
   - function loadModel and Transcript  return an object containing also the processing latency

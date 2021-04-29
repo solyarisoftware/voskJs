@@ -1,29 +1,42 @@
 const http = require('http')
 const path = require('path')
-const { loadModel, transcript, freeModel } = require('../voskjs')
+
+const { logLevel, loadModel, transcript, freeModel } = require('../voskjs')
 
 // set the language model
-const modelName = 'vosk-model-small-en-us-0.15'
-//const modelName = 'vosk-model-en-us-aspire-0.2'
-const modelDirectory = '../models/' + modelName
+const MODEL_NAME = 'vosk-model-small-en-us-0.15'
+//const MODEL_NAME = 'vosk-model-en-us-aspire-0.2'
+const MODEL_DIRECTORY = '../models/' + MODEL_NAME
 
 let model
 
-const PORT = 3000
-const URL = '/transcript'
+const HTTP_METHOD = 'POST' 
+const HTTP_PORT = 3000
+const HTTP_URL = '/transcript'
+
 
 function unixTimeMsecs() {
   return Math.floor(Date.now())
 }  
 
 
-function log(text) {
-  console.log(`${unixTimeMsecs()} ${text}`)
+function log(text, type) {
+  if (type)
+    console.log(`${unixTimeMsecs()} ${type} ${text}`)
+  else
+    console.log(`${unixTimeMsecs()} ${text}`)
 }
 
 
-function logError(text) {
-  console.error(`${unixTimeMsecs()} ${text}`)
+/**
+ * errorResponse
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+ */ 
+function errorResponse(message, statusCode, res) {
+  res.statusCode = statusCode
+  res.end(`{"error":"${message}"}`)
+  log(message, 'ERROR')
 }
 
 
@@ -45,12 +58,8 @@ function requestListener(req, res) {
   // This function is called once the headers have been received
   res.setHeader('Content-Type', 'application/json')
 
-  if (req.method !== 'POST' || req.url !== URL) {
-    const message = 'method or url not allowed'
-    res.statusCode = 405
-    res.end(`{"error":"${message}"}`)
-    logError(message)
-    return
+  if (req.method !== HTTP_METHOD || req.url !== HTTP_URL) {
+    return errorResponse('method or url not allowed', 405, res)
   }
 
   let body = ''
@@ -68,32 +77,21 @@ function requestListener(req, res) {
     try {
       parsedBody = JSON.parse(body)
     }
-    catch (e) {
-      const message = 'cannot parse body'
-      res.statusCode = 400
-      res.end(`{"error":"${message}"}`)
-      logError(message)
-      return
+    catch (error) {
+      return errorResponse(`cannot parse request body ${error}`, 400, res)
     }
 
     //
     // validate body data
     //
-    if (!parsedBody.speech || !parsedBody.model) {
-      const message = 'invalid body data'
-      res.statusCode = 405
-      res.end(`{"error":"${message}"}`)
-      logError(message)
-      return
-    }  
+    if ( !parsedBody.speech || !parsedBody.model ) 
+      return errorResponse('invalid body data', 405, res)
 
     try {
       // speech recognition of an audio file
       const transcriptData = await transcript(parsedBody.speech, model)
 
       const latency = transcriptData.latency
-      //const words = transcriptData.result
-      //const text = transcriptData.text
       
       // return JSON data structure
       const json = JSON.stringify({
@@ -107,9 +105,8 @@ function requestListener(req, res) {
       res.end(json)
     }  
     catch (error) {
-      console.error(error) 
+      return errorResponse(`transcript function ${error}`, 415, res)
     }  
-    
 
   })
 }  
@@ -125,18 +122,21 @@ async function main() {
   log('Press Ctrl-C to shutdown')
 
 
-  log(`Model directory: ${modelDirectory}`)
+  log(`Model directory: ${MODEL_DIRECTORY}`)
+
+  // set the vosk log level to silence 
+  logLevel(-1) 
 
   let latency
 
   // create a Vosk runtime model
-  ( { model, latency } = await loadModel(modelDirectory) );
+  ( { model, latency } = await loadModel(MODEL_DIRECTORY) );
 
-  log(`init model latency: ${latency}ms`)
+  log(`load model latency: ${latency}ms`)
 
-  server.listen( PORT, () => {
-    log(`Server ${path.basename(__filename)} running at http://localhost:${PORT}`)
-    log(`Endpoint POST http://localhost:${PORT}${URL}`)
+  server.listen( HTTP_PORT, () => {
+    log(`Server ${path.basename(__filename)} running at http://localhost:${HTTP_PORT}`)
+    log(`Endpoint http://localhost:${HTTP_PORT}${HTTP_URL}`)
   })
 
 }

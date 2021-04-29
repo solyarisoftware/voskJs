@@ -1,6 +1,7 @@
 /**
  * @module voskjs 
  *
+ * logLevel()
  * loadModel()
  * transcript()
  * freeModel()
@@ -16,6 +17,19 @@ const { getArgs } = require('./lib/getArgs')
 
 const SAMPLE_RATE = 16000.0
 
+/**
+ * logLevel
+ *
+ * Set log level for Vosk/Kaldi messages
+ * @param {number} level   The higher, the more verbose. 0 for infos and errors. Less than 0 for silence. 
+ */
+function logLevel(level=0) {
+
+  // set vosk log level
+  vosk.setLogLevel(level)
+
+}  
+
 
 /**
  * loadModel
@@ -25,7 +39,6 @@ const SAMPLE_RATE = 16000.0
  * @public
  *
  * @param {String}       modelDirectory directory name of the Vosk model
- * @param {Number}       logLevel       Vosk engine log level
  *
  * @typedef ModelObject
  * @property {VoskModel} model          run time model object returned by Vosk engine.
@@ -34,14 +47,11 @@ const SAMPLE_RATE = 16000.0
  * @return {promise<ModelObject>}
  *
  */ 
-function loadModel(modelDirectory, logLevel=0) {
+function loadModel(modelDirectory) {
 
   return new Promise( (resolve, reject) => {
 
     const latencyStart = new Date()
-
-    // set vosk log level
-    vosk.setLogLevel(logLevel)
     
     // validate model directory existence, async
     fs.access(modelDirectory, (err) => {
@@ -204,11 +214,14 @@ async function main() {
   const { args } = getArgs()
   const { modelDirectory, audioFile } = checkArgs(args, `node ${path.basename(__filename, '.js')}`)
 
+  // set the vosk log level to silence 
+  logLevel(-1) 
+
   // load in memory a Vosk directory model
   const { model, latency } = await loadModel(modelDirectory)
 
   // console.dir(model)
-  console.log(`init model latency   : ${latency}ms`)
+  console.log(`load model latency  : ${latency}ms`)
 
   // speech recognition from an audio file
   try {
@@ -231,6 +244,7 @@ if (require.main === module)
   main()
 
 module.exports = { 
+  logLevel,
   loadModel,
   transcript,
   freeModel

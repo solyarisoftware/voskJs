@@ -1,5 +1,5 @@
 const os = require('os')
-const { loadModel, transcript, freeModel } = require('../voskjs')
+const { logLevel, loadModel, transcript, freeModel } = require('../voskjs')
 
 const DEBUG_REQUESTS = false
 const DEBUG_RESULTS = false
@@ -65,25 +65,29 @@ async function main() {
   const cpuCount = os.cpus().length
 
   console.log()
-  console.log(`CPU cores in this host  : ${cpuCount}`) 
+  console.log(`CPU cores in this host : ${cpuCount}`) 
 
   if ( numRequests > cpuCount ) 
     console.log(`warning: number of requested tasks (${numRequests}) is higher than number of available cores (${cpuCount})`)
 
-  console.log(`requests to be spawned  : ${numRequests}`)
+  console.log(`requests to be spawned : ${numRequests}`)
   console.log()
 
   const modelDirectory = '../models/vosk-model-en-us-aspire-0.2'
   const audioFile = '../audio/2830-3980-0043.wav'
 
-  console.log(`model directory         : ${modelDirectory}`)
-  console.log(`speech file name        : ${audioFile}`)
+  console.log(`model directory        : ${modelDirectory}`)
+  console.log(`speech file name       : ${audioFile}`)
   console.log()
+
+  // set the vosk log level to silence 
+  logLevel(-1) 
 
   // create a runtime model
   const { model, latency } = await loadModel(modelDirectory)
 
-  console.log(`init model latency   : ${latency}ms`)
+  console.log(`load model latency     : ${latency}ms`)
+  console.log()
 
   // run numRequests transcript requests in parallel
   const promises = concurrentTranscriptRequests(numRequests, audioFile, model)
@@ -100,7 +104,7 @@ async function main() {
       console.log ( `DEBUG. active requests : ${activeRequests}` )
     }  
 
-    console.log(`transcript latency : ${latency}ms`)
+    console.log(`transcript latency     : ${latency}ms`)
 
     if (DEBUG_RESULTS) 
       console.log( result )
