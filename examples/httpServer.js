@@ -1,9 +1,12 @@
 const http = require('http')
 const path = require('path')
-const { initModel, transcript, freeModel } = require('../voskjs')
+const { loadModel, transcript, freeModel } = require('../voskjs')
 
-// fix the language model
-const modelDirectory = '../models/vosk-model-en-us-aspire-0.2'
+// set the language model
+const modelName = 'vosk-model-small-en-us-0.15'
+//const modelName = 'vosk-model-en-us-aspire-0.2'
+const modelDirectory = '../models/' + modelName
+
 let model
 
 const PORT = 3000
@@ -37,7 +40,8 @@ function shutdown(signal) {
 }  
 
 
-const server = http.createServer( (req, res) => {
+function requestListener(req, res) {
+  
   // This function is called once the headers have been received
   res.setHeader('Content-Type', 'application/json')
 
@@ -56,6 +60,8 @@ const server = http.createServer( (req, res) => {
 
   // This function is called once the body has been fully received
   req.on('end', async () => {
+
+    log(`request ${body}`)
 
     let parsedBody
 
@@ -83,18 +89,21 @@ const server = http.createServer( (req, res) => {
 
     try {
       // speech recognition of an audio file
-      const result = await transcript(parsedBody.speech, model)
+      const transcriptData = await transcript(parsedBody.speech, model)
+
+      const latency = transcriptData.latency
+      //const words = transcriptData.result
+      //const text = transcriptData.text
       
       // return JSON data structure
       const json = JSON.stringify({
-        ...parsedBody,
-        ...{ transcript: { 
-          ...result, 
-          ...{ elapsed:'TBD' } } 
-        }
-      })
+        ... parsedBody,
+        ... { latency },
+        ... transcriptData.result 
+        })
 
-      log(json)
+      log(`transcript latency: ${latency}ms`)
+      log(`response ${json}`)
       res.end(json)
     }  
     catch (error) {
@@ -103,20 +112,27 @@ const server = http.createServer( (req, res) => {
     
 
   })
-})
+}  
 
 
 async function main() {
 
+  const server = http.createServer( (req, res) => requestListener(req, res) )
+  
   process.on('SIGTERM', shutdown )
   process.on('SIGINT', shutdown )
   
   log('Press Ctrl-C to shutdown')
 
-  // create a Vosk runtime model
-  model = await initModel(modelDirectory)
 
   log(`Model directory: ${modelDirectory}`)
+
+  let latency
+
+  // create a Vosk runtime model
+  ( { model, latency } = await loadModel(modelDirectory) );
+
+  log(`init model latency: ${latency}ms`)
 
   server.listen( PORT, () => {
     log(`Server ${path.basename(__filename)} running at http://localhost:${PORT}`)

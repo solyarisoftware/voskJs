@@ -19,19 +19,21 @@ Documentation:
 
 The goal of the simple project is to:
 
-1. Create an easy function layer on top of already existing Vosk nodejs binding, supplying 3 functions: 
+1. Create an simple function API layer on top of already existing Vosk nodejs binding, 
+   supplying just three functions: 
 
-   - `loadModel()`
-   - `transcript()`
-   - `freeModel()`
+   - `loadModel(modelDirectory, logLevel=0)`
+   - `transcript(fileName, model, multiThreads=true)` 
+   - `freeModel(model)`
 
-   In that way you can embed the voskjs module in your nodejs program, 
-   accessing async functions for a correct behavior on an usual sigle thread nodejs program.
+   Using the simple transcript interface you can build your standalone nodejs application, 
+   accessing async functions suitable to run on a usual single thread nodejs program.
 
-2. Use `voskjs` command line program to test Vosk transcript with specific models (some tests [here](tests/README.md)).
+2. Use `voskjs` command line program to test Vosk transcript with specific models 
+  (some tests and command line usage [here](tests/README.md)).
 
-
-3. Setup a simple HTTP server to transcript speech files. Usage and examples [here](examples/) 
+3. Setup a simple HTTP server to transcript speech files. 
+   Usage examples [here](examples/). 
 
 
 ## Install 
@@ -70,30 +72,16 @@ See https://alphacephei.com/vosk/models
 
 ### 3. Demo audio files
 
-This repo contains in `audio/` directory, few English language speech audio files, coming from Mozilla Deespeech repo.
-Useful to make some tests and comparisons. 
+This repository contains in `audio/` directory, 
+few English language speech audio files, coming from Mozilla DeepSpeech.
+That's useful to make some tests and comparisons. 
 
-Source: https://github.com/mozilla/DeepSpeech/releases/download/v0.9.3/audio-0.9.3.tar.gz
-
-
-## VoskJs Command line usage examples
-
-```bash
-$ node voskjs
-
-usage:
-
-    node voskjs --model=<model directory> --audio=<audio file name>
-
-example:
-
-    node voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2
-```
+Source: [Mozilla DeepSpeech audio samples](https://github.com/mozilla/DeepSpeech/releases/download/v0.9.3/audio-0.9.3.tar.gz)
 
 
 ## Voskjs usage examples 
 
-1. Download this repo 
+1. Download this repository 
 
    ```bash
    cd && git clone https://github.com/solyarisoftware/voskJs
@@ -111,15 +99,15 @@ Some tests / notes [here](tests/README.md)
 
 1. Latency
 
-   Vosk ASR is fast! Runtime latency for file `./audio/2830-3980-0043.wav`
+   Vosk ASR is fast! Run-time latency for file `./audio/2830-3980-0043.wav`
    using English large model, is just 428 ms on my laptop. 
 
-   Weirdly the English small model perforom worst, with 598ms. Not clear to me. 
+   Weirdly the English small model performances are worst, with 598ms. Not clear to me. 
 
 2. Comparison between Vosk and Mozilla DeepSpeech (latencies)
 
    For the comparison I used [DeepSpeechJs](https://github.com/solyarisoftware/DeepSpeechJs), 
-   my simple nodejs interface to Deepspech. See results [here](tests/README.md).
+   my simple nodejs interface to Deepspeech. See results [here](tests/README.md).
 
 
 ## To do
@@ -129,22 +117,11 @@ Some tests / notes [here](tests/README.md)
 - Deliver a npm package
 
 
-## Change log
+## Acknowledgments
 
-- 0.1.0 
-  Added a simple HTTP sever
+Thanks to Nicolay V. Shmyrev, author of Vosk project, 
+also for the help about nodeJs API bindings for multi-threading management. 
 
-- 0.0.15 
-  Added tests directory, containing some stress tests results
-
-- 0.0.14 
-  Transcript function updated to integrate Vosk version 0.3.25 (`npm install vosk@latest`), 
-  where the function `rec.acceptWaveformAsync` now run on a separated external thread!
-
-
-## Acknowledgemnts
-
-Thanks to Nicolay V. Shmyrev, author of Vosk project, also for the help about nodeJs API bindings for multithreading management. 
 See also: 
 - [What's the Vosk CPU usage at run-time?](https://github.com/alphacep/vosk-api/issues/498)
 - [How to set-up a Vosk multi-threads server architecture in NodeJs](https://github.com/alphacep/vosk-api/issues/502) 
@@ -153,7 +130,6 @@ See also:
 ## License
 
 MIT (c) Giorgio Robino 
-
 
 ---
 

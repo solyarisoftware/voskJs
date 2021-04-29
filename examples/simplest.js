@@ -1,6 +1,7 @@
-const { initModel, transcript, freeModel } = require('../voskjs')
+const { loadModel, transcript, freeModel } = require('../voskjs')
 
 async function main() {
+
   const modelDirectory = '../models/vosk-model-en-us-aspire-0.2'
   const audioFile = '../audio/2830-3980-0043.wav'
 
@@ -8,12 +9,17 @@ async function main() {
   console.log(`speech file name        : ${audioFile}`)
   console.log()
 
-  // create a Vosk runtime model
-  const model = await initModel(modelDirectory)
+  // load in memory a Vosk directory model
+  const { model, latency } = await loadModel(modelDirectory)
+
+  console.log(`init model latency   : ${latency}ms`)
 
   // speech recognition of an audio file
   try {
-    console.log( await transcript(audioFile, model) )
+    const { result, latency } = await transcript(audioFile, model)
+
+    console.log( result )
+    console.log(`transcript latency : ${latency}ms`)
   }  
   catch (error) {
     console.error(error) 

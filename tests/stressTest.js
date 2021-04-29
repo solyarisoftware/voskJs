@@ -1,5 +1,5 @@
 const os = require('os')
-const { initModel, transcript, freeModel } = require('../voskjs')
+const { loadModel, transcript, freeModel } = require('../voskjs')
 
 const DEBUG_REQUESTS = false
 const DEBUG_RESULTS = false
@@ -32,7 +32,7 @@ function concurrentTranscriptRequests(numRequests, audioFile, model) {
     try {
       // run an async function (returning a Promise), without waiting the end of transcript elaboration  
       const result = transcript(audioFile, model)
-
+    
       // add Promise to an array
       promises.push(result)
     
@@ -81,7 +81,9 @@ async function main() {
   console.log()
 
   // create a runtime model
-  const model = await initModel(modelDirectory)
+  const { model, latency } = await loadModel(modelDirectory)
+
+  console.log(`init model latency   : ${latency}ms`)
 
   // run numRequests transcript requests in parallel
   const promises = concurrentTranscriptRequests(numRequests, audioFile, model)
@@ -90,7 +92,7 @@ async function main() {
   // wait termination of all promises
   for (let i = 0; i < promises.length; i++ ) {
 
-    const result = await promises[i]
+    const { result, latency } = await promises[i]
 
     if (DEBUG_REQUESTS) {
       // thread finished, decrement global counter of active thread running
@@ -98,9 +100,11 @@ async function main() {
       console.log ( `DEBUG. active requests : ${activeRequests}` )
     }  
 
-    if (DEBUG_RESULTS)
-      console.log ( result )
-  
+    console.log(`transcript latency : ${latency}ms`)
+
+    if (DEBUG_RESULTS) 
+      console.log( result )
+      
   }
 
   // free the runtime model

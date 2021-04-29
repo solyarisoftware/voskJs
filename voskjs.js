@@ -1,3 +1,10 @@
+/**
+ * @module voskjs 
+ *
+ * loadModel()
+ * transcript()
+ * freeModel()
+ */
 const vosk = require('vosk')
 
 const fs = require('fs')
@@ -7,49 +14,35 @@ const wav = require('wav')
 
 const { getArgs } = require('./lib/getArgs')
 
-const DEBUG = true
 const SAMPLE_RATE = 16000.0
 
 
 /**
- * public module functions section
- *
- * initModel()
- * transcript()
- * freeModel()
- */
-
-/**
- * initModel
+ * loadModel
  * create new run time model from the specified directory 
  *
  * @async
  * @public
  *
- * @param {String} modelDirectory
- * @param {Number} logLevel
+ * @param {String}       modelDirectory directory name of the Vosk model
+ * @param {Number}       logLevel       Vosk engine log level
+ *
+ * @typedef ModelObject
+ * @property {VoskModel} model          run time model object returned by Vosk engine.
+ * @property {Number}    latency        elpased time in msecs
  *
  * @return {promise<ModelObject>}
- * @example
- *   Model {
- *   handle: <Buffer@0x565ae50 type: { size: 0, indirection: 1, get: [Function: get], set: [Function: set], name: 'void' }>
- *   }
  *
  */ 
-function initModel(modelDirectory, logLevel=0) {
+function loadModel(modelDirectory, logLevel=0) {
+
   return new Promise( (resolve, reject) => {
 
-    const start = new Date()
+    const latencyStart = new Date()
 
     // set vosk log level
     vosk.setLogLevel(logLevel)
     
-    if (DEBUG) {
-      console.log()
-      console.log(`log level          : ${logLevel}`)
-      console.log()
-    }
-
     // validate model directory existence, async
     fs.access(modelDirectory, (err) => {
       if (err) 
@@ -59,20 +52,17 @@ function initModel(modelDirectory, logLevel=0) {
     // create new run time model from the specified directory 
     const model = new vosk.Model(modelDirectory)
 
-    if (DEBUG) {
-      const end = new Date() - start
-      console.log()
-      console.log(`init model elapsed : ${end}ms`)
-    }  
+    const latency = new Date() - latencyStart
 
-    return resolve(model)
+    return resolve( {model, latency} )
   })
+
 }  
 
 
 /**
  * transcript
- * speech recognition into a text, from an audio file, given a specified model
+ * speech recognition into a text, from an audio file, given a specified Vosk model
  *
  * @async
  * @public
@@ -82,22 +72,18 @@ function initModel(modelDirectory, logLevel=0) {
  * @param {Boolean}     multiThreads if true, an external (Vosk engine) thread is spawn
  *                                   that's need for in server architecture
  *
- * @return {Promise<ModelObject>} 
- * @example 
- *  {
- *    result: [
- *      { conf: 0.980891, end: 1.02, start: 0.33, word: 'experience' },
- *      { conf: 1, end: 1.349903, start: 1.02, word: 'proves' },
- *      { conf: 0.996779, end: 1.71, start: 1.35, word: 'this' }
- *    ],
- *    text: 'experience proves this'
- *  }
+ * @typedef TranscriptObject
+ * @property {VoskTranscriptObject}  result  transcript object returned by Vosk engine.
+ * @property {Number}                latency transcript elpased time in msecs
+ *
+ * @return {Promise<TranscriptObject>} 
  *
  */ 
 function transcript(fileName, model, multiThreads=true) {
+
   return new Promise( (resolve, reject) => {
 
-    const start = new Date()
+    const latencyStart = new Date()
 
     // validate audiofile existence, async
     fs.access(fileName, (err) => {
@@ -120,6 +106,7 @@ function transcript(fileName, model, multiThreads=true) {
       for await (const data of new Readable().wrap(wfReader)) {
 
         //
+        // WARNING
         // From vosk version 0.3.25
         // the acceptWaveformAsync function runs in a dedicated thread.
         // That wold improve performances in case of cocurrent requests 
@@ -138,19 +125,17 @@ function transcript(fileName, model, multiThreads=true) {
       
       }
 
-      const finalResult = {...rec.finalResult(rec)} 
+      // copy final Vosk engine result object
+      const result = {...rec.finalResult(rec)} 
       rec.free()
       
-      if (DEBUG) {
-        const end = new Date() - start
-        console.log(`transcript elapsed : ${end}ms`)
-        console.log()
-      }  
+      const latency = new Date() - latencyStart
 
-      return resolve(finalResult)
+      return resolve( {result, latency} )
 
     })
   })
+
 }
 
 
@@ -219,17 +204,18 @@ async function main() {
   const { args } = getArgs()
   const { modelDirectory, audioFile } = checkArgs(args, `node ${path.basename(__filename, '.js')}`)
 
-  // create a runtime model
-  const model = await initModel(modelDirectory)
+  // load in memory a Vosk directory model
+  const { model, latency } = await loadModel(modelDirectory)
 
   // console.dir(model)
+  console.log(`init model latency   : ${latency}ms`)
 
   // speech recognition from an audio file
   try {
-    const result = await transcript(audioFile, model) 
+    const { result, latency } = await transcript(audioFile, model)
 
     console.log(result)
-    console.log()
+    console.log(`transcript latency : ${latency}ms`)
   }  
   catch(error) {
     console.error(error) 
@@ -245,7 +231,7 @@ if (require.main === module)
   main()
 
 module.exports = { 
-  initModel,
+  loadModel,
   transcript,
   freeModel
 }

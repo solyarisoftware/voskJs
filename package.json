@@ -1,7 +1,7 @@
 {
   "name": "voskjs",
-  "version": "0.1.0",
-  "description": "Vosk ASR engine runtime transcript NodeJs native client.",
+  "version": "0.2.0",
+  "description": "Vosk ASR engine transcript API for NodeJs developers.",
   "main": "voskjs.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
