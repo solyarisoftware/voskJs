@@ -2,18 +2,13 @@ const http = require('http')
 const path = require('path')
 
 const { logLevel, loadModel, transcript, freeModel } = require('../voskjs')
-
-// set the language model
-const MODEL_NAME = 'vosk-model-small-en-us-0.15'
-//const MODEL_NAME = 'vosk-model-en-us-aspire-0.2'
-const MODEL_DIRECTORY = '../models/' + MODEL_NAME
-
-let model
+const { getArgs } = require('../lib/getArgs')
 
 const HTTP_METHOD = 'POST' 
+const HTTP_PATH = '/transcript'
 const HTTP_PORT = 3000
-const HTTP_URL = '/transcript'
 
+let model
 
 function unixTimeMsecs() {
   return Math.floor(Date.now())
@@ -54,25 +49,12 @@ function errorResponse(message, statusCode, res) {
 }
 
 
-function shutdown(signal) {
-
-  log(`${signal} received...`)
-  
-  // free the Vosk runtime model
-  freeModel(model)
-  
-  log('Shutdown done.')
-  
-  process.exit(0)
-}  
-
-
 function requestListener(req, res) {
   
   // This function is called once the headers have been received
   res.setHeader('Content-Type', 'application/json')
 
-  if (req.method !== HTTP_METHOD || req.url !== HTTP_URL) {
+  if (req.method !== HTTP_METHOD || req.url !== HTTP_PATH) {
     return errorResponse('method or url not allowed', 405, res)
   }
 
@@ -85,7 +67,7 @@ function requestListener(req, res) {
   req.on('end', async () => {
 
     // log request body and assign to the request an identifier (timestamp)
-    const requestId = log(`request ${body}`)
+    const requestId = log(`request  ${body}`)
 
     let parsedBody
 
@@ -116,8 +98,8 @@ function requestListener(req, res) {
         ... transcriptData.result 
         })
 
-      log(`id ${requestId} transcript latency ${latency}ms`)
-      log(`response id ${requestId} ${json}`)
+      log(`latency  ${requestId} ${latency}ms`)
+      log(`response ${requestId} ${json}`)
       res.end(json)
     }  
     catch (error) {
@@ -128,32 +110,106 @@ function requestListener(req, res) {
 }  
 
 
+function helpAndExit(programName) {
+  
+  console.log()
+  console.log('usage:')
+  console.log()
+  console.log(`    ${programName} --model=<model directory path> [--port=<port number, default=3000>]`)
+  console.log()    
+  console.log('example:')
+  console.log()
+  console.log(`    ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086`)
+  console.log('or:')
+  console.log(`    ${programName} --model=../models/vosk-model-small-en-us-0.15`)
+  console.log()
+
+  process.exit(1)
+
+}  
+
+
+/**
+ * checkArgs
+ * command line parsing
+ *
+ * @param {String}                    args
+ * @param {String}                    programName
+ *
+ * @returns {SentenceAndAttributes}
+ * @typedef {Object} SentenceAndAttributes
+ * @property {String} language 
+ * 
+ */
+function checkArgs(args, programName) {
+
+  const modelDirectory = args.model 
+  let port = args.port 
+
+  if ( !modelDirectory ) 
+    helpAndExit(programName)
+
+  if ( !port ) 
+    port = HTTP_PORT 
+
+  return { modelDirectory, port }
+}
+
+
+function shutdown(signal) {
+
+  log(`${signal} received...`)
+  
+  // free the Vosk runtime model
+  freeModel(model)
+  
+  log('Shutdown done.')
+  
+  process.exit(0)
+}  
+
+
 async function main() {
 
-  const server = http.createServer( (req, res) => requestListener(req, res) )
+  // get command line arguments 
+  const { args } = getArgs()
   
-  process.on('SIGTERM', shutdown )
-  process.on('SIGINT', shutdown )
+  // set the language model
+  const { modelDirectory, port } = checkArgs(args, `node ${path.basename(__filename, '.js')}`)
+
+  log(`Model path: ${modelDirectory}`)
+
+  const modelName = path.basename(modelDirectory, '/')
+  log(`Model name: ${modelName}`)
   
-  log('Press Ctrl-C to shutdown')
-
-
-  log(`Model directory: ${MODEL_DIRECTORY}`)
+  log(`HTTP server port: ${port}`)
 
   // set the vosk log level to silence 
   logLevel(-1) 
 
   let latency
 
+  log(`loading model: ${modelName} ...`);
+
   // create a Vosk runtime model
-  ( { model, latency } = await loadModel(MODEL_DIRECTORY) );
+  ( { model, latency } = await loadModel(modelDirectory) );
 
   log(`load model latency: ${latency}ms`)
 
-  server.listen( HTTP_PORT, () => {
+  // create the HTTP server instance
+  const server = http.createServer( (req, res) => requestListener(req, res) )
+
+  // listen incoming client requests
+  server.listen( port, () => {
     log(`Server ${path.basename(__filename)} running at http://localhost:${HTTP_PORT}`)
-    log(`Endpoint http://localhost:${HTTP_PORT}${HTTP_URL}`)
+    log(`Endpoint http://localhost:${port}${HTTP_PATH}`)
   })
+  
+  // shutdown management
+  process.on('SIGTERM', shutdown )
+  process.on('SIGINT', shutdown )
+  
+  log('Press Ctrl-C to shutdown')
 
 }
 

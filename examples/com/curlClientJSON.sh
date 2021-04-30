@@ -1,3 +1,5 @@
+#!/bin/bash 
+
 ipaddress="localhost"
 port=3000
 
@@ -7,11 +9,10 @@ model='"vosk-model-en-us-aspire-0.2"'
 jsonData='{"speech":'$speechFile',"model":'$model'}'
 
 curl \
-  --silent \
-  --header "Content-Type: application/json" \
-  --request POST \
-  --data $jsonData \
-  http://$ipaddress:$port/transcript \
-  | python3 -m json.tool
-
+--silent \
+--header "Content-Type: application/json" \
+--request POST \
+--data $jsonData \
+http://$ipaddress:$port/transcript \
+| python3 -m json.tool
 

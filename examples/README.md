@@ -1,33 +1,5 @@
 # Transcript usage examples
 
-All tests run on my laptop:
-
-- Intel(R) Core(TM) i7-8565U CPU @ 1.80GHz
-- 8 cores
-- Ubuntu desktop Ubuntu 20.04
-- node v16.0.0
-
-
-```bash
-cat /proc/cpuinfo | grep 'model name' | uniq
-model name  : Intel(R) Core(TM) i7-8565U CPU @ 1.80GHz
-```
-
-```bash
-inxi -S -C -M
-System:    Host: giorgio-HP-Laptop-17-by1xxx Kernel: 5.8.0-50-generic x86_64 bits: 64 Desktop: Gnome 3.36.7 
-           Distro: Ubuntu 20.04.2 LTS (Focal Fossa) 
-Machine:   Type: Laptop System: HP product: HP Laptop 17-by1xxx v: Type1ProductConfigId serial: <superuser/root required> 
-           Mobo: HP model: 8531 v: 17.16 serial: <superuser/root required> UEFI: Insyde v: F.32 date: 12/14/2018 
-CPU:       Topology: Quad Core model: Intel Core i7-8565U bits: 64 type: MT MCP L2 cache: 8192 KiB 
-           Speed: 600 MHz min/max: 400/4600 MHz Core speeds (MHz): 1: 600 2: 600 3: 600 4: 600 5: 600 6: 600 7: 600 8: 600 
-```
-
-My laptop has weird cores usage I claimed here:
-- https://stackoverflow.com/questions/67182001/running-multiple-nodejs-worker-threads-why-of-such-a-large-overhead-latency
-- https://stackoverflow.com/questions/67211241/why-program-execution-time-differs-running-the-same-program-multiple-times
-
-
 ## VoskJs Command line usage
 
 ```bash
@@ -49,6 +21,23 @@ example:
 The program transcript a wav file, using a specific language model. 
 This is the brainless Vosk interface, perfect for embedded / standalone systems.
 
+```bash
+$ node simplest
+model directory      : ../models/vosk-model-en-us-aspire-0.2
+speech file name     : ../audio/2830-3980-0043.wav
+load model latency   : 28439ms
+{
+  result: [
+    { conf: 0.980969, end: 1.02, start: 0.33, word: 'experience' },
+    { conf: 1, end: 1.349919, start: 1.02, word: 'proves' },
+    { conf: 0.997301, end: 1.71, start: 1.35, word: 'this' }
+  ],
+  text: 'experience proves this'
+}
+transcript latency : 471ms
+```
+
+> NOTE
 > The async architecture allows to process almost single requests (from single users).
 > A dedicated thread is spawned for each transcript processing. 
 > That means that the nodejs main thread is not 'saturated' by the CPU-intensive transcript processing.
@@ -57,78 +46,113 @@ This is the brainless Vosk interface, perfect for embedded / standalone systems.
 
 ## Transcript HTTP server 
 
-[`httpServer.js`](httpServer.js) is a simple HTTP API server 
-able to process concurrent/multi-user transcript requests in a specific language.
+[`httpServer.js`](httpServer.js) is a very simple HTTP API server 
+able to process concurrent/multi-user transcript requests, using a specific language model.
 
-> A dedicated thread is spawned for each transcript processing request. 
-> Latency performance will be optimal if your host has multiple cores.
+Currently the server support just a single endpoint `HTTP POST /transcript`
+
+> A dedicated thread is spawned for each transcript processing request, 
+> so latency performance will be optimal if your host has multiple cores.
 
 
-To run the server: 
+To Run the server
 
 ```bash
-node httpServer
+node httpServer.js --model=../models/vosk-model-en-us-aspire-0.2/ --port==3000
 ```
 
-
-The server API endpoint client must call is very simple:
+The server API endpoint client call has the format:
 
 ```bash
 curl \
-  --header "Content-Type: application/json" \
-  --request POST \
-  --data '{ "speech": "../audio/2830-3980-0043.wav", "model": "vosk-model-en-us-aspire-0.2"} \
-  http://localhost:3000/transcript
+--header "Content-Type: application/json" \
+--request POST \
+--data '{ "speech": "../audio/2830-3980-0043.wav", "model": "vosk-model-en-us-aspire-0.2"} \
+http://localhost:3000/transcript
 ```
 
-`com/` directory contains some utility bash scripts to test the client/server communication.
-By example, if you want to test the JSON returned by the transcript endpoint: 
+The JSON returned by the transcript endpoint: 
 
 ```bash
 $ com/curlClientJSON.sh
 {
     "speech": "../audio/2830-3980-0043.wav",
     "model": "vosk-model-en-us-aspire-0.2",
-    "latency": 583,
+    "requestId": 1619796459716,
+    "latency": 459,
     "result": [
         {
-            "conf": 1,
+            "conf": 0.980969,
             "end": 1.02,
-            "start": 0.36,
+            "start": 0.33,
             "word": "experience"
         },
         {
             "conf": 1,
-            "end": 1.35,
+            "end": 1.349919,
             "start": 1.02,
             "word": "proves"
         },
         {
-            "conf": 1,
-            "end": 1.74,
+            "conf": 0.997301,
+            "end": 1.71,
             "start": 1.35,
             "word": "this"
         }
     ],
     "text": "experience proves this"
 }
-
 ```
 
-The HTTP server corresponding log:
+So the HTTP POST endpoint `/transcript` return a JSON data structure containing:
+
+- `speech` the name of the speech file in the request
+- `model` the name of the model (the language) in the request
+- `requestId` an "UUID" that's the unix epoch timestamp 
+  that identify the incoming request and it could be used for debug.
+- `latency` the elapsed time, in milliseconds, required to elaborate the request
+- `result` the data structure returned by Vosk transcript function.
+
+The HTTP server corresponding log is:
 
 ```bash
-$ node httpServer.js
-
-1619687592873 Press Ctrl-C to shutdown
-1619687592875 Model directory: ../models/vosk-model-small-en-us-0.15
-1619687594074 init model latency: 1198ms
-1619687594095 Server httpServer.js running at http://localhost:3000
-1619687594095 Endpoint POST http://localhost:3000/transcript
-1619687628186 request {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}
-1619687628770 transcript latency: 583ms
-1619687628770 response {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","latency":583,"result":[{"conf":1,"end":1.02,"start":0.36,"word":"experience"},{"conf":1,"end":1.35,"start":1.02,"word":"proves"},{"conf":1,"end":1.74,"start":1.35,"word":"this"}],"text":"experience proves this"}
+node httpServer.js --model=../models/vosk-model-en-us-aspire-0.2/
 ```
+```
+1619796452845 Model path: ../models/vosk-model-en-us-aspire-0.2/
+1619796452855 Model name: vosk-model-en-us-aspire-0.2
+1619796455934 load model latency: 3078ms
+1619796455935 Press Ctrl-C to shutdown
+1619796455937 Server httpServer.js running at http://localhost:3000
+1619796455937 Endpoint http://localhost:3000/transcript
+1619796459716 request  {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}
+1619796460175 latency  1619796459716 459ms
+1619796460175 response 1619796459716 {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","requestId":1619796459716,"latency":459,"result":[{"conf":0.980969,"end":1.02,"start":0.33,"word":"experience"},{"conf":1,"end":1.349919,"start":1.02,"word":"proves"},{"conf":0.997301,"end":1.71,"start":1.35,"word":"this"}],"text":"experience proves this"}
+1619796987904 request  {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}
+1619796988349 latency  1619796987904 445ms
+1619796988349 response 1619796987904 {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","requestId":1619796987904,"latency":445,"result":[{"conf":0.97987,"end":1.02,"start":0.33,"word":"experience"},{"conf":1,"end":1.349885,"start":1.02,"word":"proves"},{"conf":0.996167,"end":1.71,"start":1.35,"word":"this"}],"text":"experience proves this"}
+1619796989071 request  {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}
+1619796989524 latency  1619796989071 452ms
+1619796989525 response 1619796989071 {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","requestId":1619796989071,"latency":452,"result":[{"conf":0.980733,"end":1.02,"start":0.33,"word":"experience"},{"conf":1,"end":1.349923,"start":1.02,"word":"proves"},{"conf":0.997445,"end":1.71,"start":1.35,"word":"this"}],"text":"experience proves this"}
+1619796990025 request  {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}
+1619796990465 latency  1619796990025 440ms
+1619796990466 response 1619796990025 {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","requestId":1619796990025,"latency":440,"result":[{"conf":0.979754,"end":1.02,"start":0.33,"word":"experience"},{"conf":1,"end":1.34989,"start":1.02,"word":"proves"},{"conf":0.996323,"end":1.71,"start":1.35,"word":"this"}],"text":"experience proves this"}
+```
+
+For each incoming request, the server log 3 lines containing
+
+- `request` body JSON
+- `latency` <requestId> elapsed time of request <requestId>
+- `response` <requestId> response JSON request <requestId>
+
+In the server log you can trace the incoming request (by example with requestId `1619796459716`) in these lines:
+```
+1619796459716 request  {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}
+1619796460175 latency  1619796459716 459ms
+1619796460175 response 1619796459716 {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","requestId":1619796459716,"latency":459,"result":[{"conf":0.980969,"end":1.02,"start":0.33,"word":"experience"},{"conf":1,"end":1.349919,"start":1.02,"word":"proves"},{"conf":0.997301,"end":1.71,"start":1.35,"word":"this"}],"text":"experience proves this"}
+```
+
+> [`com/`](com/) directory contains some utility bash scripts to test the client/server communication.
 
 ---
 

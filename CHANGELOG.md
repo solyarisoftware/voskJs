@@ -1,7 +1,8 @@
 # Change log
 
-- 0.2.3
-  - added com/abtest.sh, apache bench httpServer stress test script 
+- 0.2.4
+  - added com/abtest.sh, apache bench httpServer stress test script.
+  - httpServer improved. Now takes model and port in command line args.
 
 - 0.2.1
   - added function logLevel
