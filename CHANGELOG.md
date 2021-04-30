@@ -1,5 +1,8 @@
 # Change log
 
+- 0.2.3
+  - added com/abtest.sh, apache bench httpServer stress test script 
+
 - 0.2.1
   - added function logLevel
   - httpServer error responses improvements

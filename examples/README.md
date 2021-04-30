@@ -1,5 +1,33 @@
 # Transcript usage examples
 
+All tests run on my laptop:
+
+- Intel(R) Core(TM) i7-8565U CPU @ 1.80GHz
+- 8 cores
+- Ubuntu desktop Ubuntu 20.04
+- node v16.0.0
+
+
+```bash
+cat /proc/cpuinfo | grep 'model name' | uniq
+model name  : Intel(R) Core(TM) i7-8565U CPU @ 1.80GHz
+```
+
+```bash
+inxi -S -C -M
+System:    Host: giorgio-HP-Laptop-17-by1xxx Kernel: 5.8.0-50-generic x86_64 bits: 64 Desktop: Gnome 3.36.7 
+           Distro: Ubuntu 20.04.2 LTS (Focal Fossa) 
+Machine:   Type: Laptop System: HP product: HP Laptop 17-by1xxx v: Type1ProductConfigId serial: <superuser/root required> 
+           Mobo: HP model: 8531 v: 17.16 serial: <superuser/root required> UEFI: Insyde v: F.32 date: 12/14/2018 
+CPU:       Topology: Quad Core model: Intel Core i7-8565U bits: 64 type: MT MCP L2 cache: 8192 KiB 
+           Speed: 600 MHz min/max: 400/4600 MHz Core speeds (MHz): 1: 600 2: 600 3: 600 4: 600 5: 600 6: 600 7: 600 8: 600 
+```
+
+My laptop has weird cores usage I claimed here:
+- https://stackoverflow.com/questions/67182001/running-multiple-nodejs-worker-threads-why-of-such-a-large-overhead-latency
+- https://stackoverflow.com/questions/67211241/why-program-execution-time-differs-running-the-same-program-multiple-times
+
+
 ## VoskJs Command line usage
 
 ```bash
