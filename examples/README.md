@@ -55,10 +55,44 @@ Currently the server support just a single endpoint `HTTP POST /transcript`
 > so latency performance will be optimal if your host has multiple cores.
 
 
-To Run the server
+Server settings:
+
+```
+$ node httpServer 
+
+Usage
+
+    node httpServer --model=<model directory path> \ 
+                  [--port=<port number> \
+                  [--debug[=<vosk log level>]]
+
+Server settings examples
+
+    node httpServer --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2
+    # -> stdout inludes httpServer internal debug logs and Vosk debug logs (log level 2)
+
+    node httpServer --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug
+    # -> stdout includes httpServer internal debug logs without Vosk debug logs (log level -1)
+
+    node httpServer --model=../models/vosk-model-en-us-aspire-0.2 --port=8086
+    # -> stdout includes minimal info, just request and response messages
+
+    node httpServer --model=../models/vosk-model-small-en-us-0.15
+    # -> stdout includes minimal info, default port number is 3000
+
+Client requests examples
+
+    curl -s \ 
+         -X POST \ 
+         -H "Content-Type: application/json" \ 
+         -d '{"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}' \ 
+         http://localhost:3000/transcript
+```
+
+Server run example:
 
 ```bash
-node httpServer.js --model=../models/vosk-model-en-us-aspire-0.2/ --port==3000
+node httpServer.js --model=../models/vosk-model-en-us-aspire-0.2 --port==3000 --debug
 ```
 
 The server API endpoint client call has the format:

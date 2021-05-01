@@ -1,6 +1,6 @@
 {
   "name": "voskjs",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Vosk ASR engine transcript API for NodeJs developers.",
   "main": "voskjs.js",
   "scripts": {

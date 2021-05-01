@@ -6,11 +6,8 @@ model='"vosk-model-en-us-aspire-0.2"'
 
 jsonData='{"speech":'$speechFile',"model":'$model'}'
 
-# echo $jsonData
-
 #  -w "\n\n%{time_starttransfer}\n" \
-#  --data '{"filename":`$speechFile`","model":"english"}' \
-
+#  --data '{"speech":`$speechFile`","model":"english"}' \
 # https://stackoverflow.com/questions/7172784/how-do-i-post-json-data-with-curl
 
 curl \

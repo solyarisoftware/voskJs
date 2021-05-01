@@ -1,6 +1,7 @@
 # VoskJs
 
-Vosk ASR engine runtime transcript NodeJs client.
+Vosk ASR offline engine transcript APIs for NodeJs developers.
+Contains a simple HTTP transcript server.
 
 VoskJs can be used for speech recognition processing in different scenarios:
 - Single-user/standalone programs (e.g. perfect for single-user embedded systems) 
@@ -17,14 +18,19 @@ Documentation:
 
 ## What's VoskJs?
 
-The goal of the simple project is to:
+The goal of the project is to:
 
 1. Create an simple function API layer on top of already existing Vosk nodejs binding, 
-   supplying just three functions: 
+   supplying two main functionalities: 
 
    - `loadModel(modelDirectory, logLevel=0)`
+ 
+     Loads once in RAM memory a specific Vosk engine model from a model directory.
+ 
    - `transcript(fileName, model, multiThreads=true)` 
-   - `freeModel(model)`
+
+     At run-rime, transcripts a speech file (in WAV format), 
+     through the Vosk engine Recognizer. It supply speech-to-text text detailed info.
 
    Using the simple transcript interface you can build your standalone nodejs application, 
    accessing async functions suitable to run on a usual single thread nodejs program.
@@ -45,7 +51,7 @@ pip3 install vosk
 npm install vosk
 ```
 
-See https://alphacephei.com/vosk/install
+See also: https://alphacephei.com/vosk/install
 
 
 ### 2. Install/Download Vosk models
@@ -68,7 +74,7 @@ unzip vosk-model-small-it-0.4.zip
 cd ..
 ```
 
-See https://alphacephei.com/vosk/models
+More about available Vosk models here: https://alphacephei.com/vosk/models
 
 ### 3. Demo audio files
 
@@ -112,7 +118,6 @@ Some tests / notes [here](tests/README.md)
 
 ## To do
 
-- Improve the HTTP server
 - Improve stress / performances tests (especially for the HTTP server)
 - Deliver a npm package
 

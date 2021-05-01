@@ -8,11 +8,84 @@ const HTTP_METHOD = 'POST'
 const HTTP_PATH = '/transcript'
 const HTTP_PORT = 3000
 
+/**
+ * Module global variables
+ */
+let debug
+let activeRequests = 0
 let model
 
 function unixTimeMsecs() {
   return Math.floor(Date.now())
 }  
+
+
+function helpAndExit(programName) {
+  
+  console.info()
+  console.info('Usage)')
+  console.info()
+  console.info(`    ${programName} --model=<model directory path> \\ `)
+  console.info('                  [--port=<port number> \\')
+  console.info('                  [--debug[=<vosk log level>]]')
+  console.info()    
+  console.info('Server settings examples')
+  console.info()    
+  console.info(`    ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2`)
+  console.info('    # -> stdout inludes httpServer internal debug logs and Vosk debug logs (log level 2)')
+  console.info()    
+  console.info(`    ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug`)
+  console.info('    # -> stdout includes httpServer internal debug logs without Vosk debug logs (log level -1)')
+  console.info()    
+  console.info(`    ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086`)
+  console.info('    # -> stdout includes minimal info, just request and response messages')
+  console.info()    
+  console.info(`    ${programName} --model=../models/vosk-model-small-en-us-0.15`)
+  console.info('    # -> stdout includes minimal info, default port number is 3000')
+  console.info()
+  console.info('Client requests examples')
+  console.info()
+  console.info('    curl -s \\ ')
+  console.info('         -X POST \\ ')
+  console.info('         -H "Content-Type: application/json" \\ ')
+  console.info('         -d \'{"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}\' \\ ')
+  console.info('         http://localhost:3000/transcript')
+  console.info()    
+
+  process.exit(1)
+
+}  
+
+
+/**
+ * validateArgs
+ * command line parsing
+ *
+ * @param {String}                    args
+ * @param {String}                    programName
+ *
+ * @returns {SentenceAndAttributes}
+ * @typedef {Object} SentenceAndAttributes
+ * @property {String} language 
+ * 
+ */
+function validateArgs(args, programName) {
+
+
+  // model is a cli mandatory argument
+  const modelDirectory = args.model 
+
+  if ( !modelDirectory ) 
+    helpAndExit(programName)
+  
+  // if not set, port cli argument has a default
+  const port = !args.port ? HTTP_PORT : args.port 
+
+  // debug cli argument must be an integer or a boolean
+  const debugLevel = args.debug
+
+  return { modelDirectory, port, debugLevel }
+}
 
 
 /**
@@ -67,7 +140,7 @@ function requestListener(req, res) {
   req.on('end', async () => {
 
     // log request body and assign to the request an identifier (timestamp)
-    const requestId = log(`request  ${body}`)
+    const requestId = log(`request ${body}`)
 
     let parsedBody
 
@@ -85,8 +158,21 @@ function requestListener(req, res) {
       return errorResponse(`id ${requestId} invalid body data ${body}`, 405, res)
 
     try {
+
+      if (debug) {
+        // new thread started, increment global counter of active thread running
+        activeRequests++
+        log(`active requests ${activeRequests}`, 'debug')
+      }
+
       // speech recognition of an audio file
       const transcriptData = await transcript(parsedBody.speech, model)
+
+      if (debug) {
+        // thread finished, decrement global counter of active thread running
+        activeRequests--
+        log(`active requests ${activeRequests}`, 'debug')
+      }  
 
       const latency = transcriptData.latency
       
@@ -98,9 +184,11 @@ function requestListener(req, res) {
         ... transcriptData.result 
         })
 
-      log(`latency  ${requestId} ${latency}ms`)
       log(`response ${requestId} ${json}`)
       res.end(json)
+
+      if (debug)
+        log(`latency ${requestId} ${latency}ms`, 'debug')
     }  
     catch (error) {
       return errorResponse(`id ${requestId} transcript function ${error}`, 415, res)
@@ -108,52 +196,6 @@ function requestListener(req, res) {
 
   })
 }  
-
-
-function helpAndExit(programName) {
-  
-  console.log()
-  console.log('usage:')
-  console.log()
-  console.log(`    ${programName} --model=<model directory path> [--port=<port number, default=3000>]`)
-  console.log()    
-  console.log('example:')
-  console.log()
-  console.log(`    ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086`)
-  console.log('or:')
-  console.log(`    ${programName} --model=../models/vosk-model-small-en-us-0.15`)
-  console.log()
-
-  process.exit(1)
-
-}  
-
-
-/**
- * checkArgs
- * command line parsing
- *
- * @param {String}                    args
- * @param {String}                    programName
- *
- * @returns {SentenceAndAttributes}
- * @typedef {Object} SentenceAndAttributes
- * @property {String} language 
- * 
- */
-function checkArgs(args, programName) {
-
-  const modelDirectory = args.model 
-  let port = args.port 
-
-  if ( !modelDirectory ) 
-    helpAndExit(programName)
-
-  if ( !port ) 
-    port = HTTP_PORT 
-
-  return { modelDirectory, port }
-}
 
 
 function shutdown(signal) {
@@ -171,37 +213,60 @@ function shutdown(signal) {
 
 async function main() {
 
+  let voskLogLevel
+
   // get command line arguments 
   const { args } = getArgs()
   
   // set the language model
-  const { modelDirectory, port } = checkArgs(args, `node ${path.basename(__filename, '.js')}`)
-
-  log(`Model path: ${modelDirectory}`)
+  const { modelDirectory, port, debugLevel } = validateArgs(args, `node ${path.basename(__filename, '.js')}`)
 
   const modelName = path.basename(modelDirectory, '/')
-  log(`Model name: ${modelName}`)
-  
-  log(`HTTP server port: ${port}`)
 
-  // set the vosk log level to silence 
-  logLevel(-1) 
+  // debug cli argument not set, 
+  // internal httpServer debug and Vosk log level are unset
+  if ( ! debugLevel ) { 
+    debug = false
+    voskLogLevel = -1
+    logLevel(voskLogLevel) 
+  }  
+  
+  // internal httpServer debug is set but Vosk log level is unset
+  else if ( debugLevel === true ) {
+    debug = true
+    voskLogLevel = -1
+    logLevel(voskLogLevel) 
+  }
+
+  // debug cli argument s an integer,
+  // internal debug is set and Vosk log level is set to corresponding value
+  else if ( Number.isInteger(+debugLevel) ) {
+    debug = true
+    voskLogLevel = +debugLevel
+    logLevel(voskLogLevel) 
+  }
+
+  log(`Model path: ${modelDirectory}`)
+  log(`Model name: ${modelName}`)
+  log(`HTTP server port: ${port}`)
+  log(`internal debug log: ${debug}`)
+  log(`Vosk engine log level: ${voskLogLevel}`)
 
   let latency
 
-  log(`loading model: ${modelName} ...`);
+  log(`loading Vosk engine model: ${modelName} ...`);
 
   // create a Vosk runtime model
   ( { model, latency } = await loadModel(modelDirectory) );
 
-  log(`load model latency: ${latency}ms`)
+  log(`loaded Vosk engine model in ${latency} msecs`)
 
   // create the HTTP server instance
   const server = http.createServer( (req, res) => requestListener(req, res) )
 
   // listen incoming client requests
   server.listen( port, () => {
-    log(`Server ${path.basename(__filename)} running at http://localhost:${HTTP_PORT}`)
+    log(`Server ${path.basename(__filename)} running at http://localhost:${port}`)
     log(`Endpoint http://localhost:${port}${HTTP_PATH}`)
   })
   
