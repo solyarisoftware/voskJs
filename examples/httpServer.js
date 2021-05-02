@@ -14,6 +14,7 @@ const HTTP_PORT = 3000
 let debug
 let activeRequests = 0
 let model
+let modelName
 
 function unixTimeMsecs() {
   return Math.floor(Date.now())
@@ -31,24 +32,32 @@ function helpAndExit(programName) {
   console.info()    
   console.info('Server settings examples')
   console.info()    
+  console.info('    stdout inludes httpServer internal debug logs and Vosk debug logs (log level 2)')
   console.info(`    ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2`)
-  console.info('    # -> stdout inludes httpServer internal debug logs and Vosk debug logs (log level 2)')
   console.info()    
+  console.info('    stdout includes httpServer internal debug logs without Vosk debug logs (log level -1)')
   console.info(`    ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug`)
-  console.info('    # -> stdout includes httpServer internal debug logs without Vosk debug logs (log level -1)')
   console.info()    
+  console.info('    stdout includes minimal info, just request and response messages')
   console.info(`    ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086`)
-  console.info('    # -> stdout includes minimal info, just request and response messages')
   console.info()    
+  console.info('    stdout includes minimal info, default port number is 3000')
   console.info(`    ${programName} --model=../models/vosk-model-small-en-us-0.15`)
-  console.info('    # -> stdout includes minimal info, default port number is 3000')
   console.info()
   console.info('Client requests examples')
   console.info()
+  console.info('    full request, containing also the "model" attribute')
   console.info('    curl -s \\ ')
   console.info('         -X POST \\ ')
   console.info('         -H "Content-Type: application/json" \\ ')
   console.info('         -d \'{"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}\' \\ ')
+  console.info('         http://localhost:3000/transcript')
+  console.info()    
+  console.info('    minimal request, contains just the "speech" attribute in request body')
+  console.info('    curl -s \\ ')
+  console.info('         -X POST \\ ')
+  console.info('         -H "Content-Type: application/json" \\ ')
+  console.info('         -d \'{"speech":"../audio/2830-3980-0043.wav"}\' \\ ')
   console.info('         http://localhost:3000/transcript')
   console.info()    
 
@@ -121,15 +130,22 @@ function errorResponse(message, statusCode, res) {
   log(message, 'ERROR')
 }
 
+function successResponse(requestId, json, res) {
+  log(`response ${requestId} ${json}`)
+  res.end(json)
+}
+
 
 function requestListener(req, res) {
   
   // This function is called once the headers have been received
   res.setHeader('Content-Type', 'application/json')
 
-  if (req.method !== HTTP_METHOD || req.url !== HTTP_PATH) {
-    return errorResponse('method or url not allowed', 405, res)
-  }
+  if (req.method !== HTTP_METHOD) 
+    return errorResponse(`method not allowed ${req.method}`, 405, res)
+
+  if (req.url !== HTTP_PATH)
+    return errorResponse(`path not allowed ${req.url}`, 405, res)
 
   let body = ''
 
@@ -151,11 +167,16 @@ function requestListener(req, res) {
       return errorResponse(`id ${requestId} cannot parse request body ${error}`, 400, res)
     }
 
-    //
     // validate body data
-    //
-    if ( !parsedBody.speech || !parsedBody.model ) 
-      return errorResponse(`id ${requestId} invalid body data ${body}`, 405, res)
+
+    // body must have attributes "speech" and "model"
+    if ( !parsedBody.speech ) 
+      return errorResponse(`id ${requestId} "speech" attribute required in the body request ${body}`, 405, res)
+
+    // body attribute "model" is specified in the client request,
+    // it must be equal to the model name loaded by the server
+    if ( parsedBody.model && (parsedBody.model !== modelName) ) 
+      return errorResponse(`id ${requestId} unknown model ${body}`, 404, res)
 
     try {
 
@@ -178,17 +199,17 @@ function requestListener(req, res) {
       
       // return JSON data structure
       const json = JSON.stringify({
-        ... parsedBody,
+        ... { request: parsedBody },
         ... { requestId },
         ... { latency },
         ... transcriptData.result 
         })
 
-      log(`response ${requestId} ${json}`)
-      res.end(json)
-
       if (debug)
         log(`latency ${requestId} ${latency}ms`, 'debug')
+      
+      return successResponse(requestId, json, res)
+
     }  
     catch (error) {
       return errorResponse(`id ${requestId} transcript function ${error}`, 415, res)
@@ -200,12 +221,12 @@ function requestListener(req, res) {
 
 function shutdown(signal) {
 
-  log(`${signal} received...`)
+  log(`${signal} received`)
   
   // free the Vosk runtime model
   freeModel(model)
   
-  log('Shutdown done.')
+  log('Shutdown done')
   
   process.exit(0)
 }  
@@ -221,7 +242,8 @@ async function main() {
   // set the language model
   const { modelDirectory, port, debugLevel } = validateArgs(args, `node ${path.basename(__filename, '.js')}`)
 
-  const modelName = path.basename(modelDirectory, '/')
+  // assign global value
+  modelName = path.basename(modelDirectory, '/')
 
   // debug cli argument not set, 
   // internal httpServer debug and Vosk log level are unset
@@ -254,7 +276,7 @@ async function main() {
 
   let latency
 
-  log(`loading Vosk engine model: ${modelName} ...`);
+  log(`loading Vosk engine model: ${modelName}`);
 
   // create a Vosk runtime model
   ( { model, latency } = await loadModel(modelDirectory) );

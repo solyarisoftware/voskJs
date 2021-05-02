@@ -137,6 +137,7 @@ function transcript(fileName, model, multiThreads=true) {
 
       // copy final Vosk engine result object
       const result = {...rec.finalResult(rec)} 
+
       rec.free()
       
       const latency = new Date() - latencyStart

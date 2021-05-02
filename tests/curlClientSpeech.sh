@@ -4,9 +4,7 @@ ipaddress="localhost"
 port=3000
 
 speechFile='"../audio/2830-3980-0043.wav"'
-model='"vosk-model-en-us-aspire-0.2"'
-
-jsonData='{"speech":'$speechFile',"model":'$model'}'
+jsonData='{"speech":'$speechFile'}'
 
 curl \
 --silent \

@@ -58,34 +58,42 @@ Currently the server support just a single endpoint `HTTP POST /transcript`
 Server settings:
 
 ```
-$ node httpServer 
+$ node httpServer.js
 
-Usage
+Usage)
 
-    node httpServer --model=<model directory path> \ 
+    node httpServer --model=<model directory path> \
                   [--port=<port number> \
                   [--debug[=<vosk log level>]]
 
 Server settings examples
 
+    stdout inludes httpServer internal debug logs and Vosk debug logs (log level 2)
     node httpServer --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2
-    # -> stdout inludes httpServer internal debug logs and Vosk debug logs (log level 2)
 
+    stdout includes httpServer internal debug logs without Vosk debug logs (log level -1)
     node httpServer --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug
-    # -> stdout includes httpServer internal debug logs without Vosk debug logs (log level -1)
 
+    stdout includes minimal info, just request and response messages
     node httpServer --model=../models/vosk-model-en-us-aspire-0.2 --port=8086
-    # -> stdout includes minimal info, just request and response messages
 
+    stdout includes minimal info, default port number is 3000
     node httpServer --model=../models/vosk-model-small-en-us-0.15
-    # -> stdout includes minimal info, default port number is 3000
 
 Client requests examples
 
-    curl -s \ 
-         -X POST \ 
-         -H "Content-Type: application/json" \ 
-         -d '{"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}' \ 
+    full request, containing also the "model" attribute
+    curl -s \
+         -X POST \
+         -H "Content-Type: application/json" \
+         -d '{"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}' \
+         http://localhost:3000/transcript
+
+    minimal request, contains just the "speech" attribute in request body
+    curl -s \
+         -X POST \
+         -H "Content-Type: application/json" \
+         -d '{"speech":"../audio/2830-3980-0043.wav"}' \
          http://localhost:3000/transcript
 ```
 
@@ -95,7 +103,7 @@ Server run example:
 node httpServer.js --model=../models/vosk-model-en-us-aspire-0.2 --port==3000 --debug
 ```
 
-The server API endpoint client call has the format:
+The server API endpoint client call has the complete format:
 
 ```bash
 curl \
@@ -108,28 +116,30 @@ http://localhost:3000/transcript
 The JSON returned by the transcript endpoint: 
 
 ```bash
-$ com/curlClientJSON.sh
+$ tests/curlClientJSON.sh
 {
-    "speech": "../audio/2830-3980-0043.wav",
-    "model": "vosk-model-en-us-aspire-0.2",
-    "requestId": 1619796459716,
-    "latency": 459,
+    "request": {
+        "speech": "../audio/2830-3980-0043.wav",
+        "model": "vosk-model-small-en-us-0.15"
+    },
+    "requestId": 1619960327963,
+    "latency": 579,
     "result": [
         {
-            "conf": 0.980969,
+            "conf": 1,
             "end": 1.02,
-            "start": 0.33,
+            "start": 0.36,
             "word": "experience"
         },
         {
             "conf": 1,
-            "end": 1.349919,
+            "end": 1.35,
             "start": 1.02,
             "word": "proves"
         },
         {
-            "conf": 0.997301,
-            "end": 1.71,
+            "conf": 1,
+            "end": 1.74,
             "start": 1.35,
             "word": "this"
         }
@@ -138,7 +148,22 @@ $ com/curlClientJSON.sh
 }
 ```
 
-So the HTTP POST endpoint `/transcript` return a JSON data structure containing:
+The body request must contains the attribute `speech` 
+to specify the speech WAV file for the server speech-to-text conversion.
+
+The `model` attribute is optional. 
+If specified, the server verifies if it matches with the model name of the server-side loaded model.
+
+If `model` is not specified, the server do not make any control, just using the load model.
+In this case the client call is just:
+
+```bash
+curl --header "Content-Type: application/json" \
+--request POST --data '{ "speech": "../audio/2830-3980-0043.wav"} \
+http://localhost:3000/transcript
+```
+
+The HTTP POST endpoint `/transcript` returns a JSON data structure containing:
 
 - `speech` the name of the speech file in the request
 - `model` the name of the model (the language) in the request
