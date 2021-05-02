@@ -122,7 +122,17 @@ Some tests / notes [here](tests/README.md)
 - Deliver a npm package
 
 
-## Acknowledgments
+## How to contribute
+
+Any contribute is welcome. 
+- [Discussions](https://github.com/solyarisoftware/voskJs/discussions). 
+  Please open a new discussion (a publich chat on github) for any specific open topic, 
+  for a clarification, change request proposals, etc.
+- [Issues](https://github.com/solyarisoftware/voskJs/issues).
+- [e-mail](giorgio.robino@gmail.com)
+  You can contact me privately, via email.
+
+## Credits
 
 Thanks to Nicolay V. Shmyrev, author of Vosk project, 
 also for the help about nodeJs API bindings for multi-threading management. 

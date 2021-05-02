@@ -173,20 +173,18 @@ node httpServer.js --model=../models/vosk-model-en-us-aspire-0.2/
 1619796990466 response 1619796990025 {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","requestId":1619796990025,"latency":440,"result":[{"conf":0.979754,"end":1.02,"start":0.33,"word":"experience"},{"conf":1,"end":1.34989,"start":1.02,"word":"proves"},{"conf":0.996323,"end":1.71,"start":1.35,"word":"this"}],"text":"experience proves this"}
 ```
 
-For each incoming request, the server log 3 lines containing
+For each incoming request, the server logs the request body and the JSON response:
 
 - `request` body JSON
-- `latency` <requestId> elapsed time of request <requestId>
 - `response` <requestId> response JSON request <requestId>
 
 In the server log you can trace the incoming request (by example with requestId `1619796459716`) in these lines:
 ```
 1619796459716 request  {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}
-1619796460175 latency  1619796459716 459ms
 1619796460175 response 1619796459716 {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","requestId":1619796459716,"latency":459,"result":[{"conf":0.980969,"end":1.02,"start":0.33,"word":"experience"},{"conf":1,"end":1.349919,"start":1.02,"word":"proves"},{"conf":0.997301,"end":1.71,"start":1.35,"word":"this"}],"text":"experience proves this"}
 ```
 
-> [`com/`](com/) directory contains some utility bash scripts to test the client/server communication.
+> [`tests/`](../tests/) directory contains some utility bash scripts to test the client/server communication.
 
 ---
 

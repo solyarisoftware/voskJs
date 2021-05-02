@@ -4,8 +4,8 @@
 # test httpServer using Apache Bench (ab)
 # https://diamantidis.github.io/2020/07/15/load-testing-with-apache-bench
 # 
-concurrentClients=2
-numberRequests=500
+concurrentClients=10
+numberRequests=200
 
 ipaddress="localhost"
 port=3000
