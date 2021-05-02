@@ -1,11 +1,11 @@
 # TESTS
 
-- [Transcript using English language, large model](Transcript-using-English-language--large model)
-- [Transcript using English language, small model](Transcript-using-English-language--small model)
-- [Comparison between Vosk and Mozilla DeepSpeech (latencies)](Comparison-between-Vosk-and-Mozilla-DeepSpeech--latencies-)
-- [Multithread stress test (single request)](Multithread-stress-test--single-request-)
-- [Multithread stress test (10 requests in parallel)](Multithread-stress-test--10-requests-in-parallel-)
-- [HTTP Server benchmark test](HTTP-Server-benchmark-test)
+- [Transcript using English language, large model](#Transcript-using-English-language--large-model)
+- [Transcript using English language, small model](#Transcript-using-English-language--small-model)
+- [Comparison between Vosk and Mozilla DeepSpeech (latencies)](#Comparison-between-Vosk-and-Mozilla-DeepSpeech--latencies-)
+- [Multithread stress test (single request)](#Multithread-stress-test--single-request-)
+- [Multithread stress test (10 requests in parallel)](#Multithread-stress-test--10-requests-in-parallel-)
+- [HTTP Server benchmark test](#HTTP-Server-benchmark-test)
 
 ## My hardware / host configuration
 

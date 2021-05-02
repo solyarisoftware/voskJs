@@ -1,6 +1,6 @@
 # Change log
 
-- 0.2.6
+- 0.2.7
   - added com/abtest.sh, apache bench httpServer stress test script.
   - httpServer improved. Now takes model, port and debug attributes as command line args.
   - documenation improved (iREADME, examples/README, tests/README) 
