@@ -1,6 +1,6 @@
 # Change log
 
-- 0.2.10
+- 0.2.11
   - added com/abtest.sh, apache bench httpServer stress test script.
   - httpServer improved: 
     - better validation of body request 

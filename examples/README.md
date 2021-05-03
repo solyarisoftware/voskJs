@@ -58,15 +58,19 @@ Currently the server support just a single endpoint `HTTP POST /transcript`
 Server settings:
 
 ```
-$ node httpServer.js
+$ node httpServer.js 
+```
+```
+httpServer is a simple HTTP JSON server, loading a Vosk engine model
+to transcript speech files specified in HTTP POST /transcript request body client calls
 
-Usage)
+Usage:
 
-    node httpServer --model=<model directory path> \
+    httpServer --model=<model directory path> \ 
                   [--port=<port number> \
                   [--debug[=<vosk log level>]]
 
-Server settings examples
+Server settings examples:
 
     stdout inludes httpServer internal debug logs and Vosk debug logs (log level 2)
     node httpServer --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2
@@ -80,20 +84,28 @@ Server settings examples
     stdout includes minimal info, default port number is 3000
     node httpServer --model=../models/vosk-model-small-en-us-0.15
 
-Client requests examples
+Client requests examples:
 
-    full request, containing also the "model" attribute
-    curl -s \
-         -X POST \
-         -H "Content-Type: application/json" \
-         -d '{"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}' \
+    request body includes attributes: id, speech, model
+    curl -s \ 
+         -X POST \ 
+         -H "Content-Type: application/json" \ 
+         -d '{"id":"1620060067830","speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}' \ 
          http://localhost:3000/transcript
 
-    minimal request, contains just the "speech" attribute in request body
-    curl -s \
-         -X POST \
-         -H "Content-Type: application/json" \
-         -d '{"speech":"../audio/2830-3980-0043.wav"}' \
+    request body includes attributes: speech, model
+    curl -s \ 
+         -X POST \ 
+         -H "Content-Type: application/json" \ 
+         -d '{"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}' \ 
+         http://localhost:3000/transcript
+
+
+    request body includes just the speech attribute
+    curl -s \ 
+         -X POST \ 
+         -H "Content-Type: application/json" \ 
+         -d '{"speech":"../audio/2830-3980-0043.wav"}' \ 
          http://localhost:3000/transcript
 ```
 
@@ -122,7 +134,7 @@ $ tests/curlClientJSON.sh
         "speech": "../audio/2830-3980-0043.wav",
         "model": "vosk-model-small-en-us-0.15"
     },
-    "requestId": 1619960327963,
+    "id": 1619960327963,
     "latency": 579,
     "result": [
         {
@@ -167,7 +179,7 @@ The HTTP POST endpoint `/transcript` returns a JSON data structure containing:
 
 - `speech` the name of the speech file in the request
 - `model` the name of the model (the language) in the request
-- `requestId` an "UUID" that's the unix epoch timestamp 
+- `id` an "UUID" that's the unix epoch timestamp 
   that identify the incoming request and it could be used for debug.
 - `latency` the elapsed time, in milliseconds, required to elaborate the request
 - `result` the data structure returned by Vosk transcript function.
