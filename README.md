@@ -10,9 +10,11 @@ VoskJs can be used for speech recognition processing in different scenarios:
 
 ## What's Vosk?
 
-Vosk is an open-source speech recognition engine/toolkit, by Nikolay V. Shmyrev. 
-Documentation:
+Vosk is an open source embedded (offline, on-device) speech-to-text engine 
+which can run in real time also on small devices.
+It's based on Kaldi. Made by Nikolay V. Shmyrev. 
 
+Documentation:
 - https://alphacephei.com/vosk/
 - https://github.com/alphacep/vosk-api
 

@@ -20,40 +20,59 @@ function unixTimeMsecs() {
   return Math.floor(Date.now())
 }  
 
+function header(programName) {
+  return [ 
+  `${programName} is a simple HTTP JSON server, loading a Vosk engine model`,
+  'to transcript speech files specified in HTTP POST /transcript request body client calls'
+  ]  
+}
+
 
 function helpAndExit(programName) {
   
   console.info()
-  console.info('Usage)')
+  for (const line of header(programName))
+    console.log(line)
+
+  console.info()
+  console.info('Usage:')
   console.info()
   console.info(`    ${programName} --model=<model directory path> \\ `)
   console.info('                  [--port=<port number> \\')
   console.info('                  [--debug[=<vosk log level>]]')
   console.info()    
-  console.info('Server settings examples')
+  console.info('Server settings examples:')
   console.info()    
   console.info('    stdout inludes httpServer internal debug logs and Vosk debug logs (log level 2)')
-  console.info(`    ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2`)
+  console.info(`    node ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2`)
   console.info()    
   console.info('    stdout includes httpServer internal debug logs without Vosk debug logs (log level -1)')
-  console.info(`    ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug`)
+  console.info(`    node ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug`)
   console.info()    
   console.info('    stdout includes minimal info, just request and response messages')
-  console.info(`    ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086`)
+  console.info(`    node ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086`)
   console.info()    
   console.info('    stdout includes minimal info, default port number is 3000')
-  console.info(`    ${programName} --model=../models/vosk-model-small-en-us-0.15`)
+  console.info(`    node ${programName} --model=../models/vosk-model-small-en-us-0.15`)
   console.info()
-  console.info('Client requests examples')
+  console.info('Client requests examples:')
   console.info()
-  console.info('    full request, containing also the "model" attribute')
+  console.info('    request body includes attributes: id, speech, model')
+  console.info('    curl -s \\ ')
+  console.info('         -X POST \\ ')
+  console.info('         -H "Content-Type: application/json" \\ ')
+  console.info('         -d \'{"id":"1620060067830","speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}\' \\ ')
+  console.info('         http://localhost:3000/transcript')
+  console.info()
+  console.info('    request body includes attributes: speech, model')
   console.info('    curl -s \\ ')
   console.info('         -X POST \\ ')
   console.info('         -H "Content-Type: application/json" \\ ')
   console.info('         -d \'{"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}\' \\ ')
   console.info('         http://localhost:3000/transcript')
   console.info()    
-  console.info('    minimal request, contains just the "speech" attribute in request body')
+  console.info()    
+  console.info('    request body includes just the speech attribute')
   console.info('    curl -s \\ ')
   console.info('         -X POST \\ ')
   console.info('         -H "Content-Type: application/json" \\ ')
@@ -155,9 +174,6 @@ function requestListener(req, res) {
   // This function is called once the body has been fully received
   req.on('end', async () => {
 
-    // log request body and assign to the request an identifier (timestamp)
-    const requestId = log(`request ${body}`)
-
     let parsedBody
 
     try {
@@ -167,16 +183,24 @@ function requestListener(req, res) {
       return errorResponse(`id ${requestId} cannot parse request body ${error}`, 400, res)
     }
 
+    // log request body  
+    const currentTime = log(`request ${body}`)
+    
+    // set requestId to the id attribute of the request body, 
+    // if id attribute is not present in the request body, 
+    // set the requestId with current timestamp in msecs.
+    const requestId = parsedBody.id ? parsedBody.id : currentTime 
+
     // validate body data
 
     // body must have attributes "speech" and "model"
     if ( !parsedBody.speech ) 
-      return errorResponse(`id ${requestId} "speech" attribute required in the body request ${body}`, 405, res)
+      return errorResponse(`id ${requestId} speech attribute not found in the body request`, 405, res)
 
     // body attribute "model" is specified in the client request,
     // it must be equal to the model name loaded by the server
     if ( parsedBody.model && (parsedBody.model !== modelName) ) 
-      return errorResponse(`id ${requestId} unknown model ${body}`, 404, res)
+      return errorResponse(`id ${requestId} Vosk model ${parsedBody.model} unknown`, 404, res)
 
     try {
 
@@ -200,7 +224,7 @@ function requestListener(req, res) {
       // return JSON data structure
       const json = JSON.stringify({
         ... { request: parsedBody },
-        ... { requestId },
+        ... { id: requestId },
         ... { latency },
         ... transcriptData.result 
         })
@@ -239,10 +263,11 @@ async function main() {
   // get command line arguments 
   const { args } = getArgs()
   
-  // set the language model
-  const { modelDirectory, port, debugLevel } = validateArgs(args, `node ${path.basename(__filename, '.js')}`)
+  const programName = path.basename(__filename, '.js')
 
-  // assign global value
+  const { modelDirectory, port, debugLevel } = validateArgs(args, programName )
+
+  // set modelName as a global variable
   modelName = path.basename(modelDirectory, '/')
 
   // debug cli argument not set, 
@@ -268,20 +293,23 @@ async function main() {
     logLevel(voskLogLevel) 
   }
 
+  //for (const line of header(programName))
+  // log(line)
+
   log(`Model path: ${modelDirectory}`)
   log(`Model name: ${modelName}`)
   log(`HTTP server port: ${port}`)
   log(`internal debug log: ${debug}`)
-  log(`Vosk engine log level: ${voskLogLevel}`)
+  log(`Vosk log level: ${voskLogLevel}`)
 
   let latency
 
-  log(`wait loading Vosk engine model: ${modelName} (be patient)`);
+  log(`wait loading Vosk model: ${modelName} (be patient)`);
 
   // create a Vosk runtime model
   ( { model, latency } = await loadModel(modelDirectory) );
 
-  log(`Vosk engine model loaded in ${latency} msecs`)
+  log(`Vosk model loaded in ${latency} msecs`)
 
   // create the HTTP server instance
   const server = http.createServer( (req, res) => requestListener(req, res) )
@@ -303,7 +331,7 @@ async function main() {
   // https://flaviocopes.com/node-exceptions/
   //
   process.on('uncaughtException', (err) => { 
-      log(`There was an uncaught error: ${err}`, 'FATAL')
+      log(`there was an uncaught error: ${err}`, 'FATAL')
       shutdown('uncaughtException')
   })
   
