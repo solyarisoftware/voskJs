@@ -276,27 +276,37 @@ async function main() {
 
   let latency
 
-  log(`loading Vosk engine model: ${modelName}`);
+  log(`wait loading Vosk engine model: ${modelName} (be patient)`);
 
   // create a Vosk runtime model
   ( { model, latency } = await loadModel(modelDirectory) );
 
-  log(`loaded Vosk engine model in ${latency} msecs`)
+  log(`Vosk engine model loaded in ${latency} msecs`)
 
   // create the HTTP server instance
   const server = http.createServer( (req, res) => requestListener(req, res) )
 
   // listen incoming client requests
   server.listen( port, () => {
-    log(`Server ${path.basename(__filename)} running at http://localhost:${port}`)
-    log(`Endpoint http://localhost:${port}${HTTP_PATH}`)
+    log(`server ${path.basename(__filename)} running at http://localhost:${port}`)
+    log(`endpoint http://localhost:${port}${HTTP_PATH}`)
+    log('press Ctrl-C to shutdown')
+    log('ready to listen incoming requests')
   })
   
   // shutdown management
   process.on('SIGTERM', shutdown )
   process.on('SIGINT', shutdown )
+
+  //
+  // Shutdown on uncaughtException 
+  // https://flaviocopes.com/node-exceptions/
+  //
+  process.on('uncaughtException', (err) => { 
+      log(`There was an uncaught error: ${err}`, 'FATAL')
+      shutdown('uncaughtException')
+  })
   
-  log('Press Ctrl-C to shutdown')
 
 }
 
