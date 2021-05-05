@@ -25,14 +25,14 @@ The goal of the project is to:
 1. Create an simple function API layer on top of already existing Vosk nodejs binding, 
    supplying two main functionalities: 
 
-   - `loadModel(modelDirectory, logLevel=0)`
+   - `loadModel(modelDirectory)`
  
      Loads once in RAM memory a specific Vosk engine model from a model directory.
  
    - `transcript(fileName, model, options)` 
 
      At run-rime, transcripts a speech file (in WAV format), 
-     through the Vosk engine Recognizer. It supply speech-to-text text detailed info.
+     through the Vosk engine Recognizer. It supply speech-to-text transcript detailed info.
 
    Using the simple transcript interface you can build:
    - Your standalone nodejs application, 
@@ -82,27 +82,27 @@ More about available Vosk models here: https://alphacephei.com/vosk/models
 
 ### 3. Demo audio files
 
-This repository contains in `audio/` directory, 
-few English language speech audio files, coming from Mozilla DeepSpeech.
-That's useful to make some tests and comparisons. 
-
+Directory [`audio`](audio/) contains some English language speech audio files, 
+coming from a Mozilla DeepSpeech repo.
 Source: [Mozilla DeepSpeech audio samples](https://github.com/mozilla/DeepSpeech/releases/download/v0.9.3/audio-0.9.3.tar.gz)
+
+These files are used for some tests and comparisons.
 
 
 ## Usage examples 
 
-1. Download this repository 
+Download this repository 
 
-   ```bash
-   cd && git clone https://github.com/solyarisoftware/voskJs
-   ```
+```bash
+cd && git clone https://github.com/solyarisoftware/voskJs
+```
 
-2. Some transcript usage examples [here](examples) 
+Some transcript usage examples [here](examples) 
 
-   - [VoskJs command line usage](examples/README.md#voskjs-command-line-usage)
-   - [Simple transcript program](examples/README.md#simple-transcript-program) 
-   - [Transcript with grammar](examples/README.md#transcript-with-grammar) 
-   - [Transcript HTTP server](examples/README.md#transcript-http-server)
+- [VoskJs command line usage](examples/README.md#voskjs-command-line-usage)
+- [Simple transcript program](examples/README.md#simple-transcript-program) 
+- [Transcript with grammar](examples/README.md#transcript-with-grammar) 
+- [Transcript HTTP server](examples/README.md#transcript-http-server)
 
 
 ## Tests
@@ -147,6 +147,7 @@ Any contribute is welcome.
 - [Issues](https://github.com/solyarisoftware/voskJs/issues).
 - [e-mail](giorgio.robino@gmail.com)
   You can contact me privately, via email.
+
 
 ## Credits
 

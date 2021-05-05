@@ -249,9 +249,11 @@ Open issue: https://github.com/solyarisoftware/voskJs/issues/3
 
 
 ### 1. Run httpServer
-```
-$ node --trace-event-categories v8 httpServer --model=../models/vosk-model-en-us-aspire-0.2 > httpServer.log
 
+```bash
+$ node --trace-event-categories v8 httpServer --model=../models/vosk-model-en-us-aspire-0.2 > httpServer.log
+```
+```
 
 #
 # Fatal error in , line 0
@@ -276,14 +278,14 @@ $ node --trace-event-categories v8 httpServer --model=../models/vosk-model-en-us
 14: 0x160c579  [node]
 Illegal instruction (core dumped)
 
-
 ```
 
 ### 2. run abtest.sh
 
-```
+```bash
 $ abtest.sh 
-
+```
+```
 test httpServer using apache bench
   10 concurrent clients
   200 requests to run
@@ -341,7 +343,6 @@ Percentage of the requests served within a certain time (ms)
   98%   5093
   99%   6501
  100%   6502 (longest request)
-
 ```
 
 ---
