@@ -29,13 +29,15 @@ The goal of the project is to:
  
      Loads once in RAM memory a specific Vosk engine model from a model directory.
  
-   - `transcript(fileName, model, multiThreads=true)` 
+   - `transcript(fileName, model, options)` 
 
      At run-rime, transcripts a speech file (in WAV format), 
      through the Vosk engine Recognizer. It supply speech-to-text text detailed info.
 
-   Using the simple transcript interface you can build your standalone nodejs application, 
-   accessing async functions suitable to run on a usual single thread nodejs program.
+   Using the simple transcript interface you can build:
+   - Your standalone nodejs application, 
+     accessing async functions suitable to run on a usual single thread nodejs program.
+   - Your custom servers, considering that transcript wraps Vosk Recognizer multithread capability.
 
 2. Use `voskjs` command line program to test Vosk transcript with specific models 
   (some tests and command line usage [here](tests/README.md)).
@@ -97,10 +99,10 @@ Source: [Mozilla DeepSpeech audio samples](https://github.com/mozilla/DeepSpeech
 
 2. Some transcript usage examples [here](examples) 
 
-   - [VoskJs command line usage](examples/README.md#voskjs_command_line_usage)
-   - [Simple transcript program](examples/README.md#simple_transcript_program) 
-   - [Transcript with grammar](examples/README.md#transcript_with_grammar) 
-   - [Transcript HTTP server](examples/README.md#transcript_http_server)
+   - [VoskJs command line usage](examples/README.md#voskjs-command-line-usage)
+   - [Simple transcript program](examples/README.md#simple-transcript-program) 
+   - [Transcript with grammar](examples/README.md#transcript-with-grammar) 
+   - [Transcript HTTP server](examples/README.md#transcript-http-server)
 
 
 ## Tests

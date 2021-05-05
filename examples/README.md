@@ -1,9 +1,9 @@
 # Transcript usage examples
 
-- [VoskJs command line usage](#voskjs_command_line_usage)
-- [Simple transcript program](#simple_transcript_program) 
-- [Transcript with grammar](#transcript_with_grammar) 
-- [Transcript HTTP server](#transcript_http_server)
+- [VoskJs command line usage](#voskjs-command-line-usage)
+- [Simple transcript program](#simple-transcript-program) 
+- [Transcript with grammar](#transcript-with-grammar) 
+- [Transcript HTTP server](#transcript-http-server)
 
 
 ## VoskJs Command line usage

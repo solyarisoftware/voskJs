@@ -1,6 +1,6 @@
 # Change log
 
-- 0.3.0
+- 0.3.1
   - transcript function is renamed (optionally) recognize
   - transcript function now accept options argument, allowing to manage Vosk grammar format. 
   - documenation improved (README, examples/README, tests/README) 
