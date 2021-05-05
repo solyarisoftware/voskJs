@@ -87,7 +87,7 @@ That's useful to make some tests and comparisons.
 Source: [Mozilla DeepSpeech audio samples](https://github.com/mozilla/DeepSpeech/releases/download/v0.9.3/audio-0.9.3.tar.gz)
 
 
-## Voskjs usage examples 
+## Usage examples 
 
 1. Download this repository 
 
@@ -95,12 +95,24 @@ Source: [Mozilla DeepSpeech audio samples](https://github.com/mozilla/DeepSpeech
    cd && git clone https://github.com/solyarisoftware/voskJs
    ```
 
-2. Some examples [here](examples) 
+2. Some transcript usage examples [here](examples) 
+
+   - [VoskJs command line usage](examples/README.md#voskjs_command_line_usage)
+   - [Simple transcript program](examples/README.md#simple_transcript_program) 
+   - [Transcript with grammar](examples/README.md#transcript_with_grammar) 
+   - [Transcript HTTP server](examples/README.md#transcript_http_server)
 
 
 ## Tests
 
-Some tests / notes [here](tests/README.md)
+Some tests / notes [here](tests/README.md):
+
+- [Transcript using English language, large model](tests/README.md#Transcript-using-English-language--large-model)
+- [Transcript using English language, small model](tests/README.md#Transcript-using-English-language--small-model)
+- [Comparison between Vosk and Mozilla DeepSpeech (latencies)](tests/README.md#Comparison-between-Vosk-and-Mozilla-DeepSpeech--latencies-)
+- [Multithread stress test (single request)](tests/README.md#Multithread-stress-test--single-request-)
+- [Multithread stress test (10 requests in parallel)](tests/README.md#Multithread-stress-test--10-requests-in-parallel-)
+- [HTTP Server benchmark test](tests/README.md#HTTP-Server-benchmark-test)
 
 
 ## Notes

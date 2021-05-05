@@ -1,5 +1,11 @@
 # Transcript usage examples
 
+- [VoskJs command line usage](#voskjs_command_line_usage)
+- [Simple transcript program](#simple_transcript_program) 
+- [Transcript with grammar](#transcript_with_grammar) 
+- [Transcript HTTP server](#transcript_http_server)
+
+
 ## VoskJs Command line usage
 
 ```bash
@@ -14,15 +20,26 @@ example:
     node voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2
 ```
 
-## Standalone transcript program (one request at time)
+## Simple transcript program 
 
-[`simplest.js`](simplest.js) is a basic demo using VoskJs functionalities. 
+[`simple.js`](simple.js) is a basic demo using VoskJs functionalities. 
 
-The program transcript a wav file, using a specific language model. 
-This is the brainless Vosk interface, perfect for embedded / standalone systems.
+The program transcript (recognize, in Vosk parlance) a speech in a wav file, 
+using a specified language model. 
+This is the brainless Vosk interface, perfect for embedded / standalone systems, 
+but also as entry point for any custom server applications.
+
+> NOTE
+> With trascript function default settings, 
+> a dedicated thread is spawned for each transcript processing. 
+> That means that the nodejs main thread is not 'saturated' by the CPU-intensive transcript processing.
+> Latency performance will be optimal if your host has at least 2 cores.
+
 
 ```bash
 $ node simplest
+```
+```
 model directory      : ../models/vosk-model-en-us-aspire-0.2
 speech file name     : ../audio/2830-3980-0043.wav
 load model latency   : 28439ms
@@ -37,11 +54,37 @@ load model latency   : 28439ms
 transcript latency : 471ms
 ```
 
-> NOTE
-> The async architecture allows to process almost single requests (from single users).
-> A dedicated thread is spawned for each transcript processing. 
-> That means that the nodejs main thread is not 'saturated' by the CPU-intensive transcript processing.
-> Latency performance will be optimal if your host has at least 2 cores.
+
+## Transcript with grammar
+
+[`grammar.js`](grammar.js) is a basic demo using Vosk recognizer using grammars. 
+
+```bash
+$ node grammar
+```
+```
+model directory      : ../models/vosk-model-small-en-us-0.15
+speech file name     : ../audio/2830-3980-0043.wav
+grammar              : experience,proves,this,experience proves that
+load model latency   : 1497ms
+{
+  result: [
+    { conf: 1, end: 1.02, start: 0.36, word: 'experience' },
+    { conf: 1, end: 1.35, start: 1.02, word: 'proves' },
+    { conf: 1, end: 1.74, start: 1.35, word: 'this' }
+  ],
+  text: 'experience proves this'
+}
+transcript latency : 76ms
+```
+
+Note: 
+latency is very low if grammar sentences are provided!
+
+See details here: 
+- https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js#L198
+- https://github.com/alphacep/vosk-api/blob/91a128b3edf7e84d55649d8fa9a60664b5386292/src/vosk_api.h#L114
+- https://github.com/alphacep/vosk-api/issues/500
 
 
 ## Transcript HTTP server 
@@ -51,13 +94,14 @@ able to process concurrent/multi-user transcript requests, using a specific lang
 
 Currently the server support just a single endpoint `HTTP POST /transcript`
 
-> A dedicated thread is spawned for each transcript processing request, 
-> so latency performance will be optimal if your host has multiple cores.
+Note: 
+A dedicated thread is spawned for each transcript processing request, 
+so latency performance will be optimal if your host has multiple cores.
 
 
 Server settings:
 
-```
+```bash
 $ node httpServer.js 
 ```
 ```
@@ -129,6 +173,8 @@ The JSON returned by the transcript endpoint:
 
 ```bash
 $ tests/curlClientJSON.sh
+```
+```
 {
     "request": {
         "speech": "../audio/2830-3980-0043.wav",
@@ -221,7 +267,8 @@ In the server log you can trace the incoming request (by example with requestId 
 1619796460175 response 1619796459716 {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","requestId":1619796459716,"latency":459,"result":[{"conf":0.980969,"end":1.02,"start":0.33,"word":"experience"},{"conf":1,"end":1.349919,"start":1.02,"word":"proves"},{"conf":0.997301,"end":1.71,"start":1.35,"word":"this"}],"text":"experience proves this"}
 ```
 
-> [`tests/`](../tests/) directory contains some utility bash scripts to test the client/server communication.
+### HTTP Server Tests
+[`tests/`](../tests/) directory contains some utility bash scripts to test the client/server communication.
 
 ---
 

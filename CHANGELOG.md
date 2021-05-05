@@ -1,10 +1,15 @@
 # Change log
 
+- 0.3.0
+  - transcript function is renamed (optionally) recognize
+  - transcript function now accept options argument, allowing to manage Vosk grammar format. 
+  - documenation improved (README, examples/README, tests/README) 
+
 - 0.2.11
   - added com/abtest.sh, apache bench httpServer stress test script.
   - httpServer improved: 
     - better validation of body request 
-    - accept optionally client request id as attribute in the request body   
+    - accept optionally client request id as attribute in the request body
     - takes model, port and debug attributes as command line args.
   - documenation improved (README, examples/README, tests/README) 
 
