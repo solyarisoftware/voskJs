@@ -51,8 +51,14 @@ The goal of the project is to:
 ### 1. Install Vosk engine and relative nodejs module
 
 ```bash
+# install vosk-api engine
 pip3 install vosk 
+
+# install vosk-api nodejs binding module
 npm install vosk
+
+# install this module
+npm install @solyarisoftware/voskjs
 ```
 
 See also: https://alphacephei.com/vosk/install
@@ -61,7 +67,7 @@ See also: https://alphacephei.com/vosk/install
 ### 2. Install/Download Vosk models
 
 ```bash
-mkdir models && cd models
+mkdir your/path/models && cd models
 
 # English large model
 wget https://alphacephei.com/vosk/models/vosk-model-en-us-aspire-0.2.zip
@@ -90,12 +96,6 @@ These files are used for some tests and comparisons.
 
 
 ## Usage examples 
-
-Download this repository 
-
-```bash
-cd && git clone https://github.com/solyarisoftware/voskJs
-```
 
 Some transcript usage examples [here](examples) 
 
@@ -137,7 +137,6 @@ Some tests / notes [here](tests/README.md):
   with workaround: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
 - Function transcript could get buffer instead of a WAV
 - Review stress / performances tests (especially for the HTTP server)
-- Deliver this repo as a npm package
 
 
 ## How to contribute

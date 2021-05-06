@@ -1,15 +1,34 @@
 {
-  "name": "voskjs",
-  "version": "0.3.4",
+  "name": "@solyarisoftware/voskjs",
+  "version": "0.3.5",
   "description": "Vosk ASR engine transcript API for NodeJs developers.",
   "main": "voskjs.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/solyarisoftware/voskJs.git"
+  },
+  "author": {
+    "name": "Giorgio Robino",
+    "email": "giorgio.robino@gmail.com",
+    "url": "https://convcomp.it"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Giorgio Robino <giorgio.robino@gmail.com> (http://convcomp.it/)",
+  "homepage": "https://github.com/solyarisoftware/voskJs#readme",
+  "bugs": {
+    "url": "https://github.com/solyarisoftware/voskJs/issues"
+  },
   "license": "MIT",
   "dependencies": {
     "vosk": "^0.3.25",
     "wav": "^1.0.2"
-  }
+  },
+  "devDependencies": {},
+  "keywords": [
+    "Vosk",
+    "speech recognition",
+    "ASR",
+    "nodeJs"
+  ]
 }
