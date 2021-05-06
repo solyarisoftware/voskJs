@@ -31,10 +31,10 @@ function concurrentTranscriptRequests(numRequests, audioFile, model) {
     // speech recognition from an audio file
     try {
       // run an async function (returning a Promise), without waiting the end of transcript elaboration  
-      const result = transcript(audioFile, model)
+      const transcriptPromise = transcript(audioFile, model)
     
       // add Promise to an array
-      promises.push(result)
+      promises.push(transcriptPromise)
     
     }  
     catch (error) {

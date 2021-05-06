@@ -1,6 +1,7 @@
 # Change log
 
-- 0.3.2
+- 0.3.3
+  - added test program tests/sequentialRequests.js
   - function `transcript` can be called with alias `recognize`
   - function `transcript` now accept options argument, allowing to manage Vosk grammar format.
   - documenation improved (README, examples/README, tests/README) 

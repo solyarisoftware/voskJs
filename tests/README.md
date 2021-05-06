@@ -1,11 +1,10 @@
 # TESTS
 
-- [Transcript using English language, large model](#Transcript-using-English-language--large-model)
-- [Transcript using English language, small model](#Transcript-using-English-language--small-model)
-- [Comparison between Vosk and Mozilla DeepSpeech (latencies)](#Comparison-between-Vosk-and-Mozilla-DeepSpeech--latencies-)
-- [Multithread stress test (single request)](#Multithread-stress-test--single-request-)
-- [Multithread stress test (10 requests in parallel)](#Multithread-stress-test--10-requests-in-parallel-)
-- [HTTP Server benchmark test](#HTTP-Server-benchmark-test)
+- [Transcript using English language, large model](#transcript-using-english-language--large-model)
+- [Transcript using English language, small model](#transcript-using-english-language--small-model)
+- [Comparison between Vosk and Mozilla DeepSpeech (latencies)](#comparison-between-vosk-and-mozilla-deepspeech--latencies-)
+- [Multithread stress test (10 requests in parallel)](#multithread-stress-test--10-requests-in-parallel-)
+- [HTTP Server benchmark test](#http-server-benchmark-test)
 
 ## My hardware / host configuration
 
@@ -41,6 +40,8 @@ My laptop has weird cores usage I claimed here:
 
 ```
 $ /usr/bin/time --verbose node voskjs  --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2
+```
+```
 
 log level          : 0
 
@@ -173,36 +174,10 @@ transcript elapsed : 550ms
  > Vosk speeech recognition is ~238% faster than Deepspeech!
 
 
-## Multithread stress test (single thread)
-
-```bash
-$ /usr/bin/time -f "%e" pidstat 1 -u -e node stressTest 1
-```
-```
-Linux 5.8.0-50-generic (giorgio-HP-Laptop-17-by1xxx) 	29/04/2021 	_x86_64_	(8 CPU)
-
-CPU cores in this host : 8
-requests to be spawned : 1
-
-model directory        : ../models/vosk-model-en-us-aspire-0.2
-speech file name       : ../audio/2830-3980-0043.wav
-
-
-17:45:21      UID       PID    %usr %system  %guest   %wait    %CPU   CPU  Command
-17:45:22     1000    346431   53,00   79,00    0,00    0,00  132,00     0  node
-17:45:23     1000    346431   86,00   14,00    0,00    0,00  100,00     0  node
-load model latency     : 2119ms
-
-transcript latency     : 417ms
-
-Average:     1000    346431   69,50   46,50    0,00    0,00  116,00     -  node
-2.89
-```
-
 ## Multithread stress test (10 requests in parallel)
 
 ```bash
-$ /usr/bin/time -f "%e" pidstat 1 -u -e node stressTest 10
+$ /usr/bin/time -f "%e" pidstat 1 -u -e node parallelRequests 10
 ```
 ```
 Linux 5.8.0-50-generic (giorgio-HP-Laptop-17-by1xxx) 	29/04/2021 	_x86_64_	(8 CPU)

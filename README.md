@@ -109,12 +109,11 @@ Some transcript usage examples [here](examples)
 
 Some tests / notes [here](tests/README.md):
 
-- [Transcript using English language, large model](tests/README.md#Transcript-using-English-language--large-model)
-- [Transcript using English language, small model](tests/README.md#Transcript-using-English-language--small-model)
-- [Comparison between Vosk and Mozilla DeepSpeech (latencies)](tests/README.md#Comparison-between-Vosk-and-Mozilla-DeepSpeech--latencies-)
-- [Multithread stress test (single request)](tests/README.md#Multithread-stress-test--single-request-)
-- [Multithread stress test (10 requests in parallel)](tests/README.md#Multithread-stress-test--10-requests-in-parallel-)
-- [HTTP Server benchmark test](tests/README.md#HTTP-Server-benchmark-test)
+- [Transcript using English language, large model](tests/README.md#transcript-using-english-language--large-model)
+- [Transcript using English language, small model](tests/README.md#transcript-using-english-language--small-model)
+- [Comparison between Vosk and Mozilla DeepSpeech (latencies)](tests/README.md#comparison-between-vosk-and-mozilla-deepspeech--latencies-)
+- [Multithread stress test (10 requests in parallel)](tests/README.md#multithread-stress-test--10-requests-in-parallel-)
+- [HTTP Server benchmark test](tests/README.md#http-server-benchmark-test)
 
 
 ## Notes
@@ -134,8 +133,11 @@ Some tests / notes [here](tests/README.md):
 
 ## To do
 
-- Improve stress / performances tests (especially for the HTTP server)
-- Deliver a npm package
+- Solve blocking issue: https://github.com/solyarisoftware/voskJs/issues/3
+- HTTP Server must manage grammar client API requests
+- Function transcript could get buffer instead of a WAV
+- Better stress / performances tests (especially for the HTTP server)
+- Deliver this repo as a npm package
 
 
 ## How to contribute

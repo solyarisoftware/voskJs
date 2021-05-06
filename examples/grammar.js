@@ -10,16 +10,18 @@ async function main() {
   //const modelDirectory = '../models/vosk-model-en-us-aspire-0.2'
   const modelDirectory = '../models/vosk-model-small-en-us-0.15'
 
-  const audioFile = '../audio/2830-3980-0043.wav' // -> 'experience proves this'
+  const audioFile = '../audio/2830-3980-0043.wav' // -> experience proves this
+  //const audioFile = '../audio/4507-16021-0012.wav' // -> why should one hold on the way
+  //const audioFile = '../audio/8455-210777-0068.wav' // -> your power is sufficient i said
   
   const grammar = [ 
 
     'experience proves this',
     'why should one hold on the way',
     'your power is sufficient i said',
-    '[unk]',
     'oh one two three four five six seven eight nine zero',
-    'Giorgio Robino'
+    //'Giorgio Robino'
+    '[unk]'
   ]
 
   console.log(`model directory      : ${modelDirectory}`)
