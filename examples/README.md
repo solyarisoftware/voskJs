@@ -130,6 +130,13 @@ Server settings examples:
 
 Client requests examples:
 
+    request body includes attributes: id, speech, model, grammar
+    curl -s \ 
+         -X POST \ 
+         -H "Content-Type: application/json" \ 
+         -d '{"id":"1620060067830","speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","grammar":["experience proves this"]}' \ 
+         http://localhost:3000/transcript
+
     request body includes attributes: id, speech, model
     curl -s \ 
          -X POST \ 
@@ -159,29 +166,35 @@ Server run example:
 node httpServer.js --model=../models/vosk-model-en-us-aspire-0.2 --port==3000 --debug
 ```
 
-The server API endpoint client call has the complete format:
+The server API endpoint client call has the complete format in the following example:
 
 ```bash
 curl \
 --header "Content-Type: application/json" \
 --request POST \
---data '{ "speech": "../audio/2830-3980-0043.wav", "model": "vosk-model-en-us-aspire-0.2"} \
+--data '{"id":1620312465142,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]}' \
 http://localhost:3000/transcript
 ```
 
 The JSON returned by the transcript endpoint: 
 
 ```bash
-$ tests/curlClientJSON.sh
+$ curlClientIdSpeechModelGrammar.sh
 ```
 ```
 {
     "request": {
+        "id": 1620311991357,
         "speech": "../audio/2830-3980-0043.wav",
-        "model": "vosk-model-small-en-us-0.15"
+        "model": "vosk-model-small-en-us-0.15",
+        "grammar": [
+            "experience proves this",
+            "why should one hold on the way",
+            "your power is sufficient i said"
+        ]
     },
-    "id": 1619960327963,
-    "latency": 579,
+    "id": 1620311991357,
+    "latency": 620,
     "result": [
         {
             "conf": 1,
@@ -206,6 +219,27 @@ $ tests/curlClientJSON.sh
 }
 ```
 
+The server output:
+```
+1620312429756 Model path: ../models/vosk-model-small-en-us-0.15
+1620312429758 Model name: vosk-model-small-en-us-0.15
+1620312429758 HTTP server port: 3000
+1620312429758 internal debug log: false
+1620312429758 Vosk log level: -1
+1620312429758 wait loading Vosk model: vosk-model-small-en-us-0.15 (be patient)
+1620312430058 Vosk model loaded in 300 msecs
+1620312430060 server httpServer.js running at http://localhost:3000
+1620312430060 endpoint http://localhost:3000/transcript
+1620312430060 press Ctrl-C to shutdown
+1620312430060 ready to listen incoming requests
+1620312435318 request {"id":1620312435283,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]}
+1620312435941 response 1620312435283 {"request":{"id":1620312435283,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]},"id":1620312435283,"latency":623,"result":[{"conf":1,"end":1.02,"start":0.36,"word":"experience"},{"conf":1,"end":1.35,"start":1.02,"word":"proves"},{"conf":1,"end":1.74,"start":1.35,"word":"this"}],"text":"experience proves this"}
+1620312465331 request {"id":1620312465142,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]}
+1620312465956 response 1620312465142 {"request":{"id":1620312465142,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]},"id":1620312465142,"latency":625,"result":[{"conf":1,"end":1.02,"start":0.36,"word":"experience"},{"conf":1,"end":1.35,"start":1.02,"word":"proves"},{"conf":1,"end":1.74,"start":1.35,"word":"this"}],"text":"experience proves this"}
+```
+
+NOTES
+
 The body request must contains the attribute `speech` 
 to specify the speech WAV file for the server speech-to-text conversion.
 
@@ -221,6 +255,32 @@ curl --header "Content-Type: application/json" \
 http://localhost:3000/transcript
 ```
 
+The HTTP server corresponding log is:
+
+```bash
+$ node httpServer --model=../models/vosk-model-small-en-us-0.15
+```
+```
+1620312429756 Model path: ../models/vosk-model-small-en-us-0.15
+1620312429758 Model name: vosk-model-small-en-us-0.15
+1620312429758 HTTP server port: 3000
+1620312429758 internal debug log: false
+1620312429758 Vosk log level: -1
+1620312429758 wait loading Vosk model: vosk-model-small-en-us-0.15 (be patient)
+1620312430058 Vosk model loaded in 300 msecs
+1620312430060 server httpServer.js running at http://localhost:3000
+1620312430060 endpoint http://localhost:3000/transcript
+1620312430060 press Ctrl-C to shutdown
+1620312430060 ready to listen incoming requests
+1620312435318 request {"id":1620312435283,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]}
+1620312435941 response 1620312435283 {"request":{"id":1620312435283,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]},"id":1620312435283,"latency":623,"result":[{"conf":1,"end":1.02,"start":0.36,"word":"experience"},{"conf":1,"end":1.35,"start":1.02,"word":"proves"},{"conf":1,"end":1.74,"start":1.35,"word":"this"}],"text":"experience proves this"}
+```
+
+For each incoming request, the server logs the request body and the JSON response:
+
+- `request` body JSON
+- `response` <requestId> response JSON request <requestId>
+
 The HTTP POST endpoint `/transcript` returns a JSON data structure containing:
 
 - `speech` the name of the speech file in the request
@@ -230,44 +290,8 @@ The HTTP POST endpoint `/transcript` returns a JSON data structure containing:
 - `latency` the elapsed time, in milliseconds, required to elaborate the request
 - `result` the data structure returned by Vosk transcript function.
 
-The HTTP server corresponding log is:
-
-```bash
-node httpServer.js --model=../models/vosk-model-en-us-aspire-0.2/
-```
-```
-1619796452845 Model path: ../models/vosk-model-en-us-aspire-0.2/
-1619796452855 Model name: vosk-model-en-us-aspire-0.2
-1619796455934 load model latency: 3078ms
-1619796455935 Press Ctrl-C to shutdown
-1619796455937 Server httpServer.js running at http://localhost:3000
-1619796455937 Endpoint http://localhost:3000/transcript
-1619796459716 request  {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}
-1619796460175 latency  1619796459716 459ms
-1619796460175 response 1619796459716 {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","requestId":1619796459716,"latency":459,"result":[{"conf":0.980969,"end":1.02,"start":0.33,"word":"experience"},{"conf":1,"end":1.349919,"start":1.02,"word":"proves"},{"conf":0.997301,"end":1.71,"start":1.35,"word":"this"}],"text":"experience proves this"}
-1619796987904 request  {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}
-1619796988349 latency  1619796987904 445ms
-1619796988349 response 1619796987904 {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","requestId":1619796987904,"latency":445,"result":[{"conf":0.97987,"end":1.02,"start":0.33,"word":"experience"},{"conf":1,"end":1.349885,"start":1.02,"word":"proves"},{"conf":0.996167,"end":1.71,"start":1.35,"word":"this"}],"text":"experience proves this"}
-1619796989071 request  {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}
-1619796989524 latency  1619796989071 452ms
-1619796989525 response 1619796989071 {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","requestId":1619796989071,"latency":452,"result":[{"conf":0.980733,"end":1.02,"start":0.33,"word":"experience"},{"conf":1,"end":1.349923,"start":1.02,"word":"proves"},{"conf":0.997445,"end":1.71,"start":1.35,"word":"this"}],"text":"experience proves this"}
-1619796990025 request  {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}
-1619796990465 latency  1619796990025 440ms
-1619796990466 response 1619796990025 {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","requestId":1619796990025,"latency":440,"result":[{"conf":0.979754,"end":1.02,"start":0.33,"word":"experience"},{"conf":1,"end":1.34989,"start":1.02,"word":"proves"},{"conf":0.996323,"end":1.71,"start":1.35,"word":"this"}],"text":"experience proves this"}
-```
-
-For each incoming request, the server logs the request body and the JSON response:
-
-- `request` body JSON
-- `response` <requestId> response JSON request <requestId>
-
-In the server log you can trace the incoming request (by example with requestId `1619796459716`) in these lines:
-```
-1619796459716 request  {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}
-1619796460175 response 1619796459716 {"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","requestId":1619796459716,"latency":459,"result":[{"conf":0.980969,"end":1.02,"start":0.33,"word":"experience"},{"conf":1,"end":1.349919,"start":1.02,"word":"proves"},{"conf":0.997301,"end":1.71,"start":1.35,"word":"this"}],"text":"experience proves this"}
-```
-
 ### HTTP Server Tests
+
 [`tests/`](../tests/) directory contains some utility bash scripts to test the client/server communication.
 
 ---

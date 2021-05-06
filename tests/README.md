@@ -217,16 +217,18 @@ Average:     1000    346959  166,20   30,40    0,00    0,00  196,60     -  node
 
 To benchmark `httpServer` I used Apache Bench (ab) in the script `abtest.sh`. 
 
+WARNING:
 Unfortunately when running the test script, that submit 10 requestes in parallel for a while,
-the httpServer crashes. 
+the httpServer crashes (node versions >= 14). 
 
-Open issue: https://github.com/solyarisoftware/voskJs/issues/3
+Opened issue: https://github.com/solyarisoftware/voskJs/issues/3 
+has workaround: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
 
 
 ### 1. Run httpServer
 
 ```bash
-$ node --trace-event-categories v8 httpServer --model=../models/vosk-model-en-us-aspire-0.2 > httpServer.log
+$ node --model=../models/vosk-model-en-us-aspire-0.2 > httpServer.log
 ```
 ```
 

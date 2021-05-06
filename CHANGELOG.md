@@ -1,6 +1,7 @@
 # Change log
 
-- 0.3.3
+- 0.3.4
+  - httpServer now accepts grammar attribute in client API calls 
   - added test program tests/sequentialRequests.js
   - function `transcript` can be called with alias `recognize`
   - function `transcript` now accept options argument, allowing to manage Vosk grammar format.

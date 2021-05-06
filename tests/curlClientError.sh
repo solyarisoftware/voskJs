@@ -4,9 +4,9 @@ port=3000
 speechFile='"../audio/2830-3980-0043.wav"'
 model='"vosk-model-en-us-aspire-0.2"'
 
-jsonData='{"speech":'$speechFile',"model":'$model'}'
+body='{"speech":'$speechFile',"model":'$model'}'
 
-# echo $jsonData
+# echo $body 
 
 #  -w "\n\n%{time_starttransfer}\n" \
 #  --data '{"filename":`$speechFile`","model":"english"}' \
@@ -18,6 +18,6 @@ curl \
   --silent \
   --header "Content-Type: application/json" \
   --request POST \
-  --data $jsonData \
+  --data $body  \
   http://$ipaddress:$port/trans
 

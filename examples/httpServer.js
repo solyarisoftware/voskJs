@@ -57,6 +57,13 @@ function helpAndExit(programName) {
   console.info()
   console.info('Client requests examples:')
   console.info()
+  console.info('    request body includes attributes: id, speech, model, grammar')
+  console.info('    curl -s \\ ')
+  console.info('         -X POST \\ ')
+  console.info('         -H "Content-Type: application/json" \\ ')
+  console.info('         -d \'{"id":"1620060067830","speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","grammar":["experience proves this"]}\' \\ ')
+  console.info('         http://localhost:3000/transcript')
+  console.info()
   console.info('    request body includes attributes: id, speech, model')
   console.info('    curl -s \\ ')
   console.info('         -X POST \\ ')
@@ -210,8 +217,13 @@ function requestListener(req, res) {
         log(`active requests ${activeRequests}`, 'debug')
       }
 
+      const speech = parsedBody.speech
+
+      // grammar is an optional attribute
+      const grammar = parsedBody.grammar
+
       // speech recognition of an audio file
-      const transcriptData = await transcript(parsedBody.speech, model)
+      const transcriptData = await transcript(speech, model, grammar)
 
       if (debug) {
         // thread finished, decrement global counter of active thread running

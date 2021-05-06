@@ -133,10 +133,10 @@ Some tests / notes [here](tests/README.md):
 
 ## To do
 
-- Solve blocking issue: https://github.com/solyarisoftware/voskJs/issues/3
-- HTTP Server must manage grammar client API requests
+- Important issue to be solved: https://github.com/solyarisoftware/voskJs/issues/3 
+  with workaround: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
 - Function transcript could get buffer instead of a WAV
-- Better stress / performances tests (especially for the HTTP server)
+- Review stress / performances tests (especially for the HTTP server)
 - Deliver this repo as a npm package
 
 
