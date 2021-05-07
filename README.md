@@ -57,8 +57,11 @@ pip3 install vosk
 # 2. install vosk-api nodejs binding module
 npm install vosk
 
-# 3. install this module
+# 3. install this module as local package 
 npm install @solyarisoftware/voskjs
+
+# 3. or install this module as global package, to use CLI command voskjs 
+npm install -g @solyarisoftware/voskjs
 ```
 
 See also: https://alphacephei.com/vosk/install
@@ -109,26 +112,11 @@ Some transcript usage examples [here](examples)
 
 Some tests / notes [here](tests/README.md):
 
-- [Transcript using English language, large model](tests/README.md#transcript-using-english-language--large-model)
-- [Transcript using English language, small model](tests/README.md#transcript-using-english-language--small-model)
-- [Comparison between Vosk and Mozilla DeepSpeech (latencies)](tests/README.md#comparison-between-vosk-and-mozilla-deepspeech--latencies-)
-- [Multithread stress test (10 requests in parallel)](tests/README.md#multithread-stress-test--10-requests-in-parallel-)
+- [Transcript using English language, large model](tests/README.md#transcript-using-english-language-large-model)
+- [Transcript using English language, small model](tests/README.md#transcript-using-english-language-small-model)
+- [Comparison between Vosk and Mozilla DeepSpeech (latencies)](tests/README.md#comparison-between-vosk-and-mozilla-deepspeech-latencies)
+- [Multithread stress test (10 requests in parallel)](tests/README.md#multithread-stress-test-10-requests-in-parallel)
 - [HTTP Server benchmark test](tests/README.md#http-server-benchmark-test)
-
-
-## Notes
-
-1. Latency
-
-   Vosk ASR is fast! Run-time latency for file `./audio/2830-3980-0043.wav`
-   using English large model, is just 428 ms on my laptop. 
-
-   Weirdly the English small model performances are worst, with 598ms. Not clear to me. 
-
-2. Comparison between Vosk and Mozilla DeepSpeech (latencies)
-
-   For the comparison I used [DeepSpeechJs](https://github.com/solyarisoftware/DeepSpeechJs), 
-   my simple nodejs interface to Deepspeech. See results [here](tests/README.md).
 
 
 ## To do

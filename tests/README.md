@@ -1,10 +1,11 @@
 # TESTS
 
-- [Transcript using English language, large model](#transcript-using-english-language--large-model)
-- [Transcript using English language, small model](#transcript-using-english-language--small-model)
-- [Comparison between Vosk and Mozilla DeepSpeech (latencies)](#comparison-between-vosk-and-mozilla-deepspeech--latencies-)
-- [Multithread stress test (10 requests in parallel)](#multithread-stress-test--10-requests-in-parallel-)
+- [Transcript using English language, large model](#transcript-using-english-language-large-model)
+- [Transcript using English language, small model](#transcript-using-english-language-small-model)
+- [Comparison between Vosk and Mozilla DeepSpeech (latencies)](#comparison-between-vosk-and-mozilla-deepspeech-latencies)
+- [Multithread stress test (10 requests in parallel)](#multithread-stress-test-10-requests-in-parallel)
 - [HTTP Server benchmark test](#http-server-benchmark-test)
+
 
 ## My hardware / host configuration
 
@@ -321,6 +322,22 @@ Percentage of the requests served within a certain time (ms)
   99%   6501
  100%   6502 (longest request)
 ```
+
+
+## Notes
+
+1. Latency
+
+   Vosk ASR is fast! Run-time latency for file `./audio/2830-3980-0043.wav`
+   using English large model, is just 428 ms on my laptop. 
+
+   Weirdly the English small model performances are worst, with 598ms. Not clear to me. 
+
+2. Comparison between Vosk and Mozilla DeepSpeech (latencies)
+
+   For the comparison I used [DeepSpeechJs](https://github.com/solyarisoftware/DeepSpeechJs), 
+   my simple nodejs interface to Deepspeech. See results [here](tests/README.md).
+
 
 ---
 

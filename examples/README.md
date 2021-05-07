@@ -4,20 +4,29 @@
 - [Simple transcript program](#simple-transcript-program) 
 - [Transcript with grammar](#transcript-with-grammar) 
 - [Transcript HTTP server](#transcript-http-server)
+- [SocketIO server pseudocode](#socketio-server-pseudocode)
 
 
 ## VoskJs Command line usage
 
+If you install install this module as global package: 
 ```bash
-$ node voskjs
+npm install -g @solyarisoftware/voskjs
+```
 
+Afterward you can enjoy voskjs command line utility program:
+
+```bash
+$ voskjs
+```
+```
 usage:
 
-    node voskjs --model=<model directory> --audio=<audio file name>
+    voskjs --model=<model directory> --audio=<audio file name>
 
 example:
 
-    node voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2
+    voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2
 ```
 
 ## Simple transcript program 
@@ -238,7 +247,7 @@ The server output:
 1620312465956 response 1620312465142 {"request":{"id":1620312465142,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]},"id":1620312465142,"latency":625,"result":[{"conf":1,"end":1.02,"start":0.36,"word":"experience"},{"conf":1,"end":1.35,"start":1.02,"word":"proves"},{"conf":1,"end":1.74,"start":1.35,"word":"this"}],"text":"experience proves this"}
 ```
 
-NOTES
+### client body request options
 
 The body request must contains the attribute `speech` 
 to specify the speech WAV file for the server speech-to-text conversion.
@@ -293,6 +302,52 @@ The HTTP POST endpoint `/transcript` returns a JSON data structure containing:
 ### HTTP Server Tests
 
 [`tests/`](../tests/) directory contains some utility bash scripts to test the client/server communication.
+
+
+
+## SockeIO server pseudocode
+
+HTTP server is not the only way to go! 
+Consider by example a client-server architecture using [socketio](https://socket.io/) 
+websocket-based real-time bidirectional event-based communication library. 
+
+Here below a simplified server-side pseudo-code taht shows how to use voskJs transcript:
+
+```javascript
+const app = require('express')()
+
+// get SSL certificate
+const credentials = {
+  key: fs.readFileSync(KEY_FILENAME, 'utf8'), 
+  cert: fs.readFileSync(CERT_FILENAME, 'utf8')
+}
+
+// create the https server
+const server = https.createServer(credentials, app)
+
+// create the socketio channel 
+const io = require('socket.io')(server)
+
+// a websocket message arrived
+io.on('connection', (socket) => {
+
+  // the client sent an audio buffer
+  socket.on('audioMessage', msg => {
+
+  // save audio buffer into a local file, giving a unique name
+  const audioFileCompressed = filenameUUID()
+  await msgToAudioFile(audioFileCompressed, msg)
+
+  // convert the received audio into a WAV format file
+  const audioFileWav = convertToWav(audioFileCompressed)
+  
+  // voskjs speech to text 
+  console.log( await transcript(audioFileWav, model) )
+
+  })
+})
+```
+
 
 ---
 

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /**
  * @module voskjs 
  *
@@ -222,7 +224,7 @@ async function main() {
 
   // get command line arguments 
   const { args } = getArgs()
-  const { modelDirectory, audioFile } = checkArgs(args, `node ${path.basename(__filename, '.js')}`)
+  const { modelDirectory, audioFile } = checkArgs(args, path.basename(__filename, '.js'))
 
   // set the vosk log level to silence 
   logLevel(-1) 

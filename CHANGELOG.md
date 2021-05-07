@@ -1,5 +1,9 @@
 # Change log
 
+- 0.3.7
+  - global installation of the package allow to run `voskjs` cli program
+  - socketio server program example. 
+
 - 0.3.6
   - delivered @solyarisoftware/voskjs (added index.js)
   - httpServer now accepts grammar attribute in client API calls 
