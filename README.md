@@ -48,16 +48,16 @@ The goal of the project is to:
 
 ## Install 
 
-### 1. Install Vosk engine and relative nodejs module
+### 1. Install Vosk engine and relative nodejs modules
 
 ```bash
-# install vosk-api engine
+# 1. install vosk-api engine
 pip3 install vosk 
 
-# install vosk-api nodejs binding module
+# 2. install vosk-api nodejs binding module
 npm install vosk
 
-# install this module
+# 3. install this module
 npm install @solyarisoftware/voskjs
 ```
 
@@ -162,7 +162,7 @@ See also:
 
 ## License
 
-MIT (c) Giorgio Robino 
+[MIT](LICENSE.md) (c) Giorgio Robino 
 
 ---
 
