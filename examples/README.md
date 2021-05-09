@@ -1,13 +1,13 @@
 # Transcript usage examples
 
-- [VoskJs command line usage](#voskjs-command-line-usage)
+- [`voskjs` Command line utility](#voskjs-command-line-utility)
 - [Simple transcript program](#simple-transcript-program) 
 - [Transcript with grammar](#transcript-with-grammar) 
 - [Transcript HTTP server](#transcript-http-server)
 - [SocketIO server pseudocode](#socketio-server-pseudocode)
 
 
-## VoskJs Command line usage
+## `voskjs` Command line utility
 
 If you install install this module as global package: 
 ```bash
@@ -20,14 +20,25 @@ Afterward you can enjoy voskjs command line utility program:
 $ voskjs
 ```
 ```
-usage:
+  Usage:
 
-    voskjs --model=<model directory> --audio=<audio file name>
+    voskjs --model=<model directory> \
+            --audio=<audio file name> \
+            --grammar=<list of comma-separated words or sentences> \
 
-example:
+  Examples :
 
-    voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2
+    1. Transcript a speech file using a specific model directory
+
+       voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2
+
+    2. Transcript a speech file using a grammar (allowed by a specific model)
+
+       voskjs --audio=audio/2830-3980-0043.wav \
+              --model=models/vosk-model-small-en-us-0.15 \
+              --grammar="experience proves this, bla bla bla"
 ```
+
 
 ## Simple transcript program 
 
@@ -305,7 +316,7 @@ The HTTP POST endpoint `/transcript` returns a JSON data structure containing:
 
 
 
-## SockeIO server pseudocode
+## SocketIO server pseudocode
 
 HTTP server is not the only way to go! 
 Consider by example a client-server architecture using [socketio](https://socket.io/) 

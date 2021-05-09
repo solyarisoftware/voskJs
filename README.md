@@ -4,6 +4,7 @@ Vosk ASR offline engine transcript APIs for NodeJs developers.
 Contains a simple HTTP transcript server.
 
 VoskJs can be used for speech recognition processing in different scenarios:
+
 - Single-user/standalone programs (e.g. perfect for single-user embedded systems) 
 - Multi-user/multi-core server architectures 
 
@@ -12,7 +13,7 @@ VoskJs can be used for speech recognition processing in different scenarios:
 
 Vosk is an open source embedded (offline, on-device) speech-to-text engine 
 which can run in real time also on small devices.
-It's based on Kaldi. Made by Nikolay V. Shmyrev. 
+It's based on Kaldi, but Nikolay V. Shmyrev's Vosk offers a smart and performant interface! 
 
 Documentation:
 - https://alphacephei.com/vosk/
@@ -94,18 +95,18 @@ More about available Vosk models here: https://alphacephei.com/vosk/models
 Directory [`audio`](audio/) contains some English language speech audio files, 
 coming from a Mozilla DeepSpeech repo.
 Source: [Mozilla DeepSpeech audio samples](https://github.com/mozilla/DeepSpeech/releases/download/v0.9.3/audio-0.9.3.tar.gz)
-
 These files are used for some tests and comparisons.
 
 
-## Usage examples 
+## Examples 
 
 Some transcript usage examples [here](examples) 
 
-- [VoskJs command line usage](examples/README.md#voskjs-command-line-usage)
+- [`voskjs` Command line utility](examples/README.md#voskjs-command-line-utility)
 - [Simple transcript program](examples/README.md#simple-transcript-program) 
 - [Transcript with grammar](examples/README.md#transcript-with-grammar) 
 - [Transcript HTTP server](examples/README.md#transcript-http-server)
+- [SocketIO server pseudocode](examples/README.md#socketio-server-pseudocode)
 
 
 ## Tests
@@ -121,10 +122,13 @@ Some tests / notes [here](tests/README.md):
 
 ## To do
 
-- Important issue to be solved: https://github.com/solyarisoftware/voskJs/issues/3 
-  with workaround: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
-- Function transcript could get buffer instead of a WAV
-- Review stress / performances tests (especially for the HTTP server)
+- WARNING Important open issue to be solved: https://github.com/solyarisoftware/voskJs/issues/3 
+  with a temporrary workaround: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
+
+- Implement an simplified interface for all [Vosk-api functions](https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js)
+- Function transcript could get audio as buffer instead of as a WAV file
+- Deepen grammar usage with examples
+- Review stress and performances tests (especially for the HTTP server)
 
 
 ## How to contribute
@@ -133,15 +137,14 @@ Any contribute is welcome.
 - [Discussions](https://github.com/solyarisoftware/voskJs/discussions). 
   Please open a new discussion (a publich chat on github) for any specific open topic, 
   for a clarification, change request proposals, etc.
-- [Issues](https://github.com/solyarisoftware/voskJs/issues).
-- [e-mail](giorgio.robino@gmail.com)
-  You can contact me privately, via email.
+- [Issues](https://github.com/solyarisoftware/voskJs/issues) Please submit issues for bugs, etc
+- [e-mail](giorgio.robino@gmail.com) You can contact me privately, via email
 
 
 ## Credits
 
-Thanks to Nicolay V. Shmyrev, author of Vosk project, 
-also for the help about nodeJs API bindings for multi-threading management. 
+Thanks to Nicolay V. Shmyrev, author of [Vosk](https://alphacephei.com/vosk/) project,
+for the help about nodeJs API bindings for multi-threading management
 
 See also: 
 - [What's the Vosk CPU usage at run-time?](https://github.com/alphacep/vosk-api/issues/498)

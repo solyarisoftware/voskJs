@@ -11,7 +11,6 @@
 const vosk = require('vosk')
 
 const fs = require('fs')
-const path = require('path')
 const { Readable } = require('stream')
 const wav = require('wav')
 
@@ -177,15 +176,25 @@ function freeModel(model) {
  * test section
  */
 
-function helpAndExit(programName) {
+function helpAndExit() {
   console.log()
-  console.log('usage:')
+  console.log('  Usage')
   console.log()
-  console.log(`    ${programName} --model=<model directory> --audio=<audio file name>`)
+  console.log('    voskjs --model=<model directory> \\ ')
+  console.log('           --audio=<audio file name> \\ ')
+  console.log('           --grammar=<list of comma-separated words or sentences> \\ ')
   console.log()    
-  console.log('example:')
+  console.log('  Examples')
   console.log()
-  console.log(`    ${programName} --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2`)
+  console.log('    Transcript a speech file using a specific model directory:')
+  console.log()
+  console.log('      voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2')
+  console.log()
+  console.log('    Transcript a speech file using a grammar (allowed by a specific model):')
+  console.log()
+  console.log('      voskjs --audio=audio/2830-3980-0043.wav \\ ')
+  console.log('             --model=models/vosk-model-small-en-us-0.15 \\ ')
+  console.log('             --grammar="experience proves this, bla bla bla"')
   console.log()
   process.exit(1)
 }  
@@ -195,25 +204,31 @@ function helpAndExit(programName) {
  * command line parsing
  *
  * @param {String}                    args
- * @param {String}                    programName
  *
  * @returns {SentenceAndAttributes}
  * @typedef {Object} SentenceAndAttributes
  * @property {String} language 
  * 
  */
-function checkArgs(args, programName) {
+function checkArgs(args) {
 
   const modelDirectory = args.model 
   const audioFile = args.audio 
+  const grammar = args.grammar 
 
   if ( !modelDirectory ) 
-    helpAndExit(programName)
+    helpAndExit()
 
   if ( !audioFile ) 
-    helpAndExit(programName)
+    helpAndExit()
   
-  return { modelDirectory, audioFile }
+  return { 
+    modelDirectory, 
+    audioFile, 
+
+    // if grammar args is present, as comma separated sentences,
+    // convert it in an array of strings
+    grammar: grammar ? grammar.split(',').map(sentence => sentence.trim()) : undefined }
 }
 
 
@@ -224,23 +239,31 @@ async function main() {
 
   // get command line arguments 
   const { args } = getArgs()
-  const { modelDirectory, audioFile } = checkArgs(args, path.basename(__filename, '.js'))
+  const { modelDirectory, audioFile, grammar } = checkArgs(args)
 
   // set the vosk log level to silence 
   logLevel(-1) 
 
+  console.log()
+  console.log(`model directory      : ${modelDirectory}`)
+  console.log(`speech file name     : ${audioFile}`)
+  console.log(`grammar              : ${grammar}`)
+  console.log()
+
   // load in memory a Vosk directory model
   const { model, latency } = await loadModel(modelDirectory)
 
-  // console.dir(model)
-  console.log(`load model latency  : ${latency}ms`)
+  console.log(`load model latency   : ${latency}ms`)
+  console.log()
 
   // speech recognition from an audio file
   try {
-    const { result, latency } = await transcript(audioFile, model)
+    const { result, latency } = await transcript(audioFile, model, {grammar})
 
     console.log(result)
+    console.log()
     console.log(`transcript latency : ${latency}ms`)
+    console.log()
   }  
   catch(error) {
     console.error(error) 

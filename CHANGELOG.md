@@ -1,6 +1,7 @@
 # Change log
 
-- 0.3.7
+- 0.3.8
+  - Integrate CLI command `voskjs` with grammar argument 
   - global installation of the package allow to run `voskjs` cli program
   - socketio server program example. 
 
