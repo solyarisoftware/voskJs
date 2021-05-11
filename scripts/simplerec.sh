@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# sudo apt-get install sox ffmpeg
+
 if [ $# -eq 0 ]
   then
     echo "usage  : $0 filename (without suffix)"

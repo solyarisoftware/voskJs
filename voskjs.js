@@ -3,10 +3,13 @@
 /**
  * @module voskjs 
  *
- * logLevel()
- * loadModel()
- * transcript()
- * freeModel()
+ * @public
+ * @function logLevel
+ * @function loadModel
+ * @function transcript
+ * @function freeModel
+ *
+-* @see VoskAPI https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js
  */
 const vosk = require('vosk')
 
@@ -16,12 +19,19 @@ const wav = require('wav')
 
 const { getArgs } = require('./lib/getArgs')
 
-const SAMPLE_RATE = 16000.0
+/**
+ * @constant
+ */
+const SAMPLE_RATE = 16000
 
 /**
- * logLevel
+ */ 
+
+/**
+ * @function logLevel
+ * @public
+ * Set log level for Vosk/Kaldi log messages
  *
- * Set log level for Vosk/Kaldi messages
  * @param {number} level   The higher, the more verbose. 0 for infos and errors. Less than 0 for silence. 
  */
 function logLevel(level=0) {
@@ -33,8 +43,8 @@ function logLevel(level=0) {
 
 
 /**
- * loadModel
- * create new run time model from the specified directory 
+ * @function loadModel 
+ * Create a run time model from the specified directory 
  *
  * @async
  * @public
@@ -54,7 +64,7 @@ function loadModel(modelDirectory) {
 
     const latencyStart = new Date()
     
-    // validate model directory existence, async
+    // check if model directory exists, async
     fs.access(modelDirectory, (err) => {
       if (err) 
         return reject(`${err}: file ${modelDirectory} not found.`)
@@ -72,30 +82,35 @@ function loadModel(modelDirectory) {
 
 
 /**
- * transcript
+ * @function transcriptFromFile
+ * @alias transcript
+ * @alias recognize
  * speech recognition into a text, from an audio file, given a specified Vosk model
- *
- * @async
  * @public
- * @param {String}                   fileName  the name of speech file, in WAV format
- * @param {ModelObject}              model     the Vosk model returned by InitModel()
- * @param {VoskRecognizerArgsObject} [options] Vosk Recognizer arguments setting. Optional. 
- *
- * @return {Promise<TranscriptObject>} 
+ * @async
  *
  * @typedef VoskRecognizerArgsObject
- *   @property {Boolean}               multiThreads if true, an external (Vosk engine) thread is spawned on the fly
+ * @property {Boolean}                 multiThreads if true, an external (Vosk engine) thread is spawned on the fly
  *                                                  that need in server (concurrent requests) architecture.
- *   @property {String[]}              grammar      array of words, or sentences
+ * @property {Number}                  sampleRate   Default value: 16000
+ * @property {String[]}                grammar      array of words, or sentences
  *
- * @typedef TranscriptObject
+ * @typedef RecognizeObject
  *   @property {VoskResultObject}      result       transcript object returned by Vosk engine.
  *   @property {Number}                latency      transcript elpased time in msecs
  *
+ * @param {String}                     fileName     the name of speech file, in WAV format
+ * @param {ModelObject}                model        the Vosk model returned by InitModel()
+ * @param {VoskRecognizerArgsObject}   [options]    Vosk Recognizer arguments setting. Optional. 
+ *
+ * @return {Promise<RecognizeObject>} 
+ *
  */ 
-function transcript(fileName, model, options={multiThreads:true, grammar:null}) {
+function transcriptFromFile(fileName, model, { multiThreads=true, sampleRate=SAMPLE_RATE, grammar=null } = {}) {
 
   return new Promise( (resolve, reject) => {
+
+    //console.log( options )
 
     const latencyStart = new Date()
 
@@ -106,24 +121,27 @@ function transcript(fileName, model, options={multiThreads:true, grammar:null}) 
     })
 
     // if a grammar is specified, pass it to the Vosk Recognizer
-    const voskRecognizerArgs = options.grammar ? 
-      {model, sampleRate: SAMPLE_RATE, grammar: options.grammar} :
-      {model, sampleRate: SAMPLE_RATE}
+    const voskRecognizerArgs = grammar ? 
+      {model, sampleRate, grammar} :
+      {model, sampleRate}
 
+    // create Vosk recognizer
     const rec = new vosk.Recognizer(voskRecognizerArgs)
 
     const wfStream = fs.createReadStream(fileName, {'highWaterMark': 4096})
     const wfReader = new wav.Reader()
-
+    
     wfStream.pipe(wfReader)
+    
+    const pcmChunks = new Readable().wrap(wfReader)
+
     wfReader.on('format', async ( { audioFormat, sampleRate, channels } ) => {
         
-      if (audioFormat != 1 || channels != 1 || sampleRate != SAMPLE_RATE) {
-        //throw new Error('Audio file must be WAV format mono PCM.')
-        return reject(`${fileName}: audio file must be WAV format mono PCM with sample rate: ${SAMPLE_RATE}.`)
-      }
+      if (audioFormat != 1 || channels != 1)
+        return reject(`${fileName}: audio file (sample rate: ${sampleRate}) must be WAV format mono PCM.`)
 
-      for await (const data of new Readable().wrap(wfReader)) {
+
+      for await (const data of pcmChunks) {
 
         //
         // WARNING
@@ -135,7 +153,7 @@ function transcript(fileName, model, options={multiThreads:true, grammar:null}) 
         // Previous vosk version 0.3.25
         // const end_of_speech = rec.acceptWaveform(data)
         //
-        const end_of_speech = options.multiThreads ? 
+        const end_of_speech = multiThreads ? 
           await rec.acceptWaveformAsync(data) : 
           rec.acceptWaveform(data)
 
@@ -161,7 +179,7 @@ function transcript(fileName, model, options={multiThreads:true, grammar:null}) 
 
 
 /**
- * freeModel
+ * @function freeModel
  * @public
  *
  * @param {ModelObject} model
@@ -186,11 +204,11 @@ function helpAndExit() {
   console.log()    
   console.log('  Examples')
   console.log()
-  console.log('    Transcript a speech file using a specific model directory:')
+  console.log('    Recognize a speech file using a specific model directory:')
   console.log()
   console.log('      voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2')
   console.log()
-  console.log('    Transcript a speech file using a grammar (allowed by a specific model):')
+  console.log('    Recognize a speech file using a grammar (allowed by a specific model):')
   console.log()
   console.log('      voskjs --audio=audio/2830-3980-0043.wav \\ ')
   console.log('             --model=models/vosk-model-small-en-us-0.15 \\ ')
@@ -200,14 +218,14 @@ function helpAndExit() {
 }  
 
 /**
- * checkArgs
+ * @function checkArgs
  * command line parsing
  *
- * @param {String}                    args
+ * @param {String}    args
  *
- * @returns {SentenceAndAttributes}
- * @typedef {Object} SentenceAndAttributes
+ * @typedef {Object}  SentenceAndAttributes
  * @property {String} language 
+ * @returns {SentenceAndAttributes}
  * 
  */
 function checkArgs(args) {
@@ -233,7 +251,8 @@ function checkArgs(args) {
 
 
 /**
- * unit test main 
+ * @function main
+ * unit test
  */
 async function main() {
 
@@ -247,7 +266,7 @@ async function main() {
   console.log()
   console.log(`model directory      : ${modelDirectory}`)
   console.log(`speech file name     : ${audioFile}`)
-  console.log(`grammar              : ${grammar}`)
+  console.log(`grammar              : ${grammar ? grammar : 'not specified'}`)
   console.log()
 
   // load in memory a Vosk directory model
@@ -258,7 +277,7 @@ async function main() {
 
   // speech recognition from an audio file
   try {
-    const { result, latency } = await transcript(audioFile, model, {grammar})
+    const { result, latency } = await transcriptFromFile(audioFile, model, {grammar})
 
     console.log(result)
     console.log()
@@ -281,8 +300,9 @@ if (require.main === module)
 module.exports = { 
   logLevel,
   loadModel,
-  transcript,
-  recognize: transcript, // alias
+  transcriptFromFile,
+  transcript: transcriptFromFile, // alias
+  recognize: transcriptFromFile, // alias
   freeModel
 }
 

@@ -49,23 +49,18 @@ The goal of the project is to:
 
 ## Install 
 
-### 1. Install Vosk engine and relative nodejs modules
+### 1. Install Vosk engine and this nodejs module 
 
-```bash
-# 1. install vosk-api engine
-pip3 install vosk 
+- Install vosk-api engine
+  ```bash
+  pip3 install vosk 
+  ```
+  See also: https://alphacephei.com/vosk/install
 
-# 2. install vosk-api nodejs binding module
-npm install vosk
-
-# 3. install this module as local package 
-npm install @solyarisoftware/voskjs
-
-# 3. or install this module as global package, to use CLI command voskjs 
-npm install -g @solyarisoftware/voskjs
-```
-
-See also: https://alphacephei.com/vosk/install
+- Install this module, as global package if you want to use CLI command `voskjs` 
+  ```bash
+  npm install -g @solyarisoftware/voskjs
+  ```
 
 
 ### 2. Install/Download Vosk models
@@ -84,8 +79,6 @@ unzip vosk-model-small-en-us-0.15.zip
 # Italian model model
 wget https://alphacephei.com/vosk/models/vosk-model-small-it-0.4.zip
 unzip vosk-model-small-it-0.4.zip
-
-cd ..
 ```
 
 More about available Vosk models here: https://alphacephei.com/vosk/models
@@ -98,7 +91,7 @@ Source: [Mozilla DeepSpeech audio samples](https://github.com/mozilla/DeepSpeech
 These files are used for some tests and comparisons.
 
 
-## Examples 
+## Usage 
 
 Some transcript usage examples [here](examples) 
 
