@@ -1,5 +1,8 @@
 # Change log
 
+- 0.3.10
+  - added some tests to verify ffmpeg transcoding times
+
 - 0.3.8
   - Integrate CLI command `voskjs` with grammar argument 
   - global installation of the package allow to run `voskjs` cli program
