@@ -49,20 +49,21 @@ async function main() {
 
   const rec = new vosk.Recognizer({model: model, sampleRate: SAMPLE_RATE})
 
+  const ffmpegStart = new Date()
   const args = ffmpegtoPCMArgs(audioFile)
   console.log(`ffmpeg command          : ffmpeg ${args.join(' ')}`)
 
   latencyStart = new Date()
   const ffmpegProcess = spawn('ffmpeg', args)
 
-  let i = 1
+  //let i = 1
 
   for await (const data of ffmpegProcess.stdout) { 
 
-    console.log()
-    console.log(`data item               : ${i++}`)
-    console.log(`data size               : ${data.length}`)
-    console.log(`ffmpeg latency          : ${new Date() - latencyStart}ms`)
+    //console.log()
+    //console.log(`data item               : ${i++}`)
+    //console.log(`data size               : ${data.length}`)
+    //console.log(`ffmpeg latency          : ${new Date() - latencyStart}ms`)
 
     await rec.acceptWaveformAsync(data)
 
@@ -76,7 +77,7 @@ async function main() {
   console.log('final transcript        :')
   const finalResult = rec.finalResult()
   console.log(finalResult)
-  console.log(`final latency           : ${new Date() - latencyStart}ms`)
+  console.log(`final latency           : ${new Date() - ffmpegStart}ms`)
 
   rec.free()
 

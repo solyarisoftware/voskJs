@@ -1,7 +1,8 @@
 # Change log
 
-- 0.3.10
-  - added some tests to verify ffmpeg transcoding times
+- 0.3.11
+  - added some tests to verify ffmpeg transcoding times 
+    (using stdout pipe / without producing wav file)
 
 - 0.3.8
   - Integrate CLI command `voskjs` with grammar argument 

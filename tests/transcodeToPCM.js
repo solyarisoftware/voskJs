@@ -35,9 +35,6 @@ const ffmpegtoPCMArgs = (audioFile, sampleRate=SAMPLE_RATE, bufferSize=BUFFER_SI
 ]
 
 
-const args = ffmpegtoPCMArgs(audioFile)
-console.log(`ffmpeg command          : ffmpeg ${args.join(' ')}`)
-
 //if (process.argv.length > 2)
 //    audioFile = process.argv[2]
 
@@ -52,15 +49,19 @@ const rec = new vosk.Recognizer({model: model, sampleRate: SAMPLE_RATE})
 
 
 latencyStart = new Date()
+
+const args = ffmpegtoPCMArgs(audioFile)
+console.log(`ffmpeg command          : ffmpeg ${args.join(' ')}`)
+
 const ffmpegProcess = spawn('ffmpeg', args)
 
-let i = 1
+//let i = 1
 
 ffmpegProcess.stdout.on('data', async (stdoutData) => {
 
-  console.log()
-  console.log(`data chunk              : ${i++}`)
-  console.log(`ffmpeg latency          : ${new Date() - latencyStart}ms`)
+  //console.log()
+  //console.log(`data chunk              : ${i++}`)
+  //console.log(`ffmpeg latency          : ${new Date() - latencyStart}ms`)
   
   //await rec.acceptWaveformAsync(stdoutData)
   rec.acceptWaveform(stdoutData)
