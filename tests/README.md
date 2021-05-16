@@ -328,7 +328,7 @@ Percentage of the requests served within a certain time (ms)
 
 Do you want to measure how fast Vosk speech-to-text.
 
-Program [`tests/transcodeToPCMAsyncOneBuffer.js`](tests/transcodeToPCMAsyncOneBuffer.js) 
+Program [`transcodeToPCMAsyncOneBuffer.js`](transcodeToPCMAsyncOneBuffer.js) 
 does a speech to text transcript, using model `vosk-model-small-en-us-0.15` 
 of a 3 words sentences 'experience proves this', 
 starting from an OPUS compressed file `audio/2830-3980-0043.wav.webm`
