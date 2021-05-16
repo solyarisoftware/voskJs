@@ -1,5 +1,5 @@
 const vosk = require('vosk')
-const { toPCMBuffer } = require('../lib/toPCMBuffer')
+const { toPCM } = require('../lib/toPCM')
 
 const SAMPLE_RATE = 16000
 
@@ -23,7 +23,7 @@ async function main() {
   const recognizerStop = new Date()
 
   const ffmpegStart = new Date()
-  const pcmBuffer = await toPCMBuffer({sourceFile})
+  const pcmBuffer = await toPCM({sourceFile})
   const ffmpegStop = new Date()
 
   const transcriptStart = new Date()

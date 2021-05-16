@@ -106,11 +106,9 @@ function loadModel(modelDirectory) {
  * @return {Promise<RecognizeObject>} 
  *
  */ 
-function transcriptFromFile(fileName, model, { multiThreads=true, sampleRate=SAMPLE_RATE, grammar=null } = {}) {
+async function transcriptFromFile(fileName, model, { multiThreads=true, sampleRate=SAMPLE_RATE, grammar=null } = {}) {
 
   return new Promise( (resolve, reject) => {
-
-    //console.log( options )
 
     const latencyStart = new Date()
 
@@ -126,7 +124,7 @@ function transcriptFromFile(fileName, model, { multiThreads=true, sampleRate=SAM
       {model, sampleRate}
 
     // create Vosk recognizer
-    const rec = new vosk.Recognizer(voskRecognizerArgs)
+    const recognizer = new vosk.Recognizer(voskRecognizerArgs)
 
     const wfStream = fs.createReadStream(fileName, {'highWaterMark': 4096})
     const wfReader = new wav.Reader()
@@ -151,22 +149,22 @@ function transcriptFromFile(fileName, model, { multiThreads=true, sampleRate=SAM
         // from the caller (server) program  
         //
         // Previous vosk version 0.3.25
-        // const end_of_speech = rec.acceptWaveform(data)
+        // const end_of_speech = recognizer.acceptWaveform(data)
         //
         const end_of_speech = multiThreads ? 
-          await rec.acceptWaveformAsync(data) : 
-          rec.acceptWaveform(data)
+          await recognizer.acceptWaveformAsync(data) : 
+          recognizer.acceptWaveform(data)
 
         if (end_of_speech) {
-          console.log(rec.result())
+          console.log(recognizer.result())
         }
       
       }
 
       // copy final Vosk engine result object
-      const result = {...rec.finalResult(rec)} 
+      const result = {...recognizer.finalResult(recognizer)} 
 
-      rec.free()
+      recognizer.free()
       
       const latency = new Date() - latencyStart
 
@@ -174,6 +172,73 @@ function transcriptFromFile(fileName, model, { multiThreads=true, sampleRate=SAM
 
     })
   })
+
+}
+
+
+/**
+ * @function transcriptFromBuffer
+ * @alias transcript
+ * @alias recognize
+ * speech recognition into a text, from an audio file, given a specified Vosk model
+ * @public
+ * @async
+ *
+ * @typedef VoskRecognizerArgsObject
+ * @property {Boolean}                 multiThreads if true, an external (Vosk engine) thread is spawned on the fly
+ *                                                  that need in server (concurrent requests) architecture.
+ * @property {Number}                  sampleRate   Default value: 16000
+ * @property {String[]}                grammar      array of words, or sentences
+ *
+ * @typedef RecognizeObject
+ *   @property {VoskResultObject}      result       transcript object returned by Vosk engine.
+ *   @property {Number}                latency      transcript elpased time in msecs
+ *
+ * @param {Buffer}                     buffer       input buffer, in PCM format
+ * @param {ModelObject}                model        the Vosk model returned by InitModel()
+ * @param {VoskRecognizerArgsObject}   [options]    Vosk Recognizer arguments setting. Optional. 
+ *
+ * @return {Promise<RecognizeObject>} 
+ *
+ */ 
+async function transcriptFromBuffer(buffer, model, { multiThreads=true, sampleRate=SAMPLE_RATE, grammar=null } = {}) {
+
+  const latencyStart = new Date()
+
+  // if a grammar is specified, pass it to the Vosk Recognizer
+  const voskRecognizerArgs = grammar ? 
+    {model, sampleRate, grammar} :
+    {model, sampleRate}
+
+  // create Vosk recognizer
+  const recognizer = new vosk.Recognizer(voskRecognizerArgs)
+   
+  // https://gist.github.com/wpscholar/270005d42b860b1c33cf5ab25b37928a
+  // https://stackoverflow.com/questions/47089230/how-to-convert-buffer-to-stream-in-nodejs
+  
+  //
+  // WARNING
+  // From vosk version 0.3.25
+  // the acceptWaveformAsync function runs in a dedicated thread.
+  // That wold improve performances in case of cocurrent requests 
+  // from the caller (server) program  
+  //
+  // Previous vosk version 0.3.25
+  // const end_of_speech = recognizer.acceptWaveform(data)
+  //
+  if ( multiThreads ) 
+    await recognizer.acceptWaveformAsync(buffer)
+  else
+    recognizer.acceptWaveform(buffer)
+
+  // copy final Vosk engine result object
+  const result = {...recognizer.finalResult(recognizer)} 
+
+  recognizer.free()
+    
+  const latency = new Date() - latencyStart
+
+  return Promise.resolve( {result, latency} )
 
 }
 
@@ -300,9 +365,9 @@ if (require.main === module)
 module.exports = { 
   logLevel,
   loadModel,
+  transcriptFromBuffer,
   transcriptFromFile,
   transcript: transcriptFromFile, // alias
-  recognize: transcriptFromFile, // alias
   freeModel
 }
 

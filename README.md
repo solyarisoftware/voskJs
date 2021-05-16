@@ -24,27 +24,26 @@ Documentation:
 The goal of the project is to:
 
 1. Create an simple function API layer on top of already existing Vosk nodejs binding, 
-   supplying two main functionalities: 
+   supplying main sentence-based speech-to-text functionalities: 
 
    - `loadModel(modelDirectory)`
  
      Loads once in RAM memory a specific Vosk engine model from a model directory.
  
-   - `transcript(fileName, model, options)` 
+   - `transcriptFromFile(fileName, model, options)` 
+   - `transcriptFromBuffer(buffer, model, options)` 
 
-     At run-rime, transcripts a speech file (in WAV format), 
+     At run-rime, transcripts a speech file or buffer (in WAV/PCM format), 
      through the Vosk engine Recognizer. It supply speech-to-text transcript detailed info.
 
-   Using the simple transcript interface you can build:
-   - Your standalone nodejs application, 
-     accessing async functions suitable to run on a usual single thread nodejs program.
-   - Your custom servers, considering that transcript wraps Vosk Recognizer multithread capability.
+   Using the simple transcript interface you can build your standalone custom application, 
+   accessing async functions suitable to run on a usual single thread nodejs program.
 
 2. Use `voskjs` command line program to test Vosk transcript with specific models 
   (some tests and command line usage [here](tests/README.md)).
 
-3. Setup a simple HTTP server to transcript speech files. 
-   Usage examples [here](examples/). 
+3. Use 'httpServer', a simple HTTP server to transcript speech files. Or build your own server.
+   Some usage examples [here](examples/). 
 
 
 ## Install 
@@ -98,6 +97,7 @@ Some transcript usage examples [here](examples)
 - [`voskjs` Command line utility](examples/README.md#voskjs-command-line-utility)
 - [Simple transcript program](examples/README.md#simple-transcript-program) 
 - [Transcript with grammar](examples/README.md#transcript-with-grammar) 
+
 - [Transcript HTTP server](examples/README.md#transcript-http-server)
 - [SocketIO server pseudocode](examples/README.md#socketio-server-pseudocode)
 
@@ -119,9 +119,10 @@ Some tests / notes [here](tests/README.md):
   with a temporrary workaround: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
 
 - Implement an simplified interface for all [Vosk-api functions](https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js)
-- Function transcript could get audio as buffer instead of as a WAV file
 - Deepen grammar usage with examples
 - Review stress and performances tests (especially for the HTTP server)
+- httpServer could get PCM buffer as binary data attached in the HTTP request
+- To speedup latencies, rethink transcript interface, maybe with an initialization that includes loadModel an the Recognizer creation
 
 
 ## How to contribute

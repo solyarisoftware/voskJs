@@ -1,5 +1,10 @@
 # Change log
 
+- 0.3.12
+  - added function `transcriptFromBuffer` that transcripts audio as buffer instead of as a WAV file
+  - added `lib/toPCM.js` module function to manage ffmpeg input/output Buffers, 
+    through stdin/stdout, avoiding disk I/O
+
 - 0.3.11
   - added some tests to verify ffmpeg transcoding times 
     (using stdout pipe / without producing wav file)
@@ -7,7 +12,7 @@
 - 0.3.8
   - Integrate CLI command `voskjs` with grammar argument 
   - global installation of the package allow to run `voskjs` cli program
-  - socketio server program example. 
+  - socketio server program example
 
 - 0.3.6
   - delivered @solyarisoftware/voskjs (added index.js)
@@ -18,7 +23,7 @@
   - documenation improved (README, examples/README, tests/README) 
 
 - 0.2.11
-  - added com/abtest.sh, apache bench httpServer stress test script.
+  - added com/abtest.sh, apache bench httpServer stress test script
   - httpServer improved: 
     - better validation of body request 
     - accept optionally client request id as attribute in the request body
