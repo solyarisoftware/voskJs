@@ -5,6 +5,7 @@
 - [Comparison between Vosk and Mozilla DeepSpeech (latencies)](#comparison-between-vosk-and-mozilla-deepspeech-latencies)
 - [Multithread stress test (10 requests in parallel)](#multithread-stress-test-10-requests-in-parallel)
 - [HTTP Server benchmark test](#http-server-benchmark-test)
+- [Latency tests](#latency-tests) 
 
 
 ## My hardware / host configuration
@@ -323,6 +324,82 @@ Percentage of the requests served within a certain time (ms)
  100%   6502 (longest request)
 ```
 
+## Latency tests 
+
+Do you want to measure how fast Vosk speech-to-text.
+
+Program [`tests/transcodeToPCMAsyncOneBuffer.js`](tests/transcodeToPCMAsyncOneBuffer.js) 
+does a speech to text transcript, using model `vosk-model-small-en-us-0.15` 
+of a 3 words sentences 'experience proves this', 
+starting from an OPUS compressed file `audio/2830-3980-0043.wav.webm`
+that is transcoded to a PCM buffer (using ffmpeg).
+
+### Without a grammar
+
+Using the Vosk model without a grammar, the 'net' latency, measuring elapsed time, 
+using 'multithreading' `acceptWavefromAsync()` Vosk function, 
+you get a value of **513 milliseconds**. Not bad!
+
+```
+$ node transcodeToPCMAsyncOneBuffer.js 
+```
+```
+model directory         : ../models/vosk-model-small-en-us-0.15
+speech file name        : ../audio/2830-3980-0043.wav.webm
+grammar                 : zero,one,two,three,four,five,six,seven,eight,nine,alfa for a,bravo for b,charlie for c,delta for d,echo for e,foxtrot for f,golf for g,hotel for h,india for i,juliet for j,kilo for k,lima for l,mike for m,november for n,oscar for o,papa for p,quebec for q,romeo for r,sierra for s,tango for t,uniform for u,victor for v,whiskey for w,x ray for x,yankee for y,zulu for z,experience proves this,why should one hold on the way,your power is sufficient i said,oh one two three four five six seven eight nine zero,[unk]
+ffmpeg command          : ffmpeg -loglevel quiet -i ../audio/2830-3980-0043.wav.webm -ar 16000 -ac 1 -f s16le -bufsize 4000 pipe:1
+
+final transcript        :
+{
+  result: [
+    { conf: 1, end: 1.02, start: 0.36, word: 'experience' },
+    { conf: 1, end: 1.35, start: 1.02, word: 'proves' },
+    { conf: 1, end: 1.74, start: 1.35, word: 'this' }
+  ],
+  text: 'experience proves this'
+}
+
+LATENCIES:
+load model              : 295ms
+recognizer              : 58ms
+ffmpeg to PCM           : 51ms
+acceptWavefromAsync     : 513ms
+laten. from ffmpeg start: 564ms
+```
+
+### With a grammar
+
+Using the Vosk model with a 'medium size' grammar, the 'net' latency, measuring elapsed time, 
+using 'multithreading' `acceptWavefromAsync()` Vosk function, 
+slow down to a value of **56 milliseconds**. An order of magnitude smaller value!
+
+
+```
+$ node transcodeToPCMAsyncOneBuffer.js 
+```
+```
+model directory         : ../models/vosk-model-small-en-us-0.15
+speech file name        : ../audio/2830-3980-0043.wav.webm
+grammar                 : zero,one,two,three,four,five,six,seven,eight,nine,alfa for a,bravo for b,charlie for c,delta for d,echo for e,foxtrot for f,golf for g,hotel for h,india for i,juliet for j,kilo for k,lima for l,mike for m,november for n,oscar for o,papa for p,quebec for q,romeo for r,sierra for s,tango for t,uniform for u,victor for v,whiskey for w,x ray for x,yankee for y,zulu for z,experience proves this,why should one hold on the way,your power is sufficient i said,oh one two three four five six seven eight nine zero,[unk]
+ffmpeg command          : ffmpeg -loglevel quiet -i ../audio/2830-3980-0043.wav.webm -ar 16000 -ac 1 -f s16le -bufsize 4000 pipe:1
+
+final transcript        :
+{
+  result: [
+    { conf: 1, end: 1.02, start: 0.36, word: 'experience' },
+    { conf: 1, end: 1.35, start: 1.02, word: 'proves' },
+    { conf: 1, end: 1.74, start: 1.35, word: 'this' }
+  ],
+  text: 'experience proves this'
+}
+
+LATENCIES:
+load model              : 288ms
+recognizer              : 4ms
+ffmpeg to PCM           : 54ms
+acceptWavefromAsync     : 56ms
+laten. from ffmpeg start: 110ms
+```
 
 ## Notes
 

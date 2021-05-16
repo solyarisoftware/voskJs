@@ -111,6 +111,7 @@ Some tests / notes [here](tests/README.md):
 - [Comparison between Vosk and Mozilla DeepSpeech (latencies)](tests/README.md#comparison-between-vosk-and-mozilla-deepspeech-latencies)
 - [Multithread stress test (10 requests in parallel)](tests/README.md#multithread-stress-test-10-requests-in-parallel)
 - [HTTP Server benchmark test](tests/README.md#http-server-benchmark-test)
+- [Latency tests](tests/README.md#latency-tests) 
 
 
 ## To do

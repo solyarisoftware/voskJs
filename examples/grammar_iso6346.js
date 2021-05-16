@@ -1,7 +1,7 @@
 const { logLevel, loadModel, transcript, freeModel } = require('../voskjs')
 
 const { spellingEnglishCharacters } = require('./spellingEnglishCharacters')
-const { spellingItalianCharacters } = require('./spellingEnglishCharacters')
+const { spellingItalianCharacters } = require('./spellingItalianCharacters')
 
 
 /**

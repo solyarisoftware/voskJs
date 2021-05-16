@@ -1,6 +1,7 @@
 # Change log
 
-- 0.3.12
+- 0.3.13
+  - added latency tests (with/without grammars)  
   - added function `transcriptFromBuffer` that transcripts audio as buffer instead of as a WAV file
   - added `lib/toPCM.js` module function to manage ffmpeg input/output Buffers, 
     through stdin/stdout, avoiding disk I/O

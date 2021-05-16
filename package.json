@@ -1,6 +1,6 @@
 {
   "name": "@solyarisoftware/voskjs",
-  "version": "0.3.12",
+  "version": "0.3.13",
   "description": "Vosk ASR engine transcript API for NodeJs developers.",
   "main": "index.js",
   "repository": {
