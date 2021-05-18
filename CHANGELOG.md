@@ -1,5 +1,8 @@
 # Change log
 
+- 0.4.0
+  - httpServer interface changed. Now accepting HTTP GET requests and query string arguments.
+
 - 0.3.14
   - added latency tests (with/without grammars)
   - added function `transcriptFromBuffer` that transcripts audio as buffer instead of as a WAV file

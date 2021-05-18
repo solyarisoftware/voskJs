@@ -28,6 +28,7 @@ curl \
 --data-urlencode id="$id" \
 --data-urlencode speech="$speechFile" \
 --data-urlencode model="$model" \
+--data-urlencode grammar="$grammar" \
 http://$ipaddress:$port/transcript \
 | python3 -m json.tool
 

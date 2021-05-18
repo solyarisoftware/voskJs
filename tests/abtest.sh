@@ -9,7 +9,7 @@ numberRequests=200
 
 ipaddress="localhost"
 port=3000
-path="transcript"
+path='transcript?speech=..%2Faudio%2F2830-3980-0043.wav'
 
 # https://stackoverflow.com/questions/4774054/reliable-way-for-a-bash-script-to-get-the-full-path-to-itself
 scriptpath="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
@@ -29,15 +29,12 @@ bodyfile=$scriptpath/body.json
 # -k: Use HTTP KeepAlive feature
 
 abcommand="ab \
--p $bodyfile \
--T application/json \
--H 'Content-Type: application/json' \
 -c $concurrentClients \
 -n $numberRequests \
 -l \
 -k \
 -r \
-http://$ipaddress:$port/$path"
+'http://$ipaddress:$port/$path'"
 
 echo
 echo "test httpServer using apache bench"

@@ -42,11 +42,11 @@ The goal of the project is to:
 2. Use `voskjs` command line program to test Vosk transcript with specific models 
   (some tests and command line usage [here](tests/README.md)).
 
-3. Use 'httpServer', a simple HTTP server to transcript speech files. Or build your own server.
+3. Use `httpServer`, a simple HTTP server to transcript speech files. Or build your own server.
    Some usage examples [here](examples/). 
 
 
-## Install 
+## 🛍 Install 
 
 ### 1. Install Vosk engine and this nodejs module 
 
@@ -102,7 +102,7 @@ Some transcript usage examples [here](examples)
 - [SocketIO server pseudocode](examples/README.md#socketio-server-pseudocode)
 
 
-## Tests
+## 🛠 Tests
 
 Some tests / notes [here](tests/README.md):
 
@@ -116,17 +116,25 @@ Some tests / notes [here](tests/README.md):
 
 ## To do
 
-- WARNING Important open issue to be solved: https://github.com/solyarisoftware/voskJs/issues/3 
+- 💣 Important open issue to be solved: https://github.com/solyarisoftware/voskJs/issues/3 
   with a temporrary workaround: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
 
-- Implement an simplified interface for all [Vosk-api functions](https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js)
+- httpServer will also reply to an HTTP POST request receiving the speech WAV 
+  file as binary data attached in the HTTP request:
+  ```
+   curl -X POST 'http:localhost:3000/transcript' \
+    --header "Content-Type: audio/wav" \
+    --data-binary "@speech.wav"
+  ```
+
+- Implement a simplified interface for all [Vosk-api functions](https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js)
 - Deepen grammar usage with examples
 - Review stress and performances tests (especially for the HTTP server)
-- httpServer could get PCM buffer as binary data attached in the HTTP request
-- To speedup latencies, rethink transcript interface, maybe with an initialization that includes loadModel an the Recognizer creation
+- To speedup latencies, rethink transcript interface, maybe with an initialization phases, 
+  including Model creation an the Recognizer(s) creation
 
 
-## How to contribute
+## ✋ How to contribute
 
 Any contribute is welcome. 
 - [Discussions](https://github.com/solyarisoftware/voskJs/discussions). 
@@ -136,7 +144,7 @@ Any contribute is welcome.
 - [e-mail](giorgio.robino@gmail.com) You can contact me privately, via email
 
 
-## Credits
+## 🙏 Credits
 
 Thanks to Nicolay V. Shmyrev, author of [Vosk](https://alphacephei.com/vosk/) project,
 for the help about nodeJs API bindings for multi-threading management

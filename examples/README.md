@@ -112,12 +112,13 @@ See details here:
 [`httpServer.js`](httpServer.js) is a very simple HTTP API server 
 able to process concurrent/multi-user transcript requests, using a specific language model.
 
-Currently the server support just a single endpoint `HTTP POST /transcript`
-
-Note: 
 A dedicated thread is spawned for each transcript processing request, 
 so latency performance will be optimal if your host has multiple cores.
 
+Currently the server support just a single endpoint: 
+
+- HTTP GET /transcript
+- HTTP POST /transcript (coming soon)
 
 Server settings:
 
@@ -126,17 +127,17 @@ $ node httpServer.js
 ```
 ```
 httpServer is a simple HTTP JSON server, loading a Vosk engine model
-to transcript speech files specified in HTTP POST /transcript request body client calls
+to transcript speech files specified in HTTP GET /transcript request body client calls
 
 Usage:
 
-    httpServer --model=<model directory path> \ 
+    httpServer --model=<model directory path> \
                   [--port=<port number> \
                   [--debug[=<vosk log level>]]
 
 Server settings examples:
 
-    stdout inludes httpServer internal debug logs and Vosk debug logs (log level 2)
+    stdout includes httpServer internal debug logs and Vosk debug logs (log level 2)
     node httpServer --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2
 
     stdout includes httpServer internal debug logs without Vosk debug logs (log level -1)
@@ -151,70 +152,65 @@ Server settings examples:
 Client requests examples:
 
     request body includes attributes: id, speech, model, grammar
-    curl -s \ 
-         -X POST \ 
-         -H "Content-Type: application/json" \ 
-         -d '{"id":"1620060067830","speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","grammar":["experience proves this"]}' \ 
+    curl -s \
+         -H "Accept: application/json" \
+         -G \
+         --data-urlencode id="1620060067830" \
+         --data-urlencode speech="../audio/2830-3980-0043.wav" \
+         --data-urlencode model="vosk-model-en-us-aspire-0.2" \
+         --data-urlencode grammar="["experience proves this"]" \
          http://localhost:3000/transcript
 
     request body includes attributes: id, speech, model
-    curl -s \ 
-         -X POST \ 
-         -H "Content-Type: application/json" \ 
-         -d '{"id":"1620060067830","speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}' \ 
+    curl -s \
+         -H "Accept: application/json" \
+         -G \
+         --data-urlencode id="1620060067830" \
+         --data-urlencode speech="../audio/2830-3980-0043.wav" \
+         --data-urlencode model="vosk-model-en-us-aspire-0.2" \
          http://localhost:3000/transcript
 
     request body includes attributes: speech, model
-    curl -s \ 
-         -X POST \ 
-         -H "Content-Type: application/json" \ 
-         -d '{"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}' \ 
+    curl -s \
+         -H "Accept: application/json" \
+         -G \
+         --data-urlencode speech="../audio/2830-3980-0043.wav" \
+         --data-urlencode model="vosk-model-en-us-aspire-0.2" \
          http://localhost:3000/transcript
 
-
     request body includes just the speech attribute
-    curl -s \ 
-         -X POST \ 
-         -H "Content-Type: application/json" \ 
-         -d '{"speech":"../audio/2830-3980-0043.wav"}' \ 
+    curl -s \
+         -H "Accept: application/json" \
+         -G \
+         --data-urlencode speech="../audio/2830-3980-0043.wav" \
          http://localhost:3000/transcript
 ```
 
 Server run example:
 
 ```bash
-node httpServer.js --model=../models/vosk-model-en-us-aspire-0.2 --port==3000 --debug
+node httpServer.js --model=../models/vosk-model-small-en-us-0.15
 ```
 
-The server API endpoint client call has the complete format in the following example:
+Client call example:
 
 ```bash
-curl \
---header "Content-Type: application/json" \
---request POST \
---data '{"id":1620312465142,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]}' \
-http://localhost:3000/transcript
+$ curl \
+  -s \
+  -H "Accept: application/json" \
+  -G \
+  --data-urlencode id="283039800043" \
+  --data-urlencode speech="../audio/2830-3980-0043.wav" \
+  --data-urlencode model="vosk-model-small-en-us-0.15" \
+  http://localhost:3000/transcript \
+  | python3 -m json.tool
 ```
 
 The JSON returned by the transcript endpoint: 
-
-```bash
-$ curlClientIdSpeechModelGrammar.sh
-```
 ```
 {
-    "request": {
-        "id": 1620311991357,
-        "speech": "../audio/2830-3980-0043.wav",
-        "model": "vosk-model-small-en-us-0.15",
-        "grammar": [
-            "experience proves this",
-            "why should one hold on the way",
-            "your power is sufficient i said"
-        ]
-    },
-    "id": 1620311991357,
-    "latency": 620,
+    "id": "283039800043",
+    "latency": 574,
     "result": [
         {
             "conf": 1,
@@ -239,69 +235,72 @@ $ curlClientIdSpeechModelGrammar.sh
 }
 ```
 
-The server output:
+Server side stdout:
+
 ```
-1620312429756 Model path: ../models/vosk-model-small-en-us-0.15
-1620312429758 Model name: vosk-model-small-en-us-0.15
-1620312429758 HTTP server port: 3000
-1620312429758 internal debug log: false
-1620312429758 Vosk log level: -1
-1620312429758 wait loading Vosk model: vosk-model-small-en-us-0.15 (be patient)
-1620312430058 Vosk model loaded in 300 msecs
-1620312430060 server httpServer.js running at http://localhost:3000
-1620312430060 endpoint http://localhost:3000/transcript
-1620312430060 press Ctrl-C to shutdown
-1620312430060 ready to listen incoming requests
-1620312435318 request {"id":1620312435283,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]}
-1620312435941 response 1620312435283 {"request":{"id":1620312435283,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]},"id":1620312435283,"latency":623,"result":[{"conf":1,"end":1.02,"start":0.36,"word":"experience"},{"conf":1,"end":1.35,"start":1.02,"word":"proves"},{"conf":1,"end":1.74,"start":1.35,"word":"this"}],"text":"experience proves this"}
-1620312465331 request {"id":1620312465142,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]}
-1620312465956 response 1620312465142 {"request":{"id":1620312465142,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]},"id":1620312465142,"latency":625,"result":[{"conf":1,"end":1.02,"start":0.36,"word":"experience"},{"conf":1,"end":1.35,"start":1.02,"word":"proves"},{"conf":1,"end":1.74,"start":1.35,"word":"this"}],"text":"experience proves this"}
-```
-
-### client body request options
-
-The body request must contains the attribute `speech` 
-to specify the speech WAV file for the server speech-to-text conversion.
-
-The `model` attribute is optional. 
-If specified, the server verifies if it matches with the model name of the server-side loaded model.
-
-If `model` is not specified, the server do not make any control, just using the load model.
-In this case the client call is just:
-
-```bash
-curl --header "Content-Type: application/json" \
---request POST --data '{ "speech": "../audio/2830-3980-0043.wav"} \
-http://localhost:3000/transcript
+1621335095393 Model path: ../models/vosk-model-small-en-us-0.15
+1621335095395 Model name: vosk-model-small-en-us-0.15
+1621335095395 HTTP server port: 3000
+1621335095395 internal debug log: false
+1621335095395 Vosk log level: -1
+1621335095395 wait loading Vosk model: vosk-model-small-en-us-0.15 (be patient)
+1621335095710 Vosk model loaded in 314 msecs
+1621335095712 server httpServer.js running at http://localhost:3000
+1621335095712 endpoint http://localhost:3000/transcript
+1621335095712 press Ctrl-C to shutdown
+1621335095713 ready to listen incoming requests
+1621335101648 request 283039800043 ../audio/2830-3980-0043.wav vosk-model-small-en-us-0.15 undefined
+1621335102223 response 283039800043 {"id":"283039800043","latency":574,"result":[{"conf":1,"end":1.02,"start":0.36,"word":"experience"},{"conf":1,"end":1.35,"start":1.02,"word":"proves"},{"conf":1,"end":1.74,"start":1.35,"word":"this"}],"text":"experience proves this"}
+^[^C1621335336951 SIGINT received
+1621335337010 Shutdown done
 ```
 
-The HTTP server corresponding log is:
+### client request query string arguments
 
-```bash
-$ node httpServer --model=../models/vosk-model-small-en-us-0.15
-```
-```
-1620312429756 Model path: ../models/vosk-model-small-en-us-0.15
-1620312429758 Model name: vosk-model-small-en-us-0.15
-1620312429758 HTTP server port: 3000
-1620312429758 internal debug log: false
-1620312429758 Vosk log level: -1
-1620312429758 wait loading Vosk model: vosk-model-small-en-us-0.15 (be patient)
-1620312430058 Vosk model loaded in 300 msecs
-1620312430060 server httpServer.js running at http://localhost:3000
-1620312430060 endpoint http://localhost:3000/transcript
-1620312430060 press Ctrl-C to shutdown
-1620312430060 ready to listen incoming requests
-1620312435318 request {"id":1620312435283,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]}
-1620312435941 response 1620312435283 {"request":{"id":1620312435283,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]},"id":1620312435283,"latency":623,"result":[{"conf":1,"end":1.02,"start":0.36,"word":"experience"},{"conf":1,"end":1.35,"start":1.02,"word":"proves"},{"conf":1,"end":1.74,"start":1.35,"word":"this"}],"text":"experience proves this"}
-```
+- `speech` 
 
-For each incoming request, the server logs the request body and the JSON response:
+  The request quesry string argument is mandatory.
+  It specifies the speech WAV file for the server speech-to-text transcription
 
-- `request` body JSON
-- `response` <requestId> response JSON request <requestId>
+- `model` 
 
-The HTTP POST endpoint `/transcript` returns a JSON data structure containing:
+  The argument is optional. 
+  If specified, the server verifies if it matches with the model name of the server-side loaded model
+  If the argument is not specified, the server doesn't make any control, just using the loaded model
+  In this case the client call is just:
+
+  ```bash
+  curl \
+    -H "Accept: application/json" \
+    -G \
+    --data-urlencode speech="../audio/2830-3980-0043.wav" \
+    http://localhost:3000/transcript
+  ```
+
+   The HTTP server corresponding log is:
+
+   ```bash
+   $ node httpServer --model=../models/vosk-model-small-en-us-0.15
+   ```
+   ```
+   1620312429756 Model path: ../models/vosk-model-small-en-us-0.15
+   1620312429758 Model name: vosk-model-small-en-us-0.15
+   1620312429758 HTTP server port: 3000
+   1620312429758 internal debug log: false
+   1620312429758 Vosk log level: -1
+   1620312429758 wait loading Vosk model: vosk-model-small-en-us-0.15 (be patient)
+   1620312430058 Vosk model loaded in 300 msecs
+   1620312430060 server httpServer.js running at http://localhost:3000
+   1620312430060 endpoint http://localhost:3000/transcript
+   1620312430060 press Ctrl-C to shutdown
+   1620312430060 ready to listen incoming requests
+   1620312435318 request {"id":1620312435283,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]}
+   1620312435941 response 1620312435283 {"request":{"id":1620312435283,"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-small-en-us-0.15","grammar":["experience proves this","why should one hold on the way","your power is sufficient i said"]},"id":1620312435283,"latency":623,"result":[{"conf":1,"end":1.02,"start":0.36,"word":"experience"},{"conf":1,"end":1.35,"start":1.02,"word":"proves"},{"conf":1,"end":1.74,"start":1.35,"word":"this"}],"text":"experience proves this"}
+   ```
+
+### Server JSON response 
+
+The HTTP response returns a JSON data structure containing:
 
 - `speech` the name of the speech file in the request
 - `model` the name of the model (the language) in the request
@@ -313,7 +312,6 @@ The HTTP POST endpoint `/transcript` returns a JSON data structure containing:
 ### HTTP Server Tests
 
 [`tests/`](../tests/) directory contains some utility bash scripts to test the client/server communication.
-
 
 
 ## SocketIO server pseudocode

@@ -1,10 +1,12 @@
-const http = require('http')
 const path = require('path')
+const http = require('http')
+// https://nodejs.org/en/knowledge/HTTP/clients/how-to-access-query-string-parameters/
+const url = require('url')
 
-const { logLevel, loadModel, transcript, freeModel } = require('../voskjs')
+const { logLevel, loadModel, transcriptFromFile, freeModel } = require('../voskjs')
 const { getArgs } = require('../lib/getArgs')
 
-const HTTP_METHOD = 'POST' 
+//const HTTP_METHOD = 'GET' 
 const HTTP_PATH = '/transcript'
 const HTTP_PORT = 3000
 
@@ -23,7 +25,7 @@ function unixTimeMsecs() {
 function header(programName) {
   return [ 
   `${programName} is a simple HTTP JSON server, loading a Vosk engine model`,
-  'to transcript speech files specified in HTTP POST /transcript request body client calls'
+  'to transcript speech files specified in HTTP GET /transcript request body client calls'
   ]  
 }
 
@@ -43,7 +45,7 @@ function helpAndExit(programName) {
   console.info()    
   console.info('Server settings examples:')
   console.info()    
-  console.info('    stdout inludes httpServer internal debug logs and Vosk debug logs (log level 2)')
+  console.info('    stdout includes httpServer internal debug logs and Vosk debug logs (log level 2)')
   console.info(`    node ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2`)
   console.info()    
   console.info('    stdout includes httpServer internal debug logs without Vosk debug logs (log level -1)')
@@ -59,31 +61,36 @@ function helpAndExit(programName) {
   console.info()
   console.info('    request body includes attributes: id, speech, model, grammar')
   console.info('    curl -s \\ ')
-  console.info('         -X POST \\ ')
-  console.info('         -H "Content-Type: application/json" \\ ')
-  console.info('         -d \'{"id":"1620060067830","speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2","grammar":["experience proves this"]}\' \\ ')
+  console.info('         -H "Accept: application/json" \\ ')
+  console.info('         -G \\ ')
+  console.info('         --data-urlencode id="1620060067830" \\ ')
+  console.info('         --data-urlencode speech="../audio/2830-3980-0043.wav" \\ ')
+  console.info('         --data-urlencode model="vosk-model-en-us-aspire-0.2" \\ ')
+  console.info('         --data-urlencode grammar="["experience proves this"]" \\ ')
   console.info('         http://localhost:3000/transcript')
   console.info()
   console.info('    request body includes attributes: id, speech, model')
   console.info('    curl -s \\ ')
-  console.info('         -X POST \\ ')
-  console.info('         -H "Content-Type: application/json" \\ ')
-  console.info('         -d \'{"id":"1620060067830","speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}\' \\ ')
+  console.info('         -H "Accept: application/json" \\ ')
+  console.info('         -G \\ ')
+  console.info('         --data-urlencode id="1620060067830" \\ ')
+  console.info('         --data-urlencode speech="../audio/2830-3980-0043.wav" \\ ')
+  console.info('         --data-urlencode model="vosk-model-en-us-aspire-0.2" \\ ')
   console.info('         http://localhost:3000/transcript')
   console.info()
   console.info('    request body includes attributes: speech, model')
   console.info('    curl -s \\ ')
-  console.info('         -X POST \\ ')
-  console.info('         -H "Content-Type: application/json" \\ ')
-  console.info('         -d \'{"speech":"../audio/2830-3980-0043.wav","model":"vosk-model-en-us-aspire-0.2"}\' \\ ')
+  console.info('         -H "Accept: application/json" \\ ')
+  console.info('         -G \\ ')
+  console.info('         --data-urlencode speech="../audio/2830-3980-0043.wav" \\ ')
+  console.info('         --data-urlencode model="vosk-model-en-us-aspire-0.2" \\ ')
   console.info('         http://localhost:3000/transcript')
-  console.info()    
   console.info()    
   console.info('    request body includes just the speech attribute')
   console.info('    curl -s \\ ')
-  console.info('         -X POST \\ ')
-  console.info('         -H "Content-Type: application/json" \\ ')
-  console.info('         -d \'{"speech":"../audio/2830-3980-0043.wav"}\' \\ ')
+  console.info('         -H "Accept: application/json" \\ ')
+  console.info('         -G \\ ')
+  console.info('         --data-urlencode speech="../audio/2830-3980-0043.wav" \\ ')
   console.info('         http://localhost:3000/transcript')
   console.info()    
 
@@ -128,12 +135,13 @@ function validateArgs(args, programName) {
  *
  * @param {String} text
  * @param {String} type
+ * @param {String} time
  * @return {Number} timestamp
  *
  */
-function log(text, type) {
+function log(text, type, time=unixTimeMsecs()) {
 
-  const time = unixTimeMsecs()
+  //const time = unixTimeMsecs()
 
   if (type)
     console.log(`${time} ${type} ${text}`)
@@ -162,96 +170,79 @@ function successResponse(requestId, json, res) {
 }
 
 
-function requestListener(req, res) {
+async function requestListener(req, res) {
   
   // This function is called once the headers have been received
   res.setHeader('Content-Type', 'application/json')
 
-  if (req.method !== HTTP_METHOD) 
+  if (req.method !== 'GET') 
     return errorResponse(`method not allowed ${req.method}`, 405, res)
 
-  if (req.url !== HTTP_PATH)
+  if ( !req.url.match(/^\/transcript/) )
     return errorResponse(`path not allowed ${req.url}`, 405, res)
 
-  let body = ''
+  // get request query string arguments
+  const queryObject = url.parse(req.url,true).query
+  const { id, speech, grammar } = queryObject 
+  const requestedModelName = queryObject.model 
+  
+  // set requestId to the id attribute of the request body, 
+  // if id attribute is not present in the request body, 
+  // set the requestId with current timestamp in msecs.
+  const currentTime = unixTimeMsecs()
+  const requestId = id ? id : currentTime
 
-  // This function is called as chunks of body are received
-  req.on('data', (data) => { body += data })
+  // log request  
+   log(`request ${requestId} ${speech} ${requestedModelName? requestedModelName : ''} ${grammar? grammar : ''}`, null, currentTime)
 
-  // This function is called once the body has been fully received
-  req.on('end', async () => {
+  // validate query string arguments 
 
-    let parsedBody
+  // body must have attributes "speech" and "model"
+  if ( !speech ) 
+    return errorResponse(`id ${requestId} speech attribute not found in the body request`, 405, res)
 
-    try {
-      parsedBody = JSON.parse(body)
+  // if query argument "model" is specified in the client request,
+  // it must be equal to the model name loaded by the server
+  if ( requestedModelName && (requestedModelName !== modelName) ) 
+    return errorResponse(`id ${requestId} Vosk model ${model} unknown`, 404, res)
+
+  try {
+
+    if (debug) {
+      // new thread started, increment global counter of active thread running
+      activeRequests++
+      log(`active requests ${activeRequests}`, 'debug')
     }
-    catch (error) {
-      return errorResponse(`id ${requestId} cannot parse request body ${error}`, 400, res)
-    }
 
-    // log request body  
-    const currentTime = log(`request ${body}`)
+    // speech recognition of an audio file
+    const transcriptData = await transcriptFromFile(speech, model, {grammar: grammar? JSON.parse(grammar): undefined})
+
+    if (debug) {
+      // thread finished, decrement global counter of active thread running
+      activeRequests--
+      log(`active requests ${activeRequests}`, 'debug')
+    }  
+
+    const latency = transcriptData.latency
     
-    // set requestId to the id attribute of the request body, 
-    // if id attribute is not present in the request body, 
-    // set the requestId with current timestamp in msecs.
-    const requestId = parsedBody.id ? parsedBody.id : currentTime 
+    // return JSON data structure
+    const response = JSON.stringify({
+      //... { request: JSON.stringify(queryObject) },
+      ... { id: requestId },
+      ... { latency },
+      ... transcriptData.result 
+      })
 
-    // validate body data
+    if (debug)
+      log(`latency ${requestId} ${latency}ms`, 'debug')
+    
+    return successResponse(requestId, response, res)
 
-    // body must have attributes "speech" and "model"
-    if ( !parsedBody.speech ) 
-      return errorResponse(`id ${requestId} speech attribute not found in the body request`, 405, res)
+  }  
+  catch (error) {
+    return errorResponse(`id ${requestId} transcript function ${error}`, 415, res)
+  }  
 
-    // body attribute "model" is specified in the client request,
-    // it must be equal to the model name loaded by the server
-    if ( parsedBody.model && (parsedBody.model !== modelName) ) 
-      return errorResponse(`id ${requestId} Vosk model ${parsedBody.model} unknown`, 404, res)
-
-    try {
-
-      if (debug) {
-        // new thread started, increment global counter of active thread running
-        activeRequests++
-        log(`active requests ${activeRequests}`, 'debug')
-      }
-
-      const speech = parsedBody.speech
-
-      // grammar is an optional attribute
-      const grammar = parsedBody.grammar
-
-      // speech recognition of an audio file
-      const transcriptData = await transcript(speech, model, grammar)
-
-      if (debug) {
-        // thread finished, decrement global counter of active thread running
-        activeRequests--
-        log(`active requests ${activeRequests}`, 'debug')
-      }  
-
-      const latency = transcriptData.latency
-      
-      // return JSON data structure
-      const json = JSON.stringify({
-        ... { request: parsedBody },
-        ... { id: requestId },
-        ... { latency },
-        ... transcriptData.result 
-        })
-
-      if (debug)
-        log(`latency ${requestId} ${latency}ms`, 'debug')
-      
-      return successResponse(requestId, json, res)
-
-    }  
-    catch (error) {
-      return errorResponse(`id ${requestId} transcript function ${error}`, 415, res)
-    }  
-
-  })
 }  
 
 
