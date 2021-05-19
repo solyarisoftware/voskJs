@@ -109,7 +109,7 @@ See details here:
 
 ## Transcript HTTP server 
 
-[`httpServer.js`](httpServer.js) is a very simple HTTP API server 
+[`voskjshttp.js`](voskjshttp.js) is a very simple HTTP API server 
 able to process concurrent/multi-user transcript requests, using a specific language model.
 
 A dedicated thread is spawned for each transcript processing request, 
@@ -123,36 +123,81 @@ Currently the server support just a single endpoint:
 Server settings:
 
 ```bash
-$ node httpServer.js 
+$ cd examples && node voskjshttp.js 
 ```
+or, if you installed this package as global:
+```bash
+$ voskjshttp
 ```
-httpServer is a simple HTTP JSON server, loading a Vosk engine model
-to transcript speech files specified in HTTP GET /transcript request body client calls
+
+```
+voskjshttp is a simple HTTP JSON server, loading a Vosk engine model to transcript speeches.
+The server has two endpoints:
+
+- HTTP GET /transcript
+  The request query string arguments contain parameters,
+  including a WAV file name already accessible by the server.
+
+- HTTP POST /transcript
+  The request query string arguments contain parameters,
+  the request body contains the WAV file name to be submitted to the server.
 
 Usage:
 
-    httpServer --model=<model directory path> \
+    voskjshttp --model=<model directory path> \
                   [--port=<port number> \
                   [--debug[=<vosk log level>]]
 
 Server settings examples:
 
-    stdout includes httpServer internal debug logs and Vosk debug logs (log level 2)
-    node httpServer --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2
+    stdout includes the server internal debug logs and Vosk debug logs (log level 2)
+    node voskjshttp --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2
 
-    stdout includes httpServer internal debug logs without Vosk debug logs (log level -1)
-    node httpServer --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug
+    stdout includes the server internal debug logs without Vosk debug logs (log level -1)
+    node voskjshttp --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug
 
     stdout includes minimal info, just request and response messages
-    node httpServer --model=../models/vosk-model-en-us-aspire-0.2 --port=8086
+    node voskjshttp --model=../models/vosk-model-en-us-aspire-0.2 --port=8086
 
     stdout includes minimal info, default port number is 3000
-    node httpServer --model=../models/vosk-model-small-en-us-0.15
+    node voskjshttp --model=../models/vosk-model-small-en-us-0.15
 
 Client requests examples:
 
-    request body includes attributes: id, speech, model, grammar
+    1. GET /transcript - query string includes just the speech file argument
+
     curl -s \
+         -X GET \
+         -H "Accept: application/json" \
+         -G \
+         --data-urlencode speech="../audio/2830-3980-0043.wav" \
+         http://localhost:3000/transcript
+
+    2. GET /transcript - query string includes arguments: speech, model
+
+    curl -s \
+         -X GET \
+         -H "Accept: application/json" \
+         -G \
+         --data-urlencode speech="../audio/2830-3980-0043.wav" \
+         --data-urlencode model="vosk-model-en-us-aspire-0.2" \
+         http://localhost:3000/transcript
+
+    3. GET /transcript - query string includes arguments: id, speech, model
+
+    curl -s \
+         -X GET \
+         -H "Accept: application/json" \
+         -G \
+         --data-urlencode id="1620060067830" \
+         --data-urlencode speech="../audio/2830-3980-0043.wav" \
+         --data-urlencode model="vosk-model-en-us-aspire-0.2" \
+         http://localhost:3000/transcript
+
+    4. GET /transcript - includes arguments: id, speech, model, grammar
+
+    curl -s \
+         -X GET \
          -H "Accept: application/json" \
          -G \
          --data-urlencode id="1620060067830" \
@@ -161,35 +206,22 @@ Client requests examples:
          --data-urlencode grammar="["experience proves this"]" \
          http://localhost:3000/transcript
 
-    request body includes attributes: id, speech, model
+    5. POST /transcript - body includes the speech file
+
     curl -s \
+         -X POST \
          -H "Accept: application/json" \
-         -G \
+         -H "Content-Type: audio/wav" \
          --data-urlencode id="1620060067830" \
-         --data-urlencode speech="../audio/2830-3980-0043.wav" \
          --data-urlencode model="vosk-model-en-us-aspire-0.2" \
-         http://localhost:3000/transcript
-
-    request body includes attributes: speech, model
-    curl -s \
-         -H "Accept: application/json" \
-         -G \
-         --data-urlencode speech="../audio/2830-3980-0043.wav" \
-         --data-urlencode model="vosk-model-en-us-aspire-0.2" \
-         http://localhost:3000/transcript
-
-    request body includes just the speech attribute
-    curl -s \
-         -H "Accept: application/json" \
-         -G \
-         --data-urlencode speech="../audio/2830-3980-0043.wav" \
+         --data-binary="@../audio/2830-3980-0043.wav" \
          http://localhost:3000/transcript
 ```
 
 Server run example:
 
 ```bash
-node httpServer.js --model=../models/vosk-model-small-en-us-0.15
+node voskjshttp.js --model=../models/vosk-model-small-en-us-0.15
 ```
 
 Client call example:
@@ -245,7 +277,7 @@ Server side stdout:
 1621335095395 Vosk log level: -1
 1621335095395 wait loading Vosk model: vosk-model-small-en-us-0.15 (be patient)
 1621335095710 Vosk model loaded in 314 msecs
-1621335095712 server httpServer.js running at http://localhost:3000
+1621335095712 server voskjshttp.js running at http://localhost:3000
 1621335095712 endpoint http://localhost:3000/transcript
 1621335095712 press Ctrl-C to shutdown
 1621335095713 ready to listen incoming requests
@@ -280,7 +312,7 @@ Server side stdout:
    The HTTP server corresponding log is:
 
    ```bash
-   $ node httpServer --model=../models/vosk-model-small-en-us-0.15
+   $ node voskjshttp --model=../models/vosk-model-small-en-us-0.15
    ```
    ```
    1620312429756 Model path: ../models/vosk-model-small-en-us-0.15
@@ -290,7 +322,7 @@ Server side stdout:
    1620312429758 Vosk log level: -1
    1620312429758 wait loading Vosk model: vosk-model-small-en-us-0.15 (be patient)
    1620312430058 Vosk model loaded in 300 msecs
-   1620312430060 server httpServer.js running at http://localhost:3000
+   1620312430060 server voskjshttp.js running at http://localhost:3000
    1620312430060 endpoint http://localhost:3000/transcript
    1620312430060 press Ctrl-C to shutdown
    1620312430060 ready to listen incoming requests

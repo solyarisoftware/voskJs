@@ -1,5 +1,8 @@
 # Change log
 
+- 0.5.0
+  - httpServer.js is now renamed voskjshttp.js. It accepts GE and POST endpoints.
+
 - 0.4.0
   - httpServer interface changed. Now accepting HTTP GET requests and query string arguments.
 
