@@ -23,9 +23,9 @@ function unixTimeMsecs() {
   return Math.floor(Date.now())
 }  
 
-function header(programName) {
+function header() {
   return [ 
-    `${programName} is a simple HTTP JSON server, loading a Vosk engine model to transcript speeches.`,
+    'Simple demo HTTP JSON server, loading a Vosk engine model to transcript speeches.',
     'The server has two endpoints:',
     '',
     '- HTTP GET /transcript',
@@ -42,7 +42,7 @@ function header(programName) {
 function helpAndExit(programName) {
   
   console.info()
-  for (const line of header(programName))
+  for (const line of header())
     console.log(line)
 
   console.info()
@@ -116,10 +116,8 @@ function helpAndExit(programName) {
   console.info('         -X POST \\ ')
   console.info('         -H "Accept: application/json" \\ ')
   console.info('         -H "Content-Type: audio/wav" \\ ')
-  console.info('         --data-urlencode id="1620060067830" \\ ')
-  console.info('         --data-urlencode model="vosk-model-en-us-aspire-0.2" \\ ')
   console.info('         --data-binary="@../audio/2830-3980-0043.wav" \\ ')
-  console.info('         http://localhost:3000/transcript')
+  console.info('         "http://localhost:3000/transcript?id=1620060067830&model=vosk-model-en-us-aspire-0.2"')
   console.info()    
 
   process.exit(1)
@@ -266,15 +264,20 @@ async function requestListener(req, res) {
     // get request body binary data
     // containing speech WAV file 
     // TODO Validation of body  
-    let body = []
+
+    //let body = []
+    let speechAsBuffer = Buffer.alloc(0) 
     
-    req.on('data', (chunk) => { body.push(chunk) })
+    req.on('data', (chunk) => { 
+      //body.push(chunk) 
+      speechAsBuffer = Buffer.concat([speechAsBuffer, chunk])
+    })
 
     // all the body is received 
     req.on('end', () => {
       
-      const speechAsBuffer = Buffer.concat(body)
-    
+      //const speechAsBuffer = Buffer.concat(body)
+
       responseTranscriptPost(id, speechAsBuffer, requestedModelName, requestedGrammar, res)
     
     })
@@ -332,6 +335,9 @@ async function responseTranscriptGet(id, requestedFilename, requestedModelName, 
 
 async function responseTranscriptPost(id, buffer, requestedModelName, requestedGrammar, res) {
 
+   if (debug) 
+     log(`Body Buffer length ${Buffer.byteLength(buffer)}`)
+    
   try {
 
     if (debug) {
@@ -341,7 +347,7 @@ async function responseTranscriptPost(id, buffer, requestedModelName, requestedG
     }
 
     // speech recognition of an audio file
-    const grammar = requestedGrammar ? JSON.parse(requestedGrammar) : undefined
+    const grammar = requestedGrammar ? JSON.parse(requestedGrammar) : null
     const transcriptData = await transcriptFromBuffer(buffer, model, {grammar} )
 
     if (debug) {
@@ -392,7 +398,8 @@ async function main() {
   // get command line arguments 
   const { args } = getArgs()
   
-  const programName = path.basename(__filename, '.js')
+  //const programName = path.basename(__filename, '.js')
+  const programName = 'voskjshttp' 
 
   const { modelDirectory, port, debugLevel } = validateArgs(args, programName )
 

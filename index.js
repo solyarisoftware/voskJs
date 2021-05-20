@@ -3,10 +3,15 @@
  * voskJs package entry point
  */ 
 const voskJs = require('./voskjs')
+const toPCM = require('./lib/toPCM')
 
-const publicFuntions = voskJs
+const publicFuntions = {
+  ...voskJs,
+  ...toPCM
+}  
 
-module.exports = voskJs
+
+module.exports = publicFuntions
 
 // debug
 if (require.main === module) {

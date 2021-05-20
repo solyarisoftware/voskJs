@@ -217,20 +217,20 @@ Average:     1000    346959  166,20   30,40    0,00    0,00  196,60     -  node
 
 ## HTTP Server benchmark test
 
-To benchmark `httpServer` I used Apache Bench (ab) in the script `abtest.sh`. 
+To benchmark `voskjshttp` I used Apache Bench (ab) in the script `abtest.sh`. 
 
 WARNING:
 Unfortunately when running the test script, that submit 10 requestes in parallel for a while,
-the httpServer crashes (node versions >= 14). 
+the voskjshttp crashes (node versions >= 14). 
 
 Opened issue: https://github.com/solyarisoftware/voskJs/issues/3 
 has workaround: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
 
 
-### 1. Run httpServer
+### 1. Run voskjshttp
 
 ```bash
-$ node --model=../models/vosk-model-en-us-aspire-0.2 > httpServer.log
+$ node --model=../models/vosk-model-en-us-aspire-0.2 > voskjshttp.log
 ```
 ```
 
@@ -261,6 +261,8 @@ Illegal instruction (core dumped)
 
 ### 2. run abtest.sh
 
+Test the server, using a GET request
+
 ```bash
 $ abtest.sh 
 ```
@@ -270,7 +272,7 @@ test httpServer using apache bench
   200 requests to run
 
 full ab command
-  ab -p /home/giorgio/voskjs/tests/body.json -T application/json -H 'Content-Type: application/json' -c 10 -n 200 -l -k -r http://localhost:3000/transcript
+  ab -c 10 -n 200 -l -k -r 'http://localhost:3000/transcript?speech=..%2Faudio%2F2830-3980-0043.wav'
 
 This is ApacheBench, Version 2.3 <$Revision: 1843412 $>
 Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
@@ -282,11 +284,11 @@ Completed 200 requests
 Finished 200 requests
 
 
-Server Software:        
+Server Software:
 Server Hostname:        localhost
 Server Port:            3000
 
-Document Path:          /transcript
+Document Path:          /transcript?speech=..%2Faudio%2F2830-3980-0043.wav
 Document Length:        Variable
 
 Concurrency Level:      10

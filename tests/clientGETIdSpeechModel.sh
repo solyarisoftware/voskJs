@@ -14,7 +14,7 @@ id=$(($(date +%s%N)/1000000))
 #
 # Request:
 # GET request, with query string arguments  
-# HTTP GET /transcript?id='12121212'&speech='filename.wav'& ...
+# HTTP GET /transcript?id=12121212&speech=filename.wav& ...
 #
 # Response:
 # A JSON is expected 

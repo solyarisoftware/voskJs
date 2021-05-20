@@ -1,7 +1,14 @@
 # Change log
 
-- 0.5.0
+- 0.5.1
   - httpServer.js is now renamed voskjshttp.js. It accepts GE and POST endpoints.
+  - voskjshttp now reply to an HTTP POST request receiving the speech WAV 
+    file as binary data attached in the HTTP request:
+    ```
+     curl -X POST 'http:localhost:3000/transcript' \
+      --header "Content-Type: audio/wav" \
+      --data-binary "@speech.wav"
+    ```
 
 - 0.4.0
   - httpServer interface changed. Now accepting HTTP GET requests and query string arguments.

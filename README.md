@@ -1,7 +1,10 @@
 # VoskJs
 
-Vosk ASR offline engine transcript APIs for NodeJs developers.
-Contains a simple HTTP transcript server.
+VoskJs is a NodeJs developers toolkit to use [Vosk](https://alphacephei.com/vosk/) offline speech recognition engine. 
+It give you: 
+- simple sentence-based transcript APIs
+- command line utility `voskjs`
+- demo HTTP transcript server `voskjshttp`.
 
 VoskJs can be used for speech recognition processing in different scenarios:
 
@@ -11,9 +14,9 @@ VoskJs can be used for speech recognition processing in different scenarios:
 
 ## What's Vosk?
 
-Vosk is an open source embedded (offline, on-device) speech-to-text engine 
+Vosk is an open source embedded (offline, on-premise) speech-to-text engine 
 which can run in real time also on small devices.
-It's based on Kaldi, but Nikolay V. Shmyrev's Vosk offers a smart and performant interface! 
+It's based on [Kaldi](https://github.com/kaldi-asr/kaldi), but Nikolay V. Shmyrev's Vosk offers a smarti, simplified and performant interface! 
 
 Documentation:
 - https://alphacephei.com/vosk/
@@ -26,7 +29,7 @@ The goal of the project is to:
 1. Create an simple function API layer on top of already existing Vosk nodejs binding, 
    supplying main sentence-based speech-to-text functionalities: 
 
-   - `loadModel(modelDirectory)`
+   - `const model = loadModel(modelDirectory)`
  
      Loads once in RAM memory a specific Vosk engine model from a model directory.
  
@@ -36,14 +39,21 @@ The goal of the project is to:
      At run-rime, transcripts a speech file or buffer (in WAV/PCM format), 
      through the Vosk engine Recognizer. It supply speech-to-text transcript detailed info.
 
+   - `freeModel(mode)`
+
    Using the simple transcript interface you can build your standalone custom application, 
    accessing async functions suitable to run on a usual single thread nodejs program.
 
-2. Use `voskjs` command line program to test Vosk transcript with specific models 
-  (some tests and command line usage [here](tests/README.md)).
+2. `voskjs` 
 
-3. Use `httpServer`, a simple HTTP server to transcript speech files. Or build your own server.
-   Some usage examples [here](examples/). 
+   command line program to test Vosk transcript with specific models 
+   (some tests and command line usage [here](tests/README.md)).
+
+3. `voskjshttp`
+
+   a simple demo HTTP server to transcript speech files. 
+
+4. Build your own server. Some usage examples [here](examples/).
 
 
 ## 🛍 Install 
@@ -119,13 +129,6 @@ Some tests / notes [here](tests/README.md):
 - 💣 Important open issue to be solved: https://github.com/solyarisoftware/voskJs/issues/3 
   with a temporrary workaround: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
 
-- httpServer will also reply to an HTTP POST request receiving the speech WAV 
-  file as binary data attached in the HTTP request:
-  ```
-   curl -X POST 'http:localhost:3000/transcript' \
-    --header "Content-Type: audio/wav" \
-    --data-binary "@speech.wav"
-  ```
 
 - Implement a simplified interface for all [Vosk-api functions](https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js)
 - Deepen grammar usage with examples
