@@ -100,41 +100,47 @@ Source: [Mozilla DeepSpeech audio samples](https://github.com/mozilla/DeepSpeech
 These files are used for some tests and comparisons.
 
 
-## Usage 
+## 🧐 Usage
 
-Some transcript usage examples [here](examples) 
+Some VoskJs usage examples [here](examples) 
 
-- [`voskjs` Command line utility](examples/README.md#voskjs-command-line-utility)
-- [Simple transcript program](examples/README.md#simple-transcript-program) 
-- [Transcript with grammar](examples/README.md#transcript-with-grammar) 
-
-- [Transcript HTTP server](examples/README.md#transcript-http-server)
-- [SocketIO server pseudocode](examples/README.md#socketio-server-pseudocode)
+- `voskjs` Command line utility
+- Simple program for a sentence-based speech-to-text
+- Sentence-based speech-to-text, specifyng a grammar
+- `voskjshttp.js` demo spech-to-text HTTP server 
+- SocketIO server pseudocode
 
 
 ## 🛠 Tests
 
 Some tests / notes [here](tests/README.md):
 
-- [Transcript using English language, large model](tests/README.md#transcript-using-english-language-large-model)
-- [Transcript using English language, small model](tests/README.md#transcript-using-english-language-small-model)
-- [Comparison between Vosk and Mozilla DeepSpeech (latencies)](tests/README.md#comparison-between-vosk-and-mozilla-deepspeech-latencies)
-- [Multithread stress test (10 requests in parallel)](tests/README.md#multithread-stress-test-10-requests-in-parallel)
-- [HTTP Server benchmark test](tests/README.md#http-server-benchmark-test)
-- [Latency tests](tests/README.md#latency-tests) 
+- Transcript using English language, large model
+- Transcript using English language, small model
+- Comparison between Vosk and Mozilla DeepSpeech (latencies)
+- Multithread stress test (10 requests in parallel)
+- HTTP Server benchmark test
+- Latency tests
 
 
-## To do
+## 🎁 Bonus track
 
-- 💣 Important open issue to be solved: https://github.com/solyarisoftware/voskJs/issues/3 
-  with a temporrary workaround: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
+[`toPcm`](lib/toPCM.js) fast transcoding to PCM, using ffmpeg process 
 
 
-- Implement a simplified interface for all [Vosk-api functions](https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js)
+## 💣 WARNING
+
+Multithreading causes a crash: https://github.com/solyarisoftware/voskJs/issues/3
+The issue has a temporary workaround: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
+
+
+## 🤔 To do
+
+- To speedup latencies, rethink transcript interface, maybe with an initialization phases, 
+  including Model and Recognizer(s) object creation. TBV.
+- Implement interfaces for all [Vosk-api functions](https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js)
 - Deepen grammar usage with examples
 - Review stress and performances tests (especially for the HTTP server)
-- To speedup latencies, rethink transcript interface, maybe with an initialization phases, 
-  including Model creation an the Recognizer(s) creation
 
 
 ## ✋ How to contribute

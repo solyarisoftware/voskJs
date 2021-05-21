@@ -1,10 +1,10 @@
-# Transcript usage examples
+# VoskJs Usage Examples
 
-- [`voskjs` Command line utility](#voskjs-command-line-utility)
-- [Simple transcript program](#simple-transcript-program) 
-- [Transcript with grammar](#transcript-with-grammar) 
-- [Transcript HTTP server](#transcript-http-server)
-- [SocketIO server pseudocode](#socketio-server-pseudocode)
+- `voskjs` Command line utility
+- Simple program for a sentence-based speech-to-text
+- Sentence-based speech-to-text, specifyng a grammar
+- `voskjshttp.js` demo spech-to-text HTTP server 
+- SocketIO server pseudocode
 
 
 ## `voskjs` Command line utility
@@ -32,7 +32,7 @@ $ voskjs
 
        voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2
 
-    2. Transcript a speech file using a grammar (allowed by a specific model)
+    2. Transcript a speech file using a grammar (with a dynamic graph model)
 
        voskjs --audio=audio/2830-3980-0043.wav \
               --model=models/vosk-model-small-en-us-0.15 \
@@ -40,7 +40,7 @@ $ voskjs
 ```
 
 
-## Simple transcript program 
+## Simple program for a sentence-based speech-to-text   
 
 [`simple.js`](simple.js) is a basic demo using VoskJs functionalities. 
 
@@ -49,12 +49,11 @@ using a specified language model.
 This is the brainless Vosk interface, perfect for embedded / standalone systems, 
 but also as entry point for any custom server applications.
 
-> NOTE
-> With trascript function default settings, 
-> a dedicated thread is spawned for each transcript processing. 
-> That means that the nodejs main thread is not 'saturated' by the CPU-intensive transcript processing.
-> Latency performance will be optimal if your host has at least 2 cores.
-
+NOTE
+With trascript function default settings, 
+a dedicated thread is spawned for each transcript processing. 
+That means that the nodejs main thread is not 'saturated' by the CPU-intensive transcript processing.
+Latency performance will be optimal if your host has at least 2 cores.
 
 ```bash
 $ node simplest
@@ -75,7 +74,7 @@ transcript latency : 471ms
 ```
 
 
-## Transcript with grammar
+## Sentence-based speech-to-text, specifyng a grammar   
 
 [`grammar.js`](grammar.js) is a basic demo using Vosk recognizer using grammars. 
 
@@ -107,7 +106,7 @@ See details here:
 - https://github.com/alphacep/vosk-api/issues/500
 
 
-## Transcript HTTP server 
+## `voskjshttp.js` demo spech-to-text HTTP server 
 
 [`voskjshttp.js`](voskjshttp.js) is a very simple HTTP API server 
 able to process concurrent/multi-user transcript requests, using a specific language model.

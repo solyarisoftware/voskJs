@@ -273,7 +273,7 @@ function helpAndExit() {
   console.log()
   console.log('      voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2')
   console.log()
-  console.log('    Recognize a speech file using a grammar (allowed by a specific model):')
+  console.log('    Recognize a speech file using a grammar (with a dynamic graph model):')
   console.log()
   console.log('      voskjs --audio=audio/2830-3980-0043.wav \\ ')
   console.log('             --model=models/vosk-model-small-en-us-0.15 \\ ')

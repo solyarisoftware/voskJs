@@ -1,7 +1,11 @@
 # Change log
 
+- 0.5.2
+  - lib/toPCM updated
+  - Documentaion rework
+
 - 0.5.1
-  - httpServer.js is now renamed voskjshttp.js. It accepts GE and POST endpoints.
+  - httpServer.js is now renamed voskjshttp.js. It accepts GET and POST endpoints
   - voskjshttp now reply to an HTTP POST request receiving the speech WAV 
     file as binary data attached in the HTTP request:
     ```
