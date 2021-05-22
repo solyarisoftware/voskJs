@@ -1,7 +1,7 @@
 {
   "name": "@solyarisoftware/voskjs",
-  "version": "0.5.2",
-  "description": "Vosk ASR engine transcript API for NodeJs developers.",
+  "version": "1.0.0",
+  "description": "NodeJs developers API for Vosk-api speech-to-text engine.",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -21,7 +21,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "vosk": "^0.3.25",
+    "vosk": "^0.3.27",
     "wav": "^1.0.2"
   },
   "devDependencies": {},

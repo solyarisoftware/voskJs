@@ -6,6 +6,7 @@ const url = require('url')
 
 const { logLevel, loadModel, transcriptFromFile, transcriptFromBuffer, freeModel } = require('../voskjs')
 const { getArgs } = require('../lib/getArgs')
+const { setTimer, getTimer } = require('../lib/chronos')
 
 //const HTTP_METHOD = 'GET' 
 const HTTP_PATH = '/transcript'
@@ -301,8 +302,9 @@ async function responseTranscriptGet(id, requestedFilename, requestedModelName, 
     }
 
     // speech recognition of an audio file
+    setTimer('transcript')
     const grammar = requestedGrammar ? JSON.parse(requestedGrammar) : undefined
-    const transcriptData = await transcriptFromFile(requestedFilename, model, {grammar})
+    const result = await transcriptFromFile(requestedFilename, model, {grammar})
 
     if (debug) {
       // thread finished, decrement global counter of active thread running
@@ -310,18 +312,18 @@ async function responseTranscriptGet(id, requestedFilename, requestedModelName, 
       log(`active requests ${activeRequests}`, 'debug')
     }  
 
-    const latency = transcriptData.latency
+    const latency = getTimer('transcript')
     
     // return JSON data structure
     const responseJson = JSON.stringify({
       //... { request: JSON.stringify(queryObject) },
       ... { id },
       ... { latency },
-      ... transcriptData.result 
+      ... { result } 
       })
 
     if (debug)
-      log(`latency ${id} ${latency}ms`, 'debug')
+      log(`latency ${id} ${getTimer('transcript')}ms`, 'debug')
     
     return successResponse(id, responseJson, res)
 
@@ -347,8 +349,9 @@ async function responseTranscriptPost(id, buffer, requestedModelName, requestedG
     }
 
     // speech recognition of an audio file
+    setTimer('transcript')
     const grammar = requestedGrammar ? JSON.parse(requestedGrammar) : null
-    const transcriptData = await transcriptFromBuffer(buffer, model, {grammar} )
+    const result = await transcriptFromBuffer(buffer, model, {grammar} )
 
     if (debug) {
       // thread finished, decrement global counter of active thread running
@@ -356,17 +359,17 @@ async function responseTranscriptPost(id, buffer, requestedModelName, requestedG
       log(`active requests ${activeRequests}`, 'debug')
     }  
 
-    const latency = transcriptData.latency
+    const latency = getTimer('transcript')
     
     // return JSON data structure
     const responseJson = JSON.stringify({
       ... { id },
       ... { latency },
-      ... transcriptData.result 
+      ... { result } 
     })
 
     if (debug)
-      log(`latency ${id} ${latency}ms`, 'debug')
+      log(`latency ${id} ${getTimer('transcript')}ms`, 'debug')
     
     return successResponse(id, responseJson, res)
 
@@ -438,14 +441,14 @@ async function main() {
   log(`internal debug log: ${debug}`)
   log(`Vosk log level: ${voskLogLevel}`)
 
-  let latency
-
   log(`wait loading Vosk model: ${modelName} (be patient)`);
 
-  // create a Vosk runtime model
-  ( { model, latency } = await loadModel(modelDirectory) );
+  setTimer('loadModel')
 
-  log(`Vosk model loaded in ${latency} msecs`)
+  // create a Vosk runtime model
+  model = loadModel(modelDirectory)
+
+  log(`Vosk model loaded in ${getTimer('loadModel')} msecs`)
 
   // create the HTTP server instance
   const server = http.createServer( (req, res) => requestListener(req, res) )

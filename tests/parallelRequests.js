@@ -1,5 +1,6 @@
 const os = require('os')
 const { logLevel, loadModel, transcript, freeModel } = require('../voskjs')
+const { setTimer, getTimer } = require('../lib/chronos')
 
 const DEBUG_REQUESTS = false
 const DEBUG_RESULTS = false
@@ -83,10 +84,12 @@ async function main() {
   // set the vosk log level to silence 
   logLevel(-1) 
 
-  // create a runtime model
-  const { model, latency } = await loadModel(modelDirectory)
+  setTimer('loadModel')
 
-  console.log(`load model latency     : ${latency}ms`)
+  // create a runtime model
+  const model = loadModel(modelDirectory)
+
+  console.log(`load model latency     : ${getTimer('loadModel')}ms`)
   console.log()
 
   // run numRequests transcript requests in parallel
@@ -96,7 +99,8 @@ async function main() {
   // wait termination of all promises
   for (let i = 0; i < promises.length; i++ ) {
 
-    const { result, latency } = await promises[i]
+    setTimer('transcript')
+    const result = await promises[i]
 
     if (DEBUG_REQUESTS) {
       // thread finished, decrement global counter of active thread running
@@ -104,7 +108,7 @@ async function main() {
       console.log ( `DEBUG. active requests : ${activeRequests}` )
     }  
 
-    console.log(`transcript latency     : ${latency}ms`)
+    console.log(`transcript latency     : ${getTimer('transcript')}ms`)
 
     if (DEBUG_RESULTS) 
       console.log( result )

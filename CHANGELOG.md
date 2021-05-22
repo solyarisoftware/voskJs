@@ -1,5 +1,11 @@
 # Change log
 
+- 1.0.0
+  - functions loadModule, transcriptFromFile, transcriptFromBuffer now returns simple values instead of objects containing latency attribute
+  - added module lib/chronos.js to manage latencies 
+  - added createRecognizer function prepared to manager MaxAlternatives
+  - added flag --debug to voskjs cli
+
 - 0.5.2
   - lib/toPCM updated
   - Documentaion rework

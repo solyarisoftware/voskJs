@@ -141,6 +141,8 @@ The issue has a temporary workaround: https://github.com/alphacep/vosk-api/issue
 - Implement interfaces for all [Vosk-api functions](https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js)
 - Deepen grammar usage with examples
 - Review stress and performances tests (especially for the HTTP server)
+- use full pathnames in httpServer client/server examples 
+- Vosk-API errors catch    
 
 
 ## ✋ How to contribute

@@ -1,4 +1,5 @@
 const { logLevel, loadModel, transcript, freeModel } = require('../voskjs')
+const { setTimer, getTimer } = require('../lib/chronos')
 
 const DEBUG_REQUESTS = true
 const DEBUG_RESULTS = false
@@ -24,9 +25,10 @@ async function sequentialTranscriptRequests(numRequests, audioFile, model) {
     // speech recognition from an audio file
     try {
     
-      const { result, latency } = await transcript(audioFile, model, {multiThreads:true})
+      setTimer('transcript')
+      const result = await transcript(audioFile, model, {multiThreads:true})
 
-      console.log(`transcript latency     : ${latency}ms`)
+      console.log(`transcript latency     : ${getTimer('transcript')}ms`)
 
       if (DEBUG_RESULTS) 
         console.log( result )
@@ -64,10 +66,12 @@ async function main() {
   // set the vosk log level to silence 
   logLevel(-1) 
 
-  // create a runtime model
-  const { model, latency } = await loadModel(modelDirectory)
+  setTimer('loadModel')
 
-  console.log(`load model latency     : ${latency}ms`)
+  // create a runtime model
+  const model = loadModel(modelDirectory)
+
+  console.log(`load model latency     : ${getTimer('loadModel')}ms`)
   console.log()
 
   // run numRequests transcript requests sequentially

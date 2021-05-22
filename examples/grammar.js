@@ -1,4 +1,5 @@
 const { logLevel, loadModel, transcript, freeModel } = require('../voskjs')
+const { setTimer, getTimer } = require('../lib/chronos')
 
 /**
  * @see https://alphacephei.com/vosk/adaptation
@@ -31,17 +32,20 @@ async function main() {
   // set the vosk log level to silence 
   logLevel(-1) 
 
-  // load in memory a Vosk directory model
-  const { model, latency } = await loadModel(modelDirectory)
+  setTimer('loadModel')
 
-  console.log(`load model latency   : ${latency}ms`)
+  // load in memory a Vosk directory model
+  const model = loadModel(modelDirectory)
+
+  console.log(`load model latency   : ${getTimer('loadModel')}ms`)
 
   // speech recognition of an audio file
   try {
-    const { result, latency } = await transcript(audioFile, model, {grammar})
+    setTimer('transcript')
+    const result = await transcript(audioFile, model, {grammar})
 
     console.log( result )
-    console.log(`transcript latency : ${latency}ms`)
+    console.log(`transcript latency : ${getTimer('transcript')}ms`)
   }  
   catch (error) {
     console.error(error) 
