@@ -1,5 +1,10 @@
 # Change log
 
+- 1.0.1
+  - clientGET*.sh scripts updated using a full path name for the WAV file
+  - httpserver check contet-type 
+  - documenattion update    
+
 - 1.0.0
   - functions loadModule, transcriptFromFile, transcriptFromBuffer now returns simple values instead of objects containing latency attribute
   - added module lib/chronos.js to manage latencies 

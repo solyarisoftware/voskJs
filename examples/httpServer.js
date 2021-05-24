@@ -7,6 +7,7 @@ const url = require('url')
 const { logLevel, loadModel, transcriptFromFile, transcriptFromBuffer, freeModel } = require('../voskjs')
 const { getArgs } = require('../lib/getArgs')
 const { setTimer, getTimer } = require('../lib/chronos')
+const { info } = require('../lib/info')
 
 //const HTTP_METHOD = 'GET' 
 const HTTP_PATH = '/transcript'
@@ -42,7 +43,8 @@ function header() {
 
 function helpAndExit(programName) {
   
-  console.info()
+  info(programName)
+  console.log()
   for (const line of header())
     console.log(line)
 
@@ -241,6 +243,12 @@ async function requestListener(req, res) {
   // HTTP POST /transcript
   if (req.method === 'POST') {
     
+    // get request headers attribute: "content-type" 
+    const { 'content-type': contentType } = req.headers
+
+    if (debug)
+      log(`request POST content type ${contentType}`, 'DEBUG')
+
     // get request query string arguments
     const queryObject = url.parse(req.url,true).query
 
@@ -266,6 +274,8 @@ async function requestListener(req, res) {
     // containing speech WAV file 
     // TODO Validation of body  
 
+    setTimer('attachedFile')
+
     //let body = []
     let speechAsBuffer = Buffer.alloc(0) 
     
@@ -278,6 +288,9 @@ async function requestListener(req, res) {
     req.on('end', () => {
       
       //const speechAsBuffer = Buffer.concat(body)
+
+      if (debug) 
+        log(`HTTP POST attached file elapsed ${getTimer('attachedFile')}ms`, 'DEBUG')
 
       responseTranscriptPost(id, speechAsBuffer, requestedModelName, requestedGrammar, res)
     
@@ -298,7 +311,7 @@ async function responseTranscriptGet(id, requestedFilename, requestedModelName, 
     if (debug) {
       // new thread started, increment global counter of active thread running
       activeRequests++
-      log(`active requests ${activeRequests}`, 'debug')
+      log(`active requests ${activeRequests}`, 'DEBUG')
     }
 
     // speech recognition of an audio file
@@ -309,7 +322,7 @@ async function responseTranscriptGet(id, requestedFilename, requestedModelName, 
     if (debug) {
       // thread finished, decrement global counter of active thread running
       activeRequests--
-      log(`active requests ${activeRequests}`, 'debug')
+      log(`active requests ${activeRequests}`, 'DEBUG')
     }  
 
     const latency = getTimer('transcript')
@@ -323,7 +336,7 @@ async function responseTranscriptGet(id, requestedFilename, requestedModelName, 
       })
 
     if (debug)
-      log(`latency ${id} ${getTimer('transcript')}ms`, 'debug')
+      log(`latency ${id} ${getTimer('transcript')}ms`, 'DEBUG')
     
     return successResponse(id, responseJson, res)
 
@@ -345,7 +358,7 @@ async function responseTranscriptPost(id, buffer, requestedModelName, requestedG
     if (debug) {
       // new thread started, increment global counter of active thread running
       activeRequests++
-      log(`active requests ${activeRequests}`, 'debug')
+      log(`active requests ${activeRequests}`, 'DEBUG')
     }
 
     // speech recognition of an audio file
@@ -356,7 +369,7 @@ async function responseTranscriptPost(id, buffer, requestedModelName, requestedG
     if (debug) {
       // thread finished, decrement global counter of active thread running
       activeRequests--
-      log(`active requests ${activeRequests}`, 'debug')
+      log(`active requests ${activeRequests}`, 'DEBUG')
     }  
 
     const latency = getTimer('transcript')
@@ -369,7 +382,7 @@ async function responseTranscriptPost(id, buffer, requestedModelName, requestedG
     })
 
     if (debug)
-      log(`latency ${id} ${getTimer('transcript')}ms`, 'debug')
+      log(`latency ${id} ${getTimer('transcript')}ms`, 'DEBUG')
     
     return successResponse(id, responseJson, res)
 

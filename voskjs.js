@@ -14,9 +14,11 @@
 
 const fs = require('fs')
 const { Readable } = require('stream')
-const wav = require('wav')
 
+const wav = require('wav')
 const vosk = require('vosk')
+
+const { info } = require('./lib/info')
 const { getArgs } = require('./lib/getArgs')
 const { setTimer, getTimer } = require('./lib/chronos')
 
@@ -145,7 +147,7 @@ async function transcriptFromFile(fileName, model, { multiThreads=true, sampleRa
     const recognizer = createRecognizer(model, {sampleRate, grammar, alternatives})
 
     if (DEBUG)
-      console.log(`recognizer latency   : ${getTimer('createRecognizer')}`)
+      console.log(`recognizer latency   : ${getTimer('createRecognizer')}ms`)
 
     const wfStream = fs.createReadStream(fileName, {'highWaterMark': 4096})
     const wfReader = new wav.Reader()
@@ -259,32 +261,34 @@ function freeModel(model) {
  */
 
 function helpAndExit() {
+  info()
   console.log()
-  console.log('  Usage')
+  console.log('Usage')
   console.log()
-  console.log('    voskjs \\ ')
-  console.log('      --model=<model directory> \\ ')
-  console.log('      --audio=<audio file name> \\ ')
-  console.log('      [--grammar=<list of comma-separated words or sentences>] \\ ')
-  console.log('      [--alternatives=<number of max alternatives in text result>] ')
-  console.log('      [--debug=<Vosk debug level>] ')
+  console.log('  voskjs \\ ')
+  console.log('    --model=<model directory> \\ ')
+  console.log('    --audio=<audio file name> \\ ')
+  console.log('    [--grammar=<list of comma-separated words or sentences>] \\ ')
+  console.log('    [--alternatives=<number of max alternatives in text result>] ')
+  console.log('    [--debug=<Vosk debug level>] ')
   console.log()    
-  console.log('  Examples')
+  console.log('Examples')
   console.log()
-  console.log('    1. Recognize a speech file using a specific model directory:')
+  console.log('  1. Recognize a speech file using a specific model directory:')
   console.log()
-  console.log('       voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2')
+  console.log('     voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2')
   console.log()
-  console.log('    2. Recognize a speech file setting a grammar (with a dynamic graph model) and a number of alternative:')
+  console.log('  2. Recognize a speech file setting a grammar (with a dynamic graph model) and a number of alternative:')
   console.log()
-  console.log('       voskjs \\ ')
-  console.log('         --audio=audio/2830-3980-0043.wav \\ ')
-  console.log('         --model=models/vosk-model-small-en-us-0.15 \\ ')
-  console.log('         --grammar="experience proves this, bla bla bla"')
-  console.log('         --alternatives=3')
+  console.log('     voskjs \\ ')
+  console.log('       --audio=audio/2830-3980-0043.wav \\ ')
+  console.log('       --model=models/vosk-model-small-en-us-0.15 \\ ')
+  console.log('       --grammar="experience proves this, bla bla bla"')
+  console.log('       --alternatives=3')
   console.log()
   process.exit(1)
 }  
+
 
 /**
  * @function checkArgs
@@ -336,6 +340,7 @@ async function main() {
   const { args } = getArgs()
   const { modelDirectory, audioFile, grammar, alternatives, debug } = checkArgs(args)
 
+  info()
   console.log()
   console.log(`model directory      : ${modelDirectory}`)
   console.log(`speech file name     : ${audioFile}`)

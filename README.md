@@ -14,9 +14,14 @@ VoskJs can be used for speech recognition processing in different scenarios:
 
 ## What's Vosk?
 
-Vosk is an open source embedded (offline, on-premise) speech-to-text engine 
-which can run in real time also on small devices.
-It's based on [Kaldi](https://github.com/kaldi-asr/kaldi), but Nikolay V. Shmyrev's Vosk offers a smarti, simplified and performant interface! 
+Vosk is an open source embedded (offline/on-prem) speech-to-text engine 
+which can run with very low latencies (`< 500msecs`) on small devices.
+
+Vosk is based on a common DNN-HMM architecture. 
+Deep neural network is used for sound scoring (acoustic scoring), 
+HMM and WFST frameworks are used for time models (language models).
+It's based on [Kaldi](https://github.com/kaldi-asr/kaldi), 
+but Nikolay V. Shmyrev's Vosk offers a smart, simplified and performant interface! 
 
 Documentation:
 - https://alphacephei.com/vosk/
@@ -58,62 +63,29 @@ The goal of the project is to:
 
 ## 🛍 Install 
 
-### 1. Install Vosk engine and this nodejs module 
+1. Install Vosk engine and this nodejs module 
+2. Install/Download Vosk models
+3. Demo audio files
 
-- Install vosk-api engine
-  ```bash
-  pip3 install vosk 
-  ```
-  See also: https://alphacephei.com/vosk/install
-
-- Install this module, as global package if you want to use CLI command `voskjs` 
-  ```bash
-  npm install -g @solyarisoftware/voskjs
-  ```
+All installation details [here](INSTALL.md)
 
 
-### 2. Install/Download Vosk models
+## 🧐 Examples
 
-```bash
-mkdir your/path/models && cd models
-
-# English large model
-wget https://alphacephei.com/vosk/models/vosk-model-en-us-aspire-0.2.zip
-unzip vosk-model-en-us-aspire-0.2.zip
-
-# English small model
-wget http://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip
-unzip vosk-model-small-en-us-0.15.zip
-
-# Italian model model
-wget https://alphacephei.com/vosk/models/vosk-model-small-it-0.4.zip
-unzip vosk-model-small-it-0.4.zip
-```
-
-More about available Vosk models here: https://alphacephei.com/vosk/models
-
-### 3. Demo audio files
-
-Directory [`audio`](audio/) contains some English language speech audio files, 
-coming from a Mozilla DeepSpeech repo.
-Source: [Mozilla DeepSpeech audio samples](https://github.com/mozilla/DeepSpeech/releases/download/v0.9.3/audio-0.9.3.tar.gz)
-These files are used for some tests and comparisons.
-
-
-## 🧐 Usage
-
-Some VoskJs usage examples [here](examples) 
+Some VoskJs usage examples:
 
 - `voskjs` Command line utility
+- `voskjshttp` demo spech-to-text HTTP server 
 - Simple program for a sentence-based speech-to-text
 - Sentence-based speech-to-text, specifyng a grammar
-- `voskjshttp.js` demo spech-to-text HTTP server 
 - SocketIO server pseudocode
+
+All details [here](examples) 
 
 
 ## 🛠 Tests
 
-Some tests / notes [here](tests/README.md):
+Some tests/notes:
 
 - Transcript using English language, large model
 - Transcript using English language, small model
@@ -122,37 +94,24 @@ Some tests / notes [here](tests/README.md):
 - HTTP Server benchmark test
 - Latency tests
 
+All details [here](tests/README.md):
+
 
 ## 🎁 Bonus track
 
 [`toPcm`](lib/toPCM.js) fast transcoding to PCM, using ffmpeg process 
 
 
-## 💣 WARNING
+## 🤔 To do / How to contribute
 
-Multithreading causes a crash: https://github.com/solyarisoftware/voskJs/issues/3
-The issue has a temporary workaround: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
-
-
-## 🤔 To do
-
-- To speedup latencies, rethink transcript interface, maybe with an initialization phases, 
-  including Model and Recognizer(s) object creation. TBV.
-- Implement interfaces for all [Vosk-api functions](https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js)
-- Deepen grammar usage with examples
-- Review stress and performances tests (especially for the HTTP server)
-- use full pathnames in httpServer client/server examples 
-- Vosk-API errors catch    
+See [here](TODO.md)
 
 
-## ✋ How to contribute
+## 💣 Status
 
-Any contribute is welcome. 
-- [Discussions](https://github.com/solyarisoftware/voskJs/discussions). 
-  Please open a new discussion (a publich chat on github) for any specific open topic, 
-  for a clarification, change request proposals, etc.
-- [Issues](https://github.com/solyarisoftware/voskJs/issues) Please submit issues for bugs, etc
-- [e-mail](giorgio.robino@gmail.com) You can contact me privately, via email
+- Project is in a very draft stage
+- Warning: multithreading causes a crash: https://github.com/solyarisoftware/voskJs/issues/3
+  The issue has a temporary workaround: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
 
 
 ## 🙏 Credits
