@@ -403,19 +403,25 @@ acceptWavefromAsync     : 56ms
 laten. from ffmpeg start: 110ms
 ```
 
-## Notes
+
+## 🤔 Notes
 
 1. Latency
 
    Vosk ASR is fast! Run-time latency for file `./audio/2830-3980-0043.wav`
    using English large model, is just 428 ms on my laptop. 
 
-   Weirdly the English small model performances are worst, with 598ms. Not clear to me. 
+   Weirdly the English small model performances are  abit worst, with 598ms. Not clear to me. 
 
 2. Comparison between Vosk and Mozilla DeepSpeech (latencies)
 
    For the comparison I used [DeepSpeechJs](https://github.com/solyarisoftware/DeepSpeechJs), 
    my simple nodejs interface to Deepspeech. See results [here](tests/README.md).
+
+See also: 
+- [What's the Vosk CPU usage at run-time?](https://github.com/alphacep/vosk-api/issues/498)
+- [How to set-up a Vosk multi-threads server architecture in NodeJs](https://github.com/alphacep/vosk-api/issues/502) 
+- [Stateful & low latency ASR architecture](https://github.com/alphacep/vosk-api/issues/553)
 
 
 ---

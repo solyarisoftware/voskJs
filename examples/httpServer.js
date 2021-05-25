@@ -13,6 +13,7 @@ const { info } = require('../lib/info')
 const HTTP_PATH = '/transcript'
 const HTTP_PORT = 3000
 
+
 /**
  * Module global variables
  */
@@ -20,6 +21,8 @@ let debug
 let activeRequests = 0
 let model
 let modelName
+let pathRegexp
+
 
 function unixTimeMsecs() {
   return Math.floor(Date.now())
@@ -44,7 +47,8 @@ function helpAndExit(programName) {
   console.log('Usage:')
   console.log()
   console.log(`  ${programName} --model=<model directory path> \\ `)
-  console.log('                [--port=<port number> \\')
+  console.log(`                [--port=<server port number. Default: ${HTTP_PORT}>] \\ `)
+  console.log(`                [--path=<server endpoint path. Default: ${HTTP_PATH}>] \\ `)
   console.log('                [--debug[=<vosk log level>]]')
   console.log()    
   console.log('Server settings examples:')
@@ -141,13 +145,14 @@ function validateArgs(args, programName) {
   if ( !modelDirectory ) 
     helpAndExit(programName)
   
-  // if not set, port cli argument has a default
-  const port = !args.port ? HTTP_PORT : args.port 
+  const serverPort = !args.port ? HTTP_PORT : args.port 
+
+  const serverPath = !args.path ? HTTP_PATH : args.path 
 
   // debug cli argument must be an integer or a boolean
   const debugLevel = args.debug
 
-  return { modelDirectory, port, debugLevel }
+  return { modelDirectory, serverPort, serverPath, debugLevel }
 }
 
 
@@ -185,6 +190,25 @@ function errorResponse(message, statusCode, res) {
   log(message, 'ERROR')
 }
 
+
+// return JSON data structure
+function responseJson(id, latency, result, res) {
+  res.setHeader('Content-Type', 'application/json')
+  return JSON.stringify({
+    //... { request: JSON.stringify(queryObject) },
+    ... { id },
+    ... { latency },
+    ... { result } 
+    })
+}  
+
+
+function responseText(result, res) {
+  res.setHeader('Content-Type', 'text/plain')
+  return result.text 
+}  
+
+
 function successResponse(requestId, json, res) {
   log(`response ${requestId} ${json}`)
   res.end(json)
@@ -192,10 +216,16 @@ function successResponse(requestId, json, res) {
 
 async function requestListener(req, res) {
 
-  res.setHeader('Content-Type', 'application/json')
-
-  if ( !req.url.match(/^\/transcript/) )
+  //if ( !req.url.match(/^\/transcript/) )
+  if ( !req.url.match(pathRegexp) )
     return errorResponse(`path not allowed ${req.url}`, 405, res)
+
+  //
+  // if request header accept attribute is 'text/plain'
+  // response body is text, otherwise
+  // response body is 'application/json'
+  //
+  const requestAcceptText = (req.headers.accept === 'text/plain') ? true : false
 
   // HTTP GET /transcript
   if (req.method === 'GET') { 
@@ -229,7 +259,7 @@ async function requestListener(req, res) {
     if ( requestedModelName && (requestedModelName !== modelName) ) 
       return errorResponse(`id ${id} Vosk model ${model} unknown`, 404, res)
 
-    return responseTranscriptGet(id, requestedFilename, requestedModelName, requestedGrammar, res)
+    return responseTranscriptGet(id, requestedFilename, requestedModelName, requestedGrammar, requestAcceptText, res)
   }
 
   // HTTP POST /transcript
@@ -284,7 +314,7 @@ async function requestListener(req, res) {
       if (debug) 
         log(`HTTP POST attached file elapsed ${getTimer('attachedFile')}ms`, 'DEBUG')
 
-      responseTranscriptPost(id, speechAsBuffer, requestedModelName, requestedGrammar, res)
+      responseTranscriptPost(id, speechAsBuffer, requestedModelName, requestedGrammar, requestAcceptText, res)
     
     })
   }  
@@ -296,7 +326,7 @@ async function requestListener(req, res) {
 }  
 
 
-async function responseTranscriptGet(id, requestedFilename, requestedModelName, requestedGrammar, res) {
+async function responseTranscriptGet(id, requestedFilename, requestedModelName, requestedGrammar, requestAcceptText, res) {
 
   try {
 
@@ -318,19 +348,15 @@ async function responseTranscriptGet(id, requestedFilename, requestedModelName, 
     }  
 
     const latency = getTimer('transcript')
-    
-    // return JSON data structure
-    const responseJson = JSON.stringify({
-      //... { request: JSON.stringify(queryObject) },
-      ... { id },
-      ... { latency },
-      ... { result } 
-      })
 
     if (debug)
-      log(`latency ${id} ${getTimer('transcript')}ms`, 'DEBUG')
+      log(`latency ${id} ${latency}ms`, 'DEBUG')
+
+    const body = requestAcceptText ? 
+      responseText(result, res) : 
+      responseJson(id, latency, result, res)
     
-    return successResponse(id, responseJson, res)
+    return successResponse(id, body, res)
 
   }
   catch (error) {
@@ -340,10 +366,10 @@ async function responseTranscriptGet(id, requestedFilename, requestedModelName, 
 }  
 
 
-async function responseTranscriptPost(id, buffer, requestedModelName, requestedGrammar, res) {
+async function responseTranscriptPost(id, buffer, requestedModelName, requestedGrammar, requestAcceptText, res) {
 
-   if (debug) 
-     log(`Body Buffer length ${Buffer.byteLength(buffer)}`)
+  if (debug) 
+    log(`Body Buffer length ${Buffer.byteLength(buffer)}`)
     
   try {
 
@@ -365,18 +391,15 @@ async function responseTranscriptPost(id, buffer, requestedModelName, requestedG
     }  
 
     const latency = getTimer('transcript')
-    
-    // return JSON data structure
-    const responseJson = JSON.stringify({
-      ... { id },
-      ... { latency },
-      ... { result } 
-    })
 
     if (debug)
-      log(`latency ${id} ${getTimer('transcript')}ms`, 'DEBUG')
+      log(`latency ${id} ${latency}ms`, 'DEBUG')
     
-    return successResponse(id, responseJson, res)
+    const body = requestAcceptText ? 
+      responseText(result, res) : 
+      responseJson(id, latency, result, res)
+
+    return successResponse(id, body, res)
 
   }  
   catch (error) {
@@ -409,7 +432,7 @@ async function main() {
   //const programName = path.basename(__filename, '.js')
   const programName = 'voskjshttp' 
 
-  const { modelDirectory, port, debugLevel } = validateArgs(args, programName )
+  const { modelDirectory, serverPort, serverPath, debugLevel } = validateArgs(args, programName )
 
   // set modelName as a global variable
   modelName = path.basename(modelDirectory, '/')
@@ -437,13 +460,13 @@ async function main() {
     logLevel(voskLogLevel) 
   }
 
-  //for (const line of header(programName))
-  // log(line)
+  pathRegexp = new RegExp('^' + serverPath )
 
   log( info() )
   log(`Model path: ${modelDirectory}`)
   log(`Model name: ${modelName}`)
-  log(`HTTP server port: ${port}`)
+  log(`HTTP server port: ${serverPort}`)
+  log(`HTTP server path: ${serverPath}`)
   log(`internal debug log: ${debug}`)
   log(`Vosk log level: ${voskLogLevel}`)
 
@@ -460,9 +483,9 @@ async function main() {
   const server = http.createServer( (req, res) => requestListener(req, res) )
 
   // listen incoming client requests
-  server.listen( port, () => {
-    log(`server ${path.basename(__filename)} running at http://localhost:${port}`)
-    log(`endpoint http://localhost:${port}${HTTP_PATH}`)
+  server.listen( serverPort, () => {
+    log(`server ${path.basename(__filename)} running at http://localhost:${serverPort}`)
+    log(`endpoint http://localhost:${serverPort}${serverPath}`)
     log('press Ctrl-C to shutdown')
     log('ready to listen incoming requests')
   })

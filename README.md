@@ -15,17 +15,15 @@ VoskJs can be used for speech recognition processing in different scenarios:
 ## What's Vosk?
 
 Vosk is an open source embedded (offline/on-prem) speech-to-text engine 
-which can run with very low latencies (`< 500msecs`) on small devices.
-
+which can run with very low latencies (`< 500`msecs on my PC).
 Vosk is based on a common DNN-HMM architecture. 
 Deep neural network is used for sound scoring (acoustic scoring), 
 HMM and WFST frameworks are used for time models (language models).
 It's based on [Kaldi](https://github.com/kaldi-asr/kaldi), 
 but Nikolay V. Shmyrev's Vosk offers a smart, simplified and performant interface! 
 
-Documentation:
-- https://alphacephei.com/vosk/
-- https://github.com/alphacep/vosk-api
+Vosk [home page](https://alphacephei.com/vosk/) and [github repo](https://github.com/alphacep/vosk-api).
+
 
 ## What's VoskJs?
 
@@ -38,8 +36,8 @@ The goal of the project is to:
  
      Loads once in RAM memory a specific Vosk engine model from a model directory.
  
-   - `transcriptFromFile(fileName, model, options)` 
-   - `transcriptFromBuffer(buffer, model, options)` 
+   - `transcriptFromFile(fileName, model, {options})` 
+   - `transcriptFromBuffer(buffer, model, {options})` 
 
      At run-rime, transcripts a speech file or buffer (in WAV/PCM format), 
      through the Vosk engine Recognizer. It supply speech-to-text transcript detailed info.
@@ -134,14 +132,14 @@ All details [here](tests/README.md):
 
 ## 🎁 Bonus track
 
-[`toPcm`](lib/toPCM.js) fast transcoding to PCM, using ffmpeg process 
+[`toPcm`](lib/toPCM.js) fast transcoding to PCM, using ffmpeg process (install ffmpeg before). 
 
 
-## 🤔 To do
+## To do
 
 - To speedup latencies, rethink transcript interface, maybe with an initialization phases, 
   including Model and Recognizer(s) object creation.
-  See proposal architecture: https://github.com/alphacep/vosk-api/issues/553
+  Possible architecture: [Stateful & low latency ASR architecture](https://github.com/alphacep/vosk-api/issues/553)
 - Implement interfaces for all [Vosk-api functions](https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js)
 - Deepen grammar usage with examples
 - add to voskjs sampling rate parameter
@@ -154,7 +152,7 @@ All details [here](tests/README.md):
     see https://cloud.ibm.com/docs/speech-to-text?topic=speech-to-text-audio-formats#audio-formats-list
 
 
-## ✋ How to contribute
+## How to contribute
 
 Any contribute is welcome. 
 - [Discussions](https://github.com/solyarisoftware/voskJs/discussions). 
@@ -175,10 +173,6 @@ Any contribute is welcome.
 
 Thanks to Nicolay V. Shmyrev, author of [Vosk](https://alphacephei.com/vosk/) project,
 for the help about nodeJs API bindings for multi-threading management
-
-See also: 
-- [What's the Vosk CPU usage at run-time?](https://github.com/alphacep/vosk-api/issues/498)
-- [How to set-up a Vosk multi-threads server architecture in NodeJs](https://github.com/alphacep/vosk-api/issues/502) 
 
 
 ## License

@@ -39,6 +39,7 @@ function helpAndExit() {
   console.log('    --model=<model directory> \\ ')
   console.log('    --audio=<audio file name> \\ ')
   console.log('    [--grammar=<list of comma-separated words or sentences>] \\ ')
+  console.log('    [--samplerate=<Number, usually 16000 or 8000>] \\ ')
   console.log('    [--alternatives=<number of max alternatives in text result>] ')
   console.log('    [--debug=<Vosk debug level>] ')
   console.log()    
@@ -305,6 +306,7 @@ function checkArgs(args) {
   const modelDirectory = args.model 
   const audioFile = args.audio 
   const grammar = args.grammar 
+  const sampleRate = args.samplerate 
   const alternatives = args.alternatives 
 
   // if not specified, set default Vosk debug level to -1 (silent mode)
@@ -323,6 +325,10 @@ function checkArgs(args) {
     // if grammar args is present, as comma separated sentences,
     // convert it in an array of strings
     grammar: grammar ? grammar.split(',').map(sentence => sentence.trim()) : undefined, 
+
+    // convert to Number
+    sampleRate: sampleRate ? +sampleRate : undefined,
+
     alternatives,
     debug
   }
@@ -337,13 +343,14 @@ async function main() {
 
   // get command line arguments 
   const { args } = getArgs()
-  const { modelDirectory, audioFile, grammar, alternatives, debug } = checkArgs(args)
+  const { modelDirectory, audioFile, grammar, sampleRate, alternatives, debug } = checkArgs(args)
 
   info()
   console.log()
   console.log(`model directory      : ${modelDirectory}`)
   console.log(`speech file name     : ${audioFile}`)
-  console.log(`grammar              : ${grammar ? grammar : 'not specified'}`)
+  console.log(`grammar              : ${grammar ? grammar : 'not specified. Default: NO'}`)
+  console.log(`sample rate          : ${sampleRate ? sampleRate : 'not specified. Default: 16000'}`)
   console.log(`max alternatives     : ${alternatives}`)
   console.log(`Vosk debug level     : ${debug}`)
   console.log()
@@ -363,7 +370,7 @@ async function main() {
   try {
     setTimer('transcript')
 
-    const result = await transcriptFromFile(audioFile, model, {grammar, alternatives})
+    const result = await transcriptFromFile(audioFile, model, {grammar, sampleRate, alternatives})
 
     console.log(result)
     console.log()

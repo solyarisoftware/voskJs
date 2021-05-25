@@ -1,8 +1,15 @@
 # Change log
 
-- 1.0.2
+- 1.0.3
+  - voskjs take sample rate as command line parameter
+  - voskjshttp updated 
+    - reply application/json or text/plain following request header attribute "Accept"
+    - endpoint path /transcript can be configured 
+    - added test scripts clientGETtext.sh and clientPOSTtext.sh
   - documentation update
-  - added versions info in voskjs and voskjshttp    
+
+- 1.0.2
+  - added versions info in voskjs and voskjshttp
   - clientGET*.sh scripts updated using a full path name for the WAV file
   - httpserver check contet-type 
 
