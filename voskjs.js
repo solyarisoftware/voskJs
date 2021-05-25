@@ -28,8 +28,37 @@ const { setTimer, getTimer } = require('./lib/chronos')
  */
 const SAMPLE_RATE = 16000
 
-/**
- */ 
+
+function helpAndExit() {
+  console.log('voskjs is a CLI utility to test Vosk-api features')
+  console.log (info())
+  console.log()
+  console.log('Usage')
+  console.log()
+  console.log('  voskjs \\ ')
+  console.log('    --model=<model directory> \\ ')
+  console.log('    --audio=<audio file name> \\ ')
+  console.log('    [--grammar=<list of comma-separated words or sentences>] \\ ')
+  console.log('    [--alternatives=<number of max alternatives in text result>] ')
+  console.log('    [--debug=<Vosk debug level>] ')
+  console.log()    
+  console.log('Examples')
+  console.log()
+  console.log('  1. Recognize a speech file using a specific model directory:')
+  console.log()
+  console.log('     voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2')
+  console.log()
+  console.log('  2. Recognize a speech file setting a grammar (with a dynamic graph model) and a number of alternative:')
+  console.log()
+  console.log('     voskjs \\ ')
+  console.log('       --audio=audio/2830-3980-0043.wav \\ ')
+  console.log('       --model=models/vosk-model-small-en-us-0.15 \\ ')
+  console.log('       --grammar="experience proves this, bla bla bla"')
+  console.log('       --alternatives=3')
+  console.log()
+  process.exit(1)
+}  
+
 
 /**
  * @function logLevel
@@ -259,36 +288,6 @@ function freeModel(model) {
 /**
  * test section
  */
-
-function helpAndExit() {
-  info()
-  console.log()
-  console.log('Usage')
-  console.log()
-  console.log('  voskjs \\ ')
-  console.log('    --model=<model directory> \\ ')
-  console.log('    --audio=<audio file name> \\ ')
-  console.log('    [--grammar=<list of comma-separated words or sentences>] \\ ')
-  console.log('    [--alternatives=<number of max alternatives in text result>] ')
-  console.log('    [--debug=<Vosk debug level>] ')
-  console.log()    
-  console.log('Examples')
-  console.log()
-  console.log('  1. Recognize a speech file using a specific model directory:')
-  console.log()
-  console.log('     voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2')
-  console.log()
-  console.log('  2. Recognize a speech file setting a grammar (with a dynamic graph model) and a number of alternative:')
-  console.log()
-  console.log('     voskjs \\ ')
-  console.log('       --audio=audio/2830-3980-0043.wav \\ ')
-  console.log('       --model=models/vosk-model-small-en-us-0.15 \\ ')
-  console.log('       --grammar="experience proves this, bla bla bla"')
-  console.log('       --alternatives=3')
-  console.log()
-  process.exit(1)
-}  
-
 
 /**
  * @function checkArgs
