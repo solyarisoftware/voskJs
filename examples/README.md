@@ -1,11 +1,11 @@
 # VoskJs Usage Examples
 
-- `voskjs` Command line utility
-- Simple program for a sentence-based speech-to-text
-- Sentence-based speech-to-text, specifyng a grammar
-- `voskjshttp.js` demo spech-to-text HTTP server 
-- SocketIO server pseudocode
-
+- [`voskjs` Command line utility](#voskjs-command-line-utility)
+- [Simple program for a sentence-based speech-to-text](#simple-program-for-a-sentence-based-speech-to-text)
+- [Sentence-based speech-to-text, specifyng a grammar](#sentence-based-speech-to-text-specifyng-a-grammar)
+- [`voskjshttp.js` demo spech-to-text HTTP server](#voskjshttpjs-demo-spech-to-text-http-server)
+- [SocketIO server pseudocode](#socketio-server-pseudocode)
+- [`voskjshttp` as RHASSPY speech-to-text remote HTTP Server](#voskjshttp-as-rhasspy-speech-to-text-remote-http-server)
 
 ## `voskjs` Command line utility
 
@@ -20,23 +20,32 @@ Afterward you can enjoy voskjs command line utility program:
 $ voskjs
 ```
 ```
-  Usage:
+voskjs is a CLI utility to test Vosk-api features
+package @solyarisoftware/voskjs version 1.0.3, Vosk-api version 0.3.27
 
-    voskjs --model=<model directory> \
-            --audio=<audio file name> \
-            --grammar=<list of comma-separated words or sentences> \
+Usage
 
-  Examples :
+  voskjs \ 
+    --model=<model directory> \ 
+    --audio=<audio file name> \ 
+    [--grammar=<list of comma-separated words or sentences>] \ 
+    [--samplerate=<Number, usually 16000 or 8000>] \ 
+    [--alternatives=<number of max alternatives in text result>] 
+    [--debug=<Vosk debug level>] 
 
-    1. Transcript a speech file using a specific model directory
+Examples
 
-       voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2
+  1. Recognize a speech file using a specific model directory:
 
-    2. Transcript a speech file using a grammar (with a dynamic graph model)
+     voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2
 
-       voskjs --audio=audio/2830-3980-0043.wav \
-              --model=models/vosk-model-small-en-us-0.15 \
-              --grammar="experience proves this, bla bla bla"
+  2. Recognize a speech file setting a grammar (with a dynamic graph model) and a number of alternative:
+
+     voskjs \ 
+       --audio=audio/2830-3980-0043.wav \ 
+       --model=models/vosk-model-small-en-us-0.15 \ 
+       --grammar="experience proves this, bla bla bla"
+       --alternatives=3
 ```
 
 
@@ -129,88 +138,92 @@ or, if you installed this package as global:
 $ voskjshttp
 ```
 ```
-Simple HTTP JSON server, loading a Vosk engine model to transcript speeches.
+Simple demo HTTP JSON server, loading a Vosk engine model to transcript speeches.
+package @solyarisoftware/voskjs version 1.0.3, Vosk-api version 0.3.27
+
 The server has two endpoints:
 
-- HTTP GET /transcript
+  HTTP GET /transcript
   The request query string arguments contain parameters,
   including a WAV file name already accessible by the server.
 
-- HTTP POST /transcript
+  HTTP POST /transcript
   The request query string arguments contain parameters,
   the request body contains the WAV file name to be submitted to the server.
 
 Usage:
 
-    voskjshttp --model=<model directory path> \
-                  [--port=<port number> \
-                  [--debug[=<vosk log level>]]
+  voskjshttp --model=<model directory path> \
+                [--port=<server port number. Default: 3000>] \
+                [--path=<server endpoint path. Default: /transcript>] \
+                [--debug[=<vosk log level>]]
 
 Server settings examples:
 
-    stdout includes the server internal debug logs and Vosk debug logs (log level 2)
-    node voskjshttp --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2
+  stdout includes the server internal debug logs and Vosk debug logs (log level 2)
+  node voskjshttp --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2
 
-    stdout includes the server internal debug logs without Vosk debug logs (log level -1)
-    node voskjshttp --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug
+  stdout includes the server internal debug logs without Vosk debug logs (log level -1)
+  node voskjshttp --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug
 
-    stdout includes minimal info, just request and response messages
-    node voskjshttp --model=../models/vosk-model-en-us-aspire-0.2 --port=8086
+  stdout includes minimal info, just request and response messages
+  node voskjshttp --model=../models/vosk-model-en-us-aspire-0.2 --port=8086
 
-    stdout includes minimal info, default port number is 3000
-    node voskjshttp --model=../models/vosk-model-small-en-us-0.15
+  stdout includes minimal info, default port number is 3000
+  node voskjshttp --model=../models/vosk-model-small-en-us-0.15
 
 Client requests examples:
 
-    1. GET /transcript - query string includes just the speech file argument
+  1. GET /transcript - query string includes just the speech file argument
 
-    curl -s \
-         -X GET \
-         -H "Accept: application/json" \
-         -G \
-         --data-urlencode speech="../audio/2830-3980-0043.wav" \
-         http://localhost:3000/transcript
+  curl -s \
+       -X GET \
+       -H "Accept: application/json" \
+       -G \
+       --data-urlencode speech="../audio/2830-3980-0043.wav" \
+       http://localhost:3000/transcript
 
-    2. GET /transcript - query string includes arguments: speech, model
+  2. GET /transcript - query string includes arguments: speech, model
 
-    curl -s \
-         -X GET \
-         -H "Accept: application/json" \
-         -G \
-         --data-urlencode speech="../audio/2830-3980-0043.wav" \
-         --data-urlencode model="vosk-model-en-us-aspire-0.2" \
-         http://localhost:3000/transcript
+  curl -s \
+       -X GET \
+       -H "Accept: application/json" \
+       -G \
+       --data-urlencode speech="../audio/2830-3980-0043.wav" \
+       --data-urlencode model="vosk-model-en-us-aspire-0.2" \
+       http://localhost:3000/transcript
 
-    3. GET /transcript - query string includes arguments: id, speech, model
+  3. GET /transcript - query string includes arguments: id, speech, model
 
-    curl -s \
-         -X GET \
-         -H "Accept: application/json" \
-         -G \
-         --data-urlencode id="1620060067830" \
-         --data-urlencode speech="../audio/2830-3980-0043.wav" \
-         --data-urlencode model="vosk-model-en-us-aspire-0.2" \
-         http://localhost:3000/transcript
+  curl -s \
+       -X GET \
+       -H "Accept: application/json" \
+       -G \
+       --data-urlencode id="1620060067830" \
+       --data-urlencode speech="../audio/2830-3980-0043.wav" \
+       --data-urlencode model="vosk-model-en-us-aspire-0.2" \
+       http://localhost:3000/transcript
 
-    4. GET /transcript - includes arguments: id, speech, model, grammar
+  4. GET /transcript - includes arguments: id, speech, model, grammar
 
-    curl -s \
-         -X GET \
-         -H "Accept: application/json" \
-         -G \
-         --data-urlencode id="1620060067830" \
-         --data-urlencode speech="../audio/2830-3980-0043.wav" \
-         --data-urlencode model="vosk-model-en-us-aspire-0.2" \
-         --data-urlencode grammar="["experience proves this"]" \
-         http://localhost:3000/transcript
+  curl -s \
+       -X GET \
+       -H "Accept: application/json" \
+       -G \
+       --data-urlencode id="1620060067830" \
+       --data-urlencode speech="../audio/2830-3980-0043.wav" \
+       --data-urlencode model="vosk-model-en-us-aspire-0.2" \
+       --data-urlencode grammar="["experience proves this"]" \
+       http://localhost:3000/transcript
 
-    5. POST /transcript - the speech file is sent as body payload
+  5. POST /transcript - body includes the speech file
 
-    curl -s \
-         -X POST \
-         -H "Accept: application/json" \
-         --data-binary="@../audio/2830-3980-0043.wav" \
-         "http://localhost:3000/transcript?id='1620060067830'&model='vosk-model-en-us-aspire-0.2'"
+  curl -s \
+       -X POST \
+       -H "Accept: application/json" \
+       -H "Content-Type: audio/wav" \
+       --data-binary="@../audio/2830-3980-0043.wav" \
+       "http://localhost:3000/transcript?id=1620060067830&model=vosk-model-en-us-aspire-0.2"
 ```
 
 Server run example:
@@ -384,6 +397,86 @@ io.on('connection', (socket) => {
 })
 ```
 
+## `voskjshttp` as RHASSPY speech-to-text remote HTTP Server
+
+[RHASSPY](https://rhasspy.readthedocs.io/en/latest/) is an open source, 
+fully offline set of voice assistant services.
+
+RHASSPY uses, as option, a [Remote HTTP Server ](https://rhasspy.readthedocs.io/en/latest/speech-to-text/#remote-http-server)
+to transform speech (WAV) to text. This is typically used in a client/server set up, 
+where Rhasspy does speech/intent recognition on a home server with decent CPU/RAM available.
+
+You can run voskjshttp as RHASSPY speech-to-text remote HTTP Server
+Following these specifications:
+
+- https://rhasspy.readthedocs.io/en/latest/speech-to-text/#remote-http-server
+- https://rhasspy.readthedocs.io/en/latest/usage/#http-api
+- https://rhasspy.readthedocs.io/en/latest/reference/#http-api
+
+
+### Install the server
+
+Install on your home server: Vosk, this package and a Vosk language model of your choice, as described [here](../README.md#-install)
+
+### Run the server 
+
+```
+voskjshttp \
+  --model=models/vosk-model-small-en-us-0.15 \
+  --path=/api/speech-to-text \
+  --port=12101
+```
+
+### Curl client tests
+
+two bash scripts are available in the tests/ directory:
+
+- get a text/plain response from the server
+  ```
+  $ curlRHASSPYtext.sh
+  experience proves this
+  ```
+
+- get an application/json response from the server
+
+  ```
+  $ curlRHASSPYjson.sh
+  
+      "id": 1622012841793,
+      "latency": 570,
+      "result": {
+          "result": [
+              {
+                  "conf": 1,
+                  "end": 1.02,
+                  "start": 0.36,
+                  "word": "experience"
+              },
+              {
+                  "conf": 1,
+                  "end": 1.35,
+                  "start": 1.02,
+                  "word": "proves"
+              },
+              {
+                  "conf": 1,
+                  "end": 1.74,
+                  "start": 1.35,
+                  "word": "this"
+              }
+          ],
+          "text": "experience proves this"
+      }
+  }
+
+  ```
+
+### Warning 
+
+Currently, because a bug in the Node-C++ interface, multithreading causes a crash: https://github.com/solyarisoftware/voskJs/issues/3
+The temporary workaround is to use a Node version previous to v.14: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
+
+To do: disable multithreading in `voskjshttp`, with a command line flag. 
 
 ---
 

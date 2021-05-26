@@ -1,5 +1,8 @@
 # Change log
 
+- 1.0.4
+  - added voskjshttp docs to explain how to use it as a RHASSPY speech-to-text HTTP Remote Server 
+
 - 1.0.3
   - voskjs take sample rate as command line parameter
   - voskjshttp updated 

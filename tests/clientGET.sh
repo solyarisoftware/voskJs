@@ -3,7 +3,7 @@
 ipaddress="localhost"
 port=3000
 
-# get absolute payth of a WAV speech file
+# get absolute path of a WAV speech file
 speechFile=`realpath ../audio/2830-3980-0043.wav`
 
 #model="vosk-model-en-us-aspire-0.2"
