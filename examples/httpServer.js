@@ -22,6 +22,7 @@ let activeRequests = 0
 let model
 let modelName
 let pathRegexp
+let multiThreads
 
 
 function unixTimeMsecs() {
@@ -49,6 +50,7 @@ function helpAndExit(programName) {
   console.log(`  ${programName} --model=<model directory path> \\ `)
   console.log(`                [--port=<server port number. Default: ${HTTP_PORT}>] \\ `)
   console.log(`                [--path=<server endpoint path. Default: ${HTTP_PATH}>] \\ `)
+  console.log('                [--no-threads]')
   console.log('                [--debug[=<vosk log level>]]')
   console.log()    
   console.log('Server settings examples:')
@@ -149,10 +151,12 @@ function validateArgs(args, programName) {
 
   const serverPath = !args.path ? HTTP_PATH : args.path 
 
+  const multiThreads = args['no-threads'] ? false: true
+
   // debug cli argument must be an integer or a boolean
   const debugLevel = args.debug
 
-  return { modelDirectory, serverPort, serverPath, debugLevel }
+  return { modelDirectory, serverPort, serverPath, multiThreads, debugLevel }
 }
 
 
@@ -339,7 +343,7 @@ async function responseTranscriptGet(id, requestedFilename, requestedModelName, 
     // speech recognition of an audio file
     setTimer('transcript')
     const grammar = requestedGrammar ? JSON.parse(requestedGrammar) : undefined
-    const result = await transcriptFromFile(requestedFilename, model, {grammar})
+    const result = await transcriptFromFile(requestedFilename, model, {grammar, multiThreads})
 
     if (debug) {
       // thread finished, decrement global counter of active thread running
@@ -382,7 +386,7 @@ async function responseTranscriptPost(id, buffer, requestedModelName, requestedG
     // speech recognition of an audio file
     setTimer('transcript')
     const grammar = requestedGrammar ? JSON.parse(requestedGrammar) : null
-    const result = await transcriptFromBuffer(buffer, model, {grammar} )
+    const result = await transcriptFromBuffer(buffer, model, {grammar, multiThreads} )
 
     if (debug) {
       // thread finished, decrement global counter of active thread running
@@ -432,7 +436,10 @@ async function main() {
   //const programName = path.basename(__filename, '.js')
   const programName = 'voskjshttp' 
 
-  const { modelDirectory, serverPort, serverPath, debugLevel } = validateArgs(args, programName )
+  const validatedArgs = validateArgs(args, programName )
+  const { modelDirectory, serverPort, serverPath, debugLevel } = validatedArgs
+
+  ;({ multiThreads } = validatedArgs)
 
   // set modelName as a global variable
   modelName = path.basename(modelDirectory, '/')
@@ -467,6 +474,7 @@ async function main() {
   log(`Model name: ${modelName}`)
   log(`HTTP server port: ${serverPort}`)
   log(`HTTP server path: ${serverPath}`)
+  log(`multiThreads    : ${multiThreads}`)
   log(`internal debug log: ${debug}`)
   log(`Vosk log level: ${voskLogLevel}`)
 

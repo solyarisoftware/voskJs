@@ -424,7 +424,8 @@ Install on your home server: Vosk, this package and a Vosk language model of you
 voskjshttp \
   --model=models/vosk-model-small-en-us-0.15 \
   --path=/api/speech-to-text \
-  --port=12101
+  --port=12101 \
+  --no-threads
 ```
 
 ### Curl client tests
@@ -434,6 +435,8 @@ two bash scripts are available in the tests/ directory:
 - get a text/plain response from the server
   ```
   $ curlRHASSPYtext.sh
+  ```
+  ```
   experience proves this
   ```
 
@@ -441,6 +444,8 @@ two bash scripts are available in the tests/ directory:
 
   ```
   $ curlRHASSPYjson.sh
+  ```
+  ```
   
       "id": 1622012841793,
       "latency": 570,
@@ -473,10 +478,14 @@ two bash scripts are available in the tests/ directory:
 
 ### Warning 
 
-Currently, because a bug in the Node-C++ interface, multithreading causes a crash: https://github.com/solyarisoftware/voskJs/issues/3
-The temporary workaround is to use a Node version previous to v.14: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
+Currently, because a bug in the Node-C++ interface of Vosk-apy lib, multithreading causes a crash: https://github.com/solyarisoftware/voskJs/issues/3 
 
-To do: disable multithreading in `voskjshttp`, with a command line flag. 
+Two temporary alternative workarounds proposed:
+- Use a Node version previous to v. 14 : https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
+- Use any Node version successive v.13 but disable multithreading in `voskjshttp`, with a command line flag `--no-threads`. 
+  This option seems to be a non sense, because in this way the server just serve one request a time 
+  (that will saturate a cpu core for hundreds of milliseconds, also blocking the Node main thread), 
+  nevertheless the lack of multithreading could be acceptable to serve few staellites (clients) in a small (home) environment.
 
 ---
 
