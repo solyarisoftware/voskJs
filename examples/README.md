@@ -414,78 +414,93 @@ Following these specifications:
 - https://rhasspy.readthedocs.io/en/latest/reference/#http-api
 
 
-### Install the server
+1. Install the server
 
-Install on your home server: Vosk, this package and a Vosk language model of your choice, as described [here](../README.md#-install)
+   Install on your home server, as described [here](../README.md#-install): 
+   - Vosk
+   - `npm install -g @solyarisoftware/voskjs`
+   - A Vosk language model of your choice
 
-### Run the server 
+2. Run the server 
 
-```
-voskjshttp \
-  --model=models/vosk-model-small-en-us-0.15 \
-  --path=/api/speech-to-text \
-  --port=12101 \
-  --no-threads
-```
+   Warning:
+   currently, because a bug in the Node-C++ interface of Vosk-API lib, multithreading causes a crash: https://github.com/solyarisoftware/voskJs/issues/3 
+   Two temporary alternative workarounds proposed:
 
-### Curl client tests
+   - Vosk Multithreading **enabled**
 
-two bash scripts are available in the tests/ directory:
+     Use a Node version previous to v. 14. 
+     See: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
+     ```
+     $ voskjshttp \
+       --model=models/vosk-model-small-en-us-0.15 \
+       --path=/api/speech-to-text \
+       --port=12101 \
+     ```
 
-- get a text/plain response from the server
-  ```
-  $ curlRHASSPYtext.sh
-  ```
-  ```
-  experience proves this
-  ```
+   - Vosk Multithreading **disabled**
+ 
+     Use any Node version successive v.13 but disable multithreading in `voskjshttp`, 
+     with a command line flag `--no-threads`. 
 
-- get an application/json response from the server
+     This option seems to be a nonsense, because in this way the server just serve one request a time 
+     (that will saturate a CPU core for hundreds of milliseconds, also blocking the Node main thread). 
+     Nevertheless the lack of multithreading could be acceptable to serve few satellites (clients) in a small (home) environment.
+     ```
+     $ voskjshttp \
+       --model=models/vosk-model-small-en-us-0.15 \
+       --path=/api/speech-to-text \
+       --port=12101 \
+       --no-threads
+     ```
 
-  ```
-  $ curlRHASSPYjson.sh
-  ```
-  ```
-  
-      "id": 1622012841793,
-      "latency": 570,
-      "result": {
-          "result": [
-              {
-                  "conf": 1,
-                  "end": 1.02,
-                  "start": 0.36,
-                  "word": "experience"
-              },
-              {
-                  "conf": 1,
-                  "end": 1.35,
-                  "start": 1.02,
-                  "word": "proves"
-              },
-              {
-                  "conf": 1,
-                  "end": 1.74,
-                  "start": 1.35,
-                  "word": "this"
-              }
-          ],
-          "text": "experience proves this"
-      }
-  }
+3. Curl client tests
 
-  ```
+   Two bash scripts are available in the tests/ directory:
 
-### Warning 
+   - [`curlRHASSPYtext.sh`](curlRHASSPYtext.sh) get a text/plain response from the server
+     ```
+     $ curlRHASSPYtext.sh
+     ```
+     ```
+     experience proves this
+     ```
 
-Currently, because a bug in the Node-C++ interface of Vosk-apy lib, multithreading causes a crash: https://github.com/solyarisoftware/voskJs/issues/3 
+   - [`curlRHASSPYjson.sh`](curlRHASSPYjson.sh) get an application/json response from the server
 
-Two temporary alternative workarounds proposed:
-- Use a Node version previous to v. 14 : https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
-- Use any Node version successive v.13 but disable multithreading in `voskjshttp`, with a command line flag `--no-threads`. 
-  This option seems to be a non sense, because in this way the server just serve one request a time 
-  (that will saturate a cpu core for hundreds of milliseconds, also blocking the Node main thread), 
-  nevertheless the lack of multithreading could be acceptable to serve few staellites (clients) in a small (home) environment.
+     ```
+     $ curlRHASSPYjson.sh
+     ```
+     ```
+     { 
+        "id": 1622012841793,
+        "latency": 570,
+        "result": {
+            "result": [
+                {
+                    "conf": 1,
+                    "end": 1.02,
+                    "start": 0.36,
+                    "word": "experience"
+                },
+                {
+                    "conf": 1,
+                    "end": 1.35,
+                    "start": 1.02,
+                    "word": "proves"
+                },
+                {
+                    "conf": 1,
+                    "end": 1.74,
+                    "start": 1.35,
+                    "word": "this"
+                }
+            ],
+            "text": "experience proves this"
+        }
+     }
+     ```
+
 
 ---
 

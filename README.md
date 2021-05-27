@@ -108,9 +108,9 @@ These files are used for some tests and comparisons.
 Some VoskJs usage examples:
 
 - [`voskjs` Command line utility](examples/README.md#voskjs-command-line-utility)
+- [`voskjshttp` demo spech-to-text HTTP server](examples/README.md#voskjshttpjs-demo-spech-to-text-http-server)
 - [Simple program for a sentence-based speech-to-text](examples/README.md#simple-program-for-a-sentence-based-speech-to-text)
 - [Sentence-based speech-to-text, specifyng a grammar](examples/README.md#sentence-based-speech-to-text-specifyng-a-grammar)
-- [`voskjshttp.js` demo spech-to-text HTTP server](examples/README.md#voskjshttpjs-demo-spech-to-text-http-server)
 - [SocketIO server pseudocode](examples/README.md#socketio-server-pseudocode)
 - [`voskjshttp` as RHASSPY speech-to-text remote HTTP Server](examples/README.md#voskjshttp-as-rhasspy-speech-to-text-remote-http-server)
 
