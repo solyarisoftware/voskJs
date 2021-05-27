@@ -458,7 +458,7 @@ Following these specifications:
 
    Two bash scripts are available in the tests/ directory:
 
-   - [`curlRHASSPYtext.sh`](curlRHASSPYtext.sh) get a text/plain response from the server
+   - [`curlRHASSPYtext.sh`](../tests/curlRHASSPYtext.sh) get a text/plain response from the server
      ```
      $ curlRHASSPYtext.sh
      ```
@@ -466,7 +466,7 @@ Following these specifications:
      experience proves this
      ```
 
-   - [`curlRHASSPYjson.sh`](curlRHASSPYjson.sh) get an application/json response from the server
+   - [`curlRHASSPYjson.sh`](../tests/curlRHASSPYjson.sh) get an application/json response from the server
 
      ```
      $ curlRHASSPYjson.sh
