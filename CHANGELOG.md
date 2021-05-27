@@ -1,6 +1,6 @@
 # Change log
 
-- 1.0.7
+- 1.0.8
   - added flag `--no-threads` to `voskjshttp`
   - added voskjshttp docs to explain how to use it as a RHASSPY speech-to-text HTTP Remote Server 
   - documentation update
