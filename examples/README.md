@@ -17,7 +17,7 @@ npm install -g @solyarisoftware/voskjs
 Afterward you can enjoy voskjs command line utility program:
 
 ```bash
-$ voskjs
+voskjs
 ```
 ```
 voskjs is a CLI utility to test Vosk-api features
@@ -65,7 +65,7 @@ That means that the nodejs main thread is not 'saturated' by the CPU-intensive t
 Latency performance will be optimal if your host has at least 2 cores.
 
 ```bash
-$ node simplest
+node simplest
 ```
 ```
 model directory      : ../models/vosk-model-en-us-aspire-0.2
@@ -88,7 +88,7 @@ transcript latency : 471ms
 [`grammar.js`](grammar.js) is a basic demo using Vosk recognizer using grammars. 
 
 ```bash
-$ node grammar
+node grammar
 ```
 ```
 model directory      : ../models/vosk-model-small-en-us-0.15
@@ -131,15 +131,15 @@ Currently the server support just a single endpoint:
 Server settings:
 
 ```bash
-$ cd examples && node httpServer.js 
+cd examples && node voskjshttp.js 
 ```
 or, if you installed this package as global:
 ```bash
-$ voskjshttp
+voskjshttp
 ```
 ```
 Simple demo HTTP JSON server, loading a Vosk engine model to transcript speeches.
-package @solyarisoftware/voskjs version 1.0.3, Vosk-api version 0.3.27
+package @solyarisoftware/voskjs version 1.1.0, Vosk-api version 0.3.27
 
 The server has two endpoints:
 
@@ -156,21 +156,22 @@ Usage:
   voskjshttp --model=<model directory path> \
                 [--port=<server port number. Default: 3000>] \
                 [--path=<server endpoint path. Default: /transcript>] \
+                [--no-threads]
                 [--debug[=<vosk log level>]]
 
 Server settings examples:
 
-  stdout includes the server internal debug logs and Vosk debug logs (log level 2)
-  node voskjshttp --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2
+  voskjshttp --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2
+  # stdout includes the server internal debug logs and Vosk debug logs (log level 2)
 
-  stdout includes the server internal debug logs without Vosk debug logs (log level -1)
-  node voskjshttp --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug
+  voskjshttp --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug
+  # stdout includes the server internal debug logs without Vosk debug logs (log level -1)
 
-  stdout includes minimal info, just request and response messages
-  node voskjshttp --model=../models/vosk-model-en-us-aspire-0.2 --port=8086
+  voskjshttp --model=../models/vosk-model-en-us-aspire-0.2 --port=8086
+  # stdout includes minimal info, just request and response messages
 
-  stdout includes minimal info, default port number is 3000
-  node voskjshttp --model=../models/vosk-model-small-en-us-0.15
+  voskjshttp --model=../models/vosk-model-small-en-us-0.15
+  # stdout includes minimal info, default port number is 3000
 
 Client requests examples:
 
@@ -235,7 +236,7 @@ voskjshttp --model=../models/vosk-model-small-en-us-0.15
 Client call example:
 
 ```bash
-$ curl \
+curl \
   -s \
   -H "Accept: application/json" \
   -G \
@@ -320,7 +321,7 @@ Server side stdout:
    The HTTP server corresponding log is:
 
    ```bash
-   $ node voskjshttp --model=../models/vosk-model-small-en-us-0.15
+   node voskjshttp --model=../models/vosk-model-small-en-us-0.15
    ```
    ```
    1620312429756 Model path: ../models/vosk-model-small-en-us-0.15
@@ -432,10 +433,10 @@ Following these specifications:
      Use a Node version previous to v. 14. 
      See: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
      ```
-     $ voskjshttp \
+     voskjshttp \
        --model=models/vosk-model-small-en-us-0.15 \
        --path=/api/speech-to-text \
-       --port=12101 \
+       --port=12101
      ```
 
    - Vosk Multithreading **disabled**
@@ -447,7 +448,7 @@ Following these specifications:
      (that will saturate a CPU core for hundreds of milliseconds, also blocking the Node main thread). 
      Nevertheless the lack of multithreading could be acceptable to serve few satellites (clients) in a small (home) environment.
      ```
-     $ voskjshttp \
+     voskjshttp \
        --model=models/vosk-model-small-en-us-0.15 \
        --path=/api/speech-to-text \
        --port=12101 \
@@ -460,7 +461,7 @@ Following these specifications:
 
    - [`clientRHASSPYtext.sh`](../tests/clientRHASSPYtext.sh) get a text/plain response from the server
      ```
-     $ clientRHASSPYtext.sh
+     clientRHASSPYtext.sh
      ```
      ```
      experience proves this
@@ -469,13 +470,13 @@ Following these specifications:
    - [`clientRHASSPYjson.sh`](../tests/clientRHASSPYjson.sh) get an application/json response from the server
 
      ```
-     $ clientRHASSPYjson.sh
+     clientRHASSPYjson.sh
      ```
      ```
      { 
         "id": 1622012841793,
         "latency": 570,
-        "result": {
+        "vosk": {
             "result": [
                 {
                     "conf": 1,

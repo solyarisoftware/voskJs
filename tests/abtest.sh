@@ -1,7 +1,7 @@
 #!/bin/bash 
 
 #
-# test httpServer using Apache Bench (ab)
+# test voskjshttp using Apache Bench (ab)
 # https://diamantidis.github.io/2020/07/15/load-testing-with-apache-bench
 # 
 concurrentClients=10
@@ -37,7 +37,7 @@ abcommand="ab \
 'http://$ipaddress:$port/$path'"
 
 echo
-echo "test httpServer using apache bench"
+echo "test voskjshttp using apache bench"
 echo "  $concurrentClients concurrent clients"  
 echo "  $numberRequests requests to run"  
 echo

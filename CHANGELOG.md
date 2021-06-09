@@ -1,5 +1,11 @@
 # Change log
 
+- 1.1.0
+  - voskjshttp JSON response attribute *result* renamed *vosk*  
+  - lib/audioutils.js substitute lib/toPCM.js
+  - httpServer.js renamed voskjshttp.js
+  - documenattion updated
+
 - 1.0.8
   - added flag `--no-threads` to `voskjshttp`
   - added voskjshttp docs to explain how to use it as a RHASSPY speech-to-text HTTP Remote Server 

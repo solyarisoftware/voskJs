@@ -3,11 +3,11 @@
  * voskJs package entry point
  */ 
 const voskJs = require('./voskjs')
-const toPCM = require('./lib/toPCM')
+const audioutils = require('./lib/audioutils.js')
 
 const publicFuntions = {
   ...voskJs,
-  ...toPCM
+  ...audioutils
 }  
 
 

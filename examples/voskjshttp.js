@@ -8,6 +8,7 @@ const { logLevel, loadModel, transcriptFromFile, transcriptFromBuffer, freeModel
 const { getArgs } = require('../lib/getArgs')
 const { setTimer, getTimer } = require('../lib/chronos')
 const { info } = require('../lib/info')
+const { log } = require('../lib/log')
 
 //const HTTP_METHOD = 'GET' 
 const HTTP_PATH = '/transcript'
@@ -55,17 +56,17 @@ function helpAndExit(programName) {
   console.log()    
   console.log('Server settings examples:')
   console.log()    
-  console.log('  stdout includes the server internal debug logs and Vosk debug logs (log level 2)')
-  console.log(`  node ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2`)
+  console.log(`  ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug=2`)
+  console.log('  # stdout includes the server internal debug logs and Vosk debug logs (log level 2)')
   console.log()    
-  console.log('  stdout includes the server internal debug logs without Vosk debug logs (log level -1)')
-  console.log(`  node ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug`)
+  console.log(`  ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086 --debug`)
+  console.log('  # stdout includes the server internal debug logs without Vosk debug logs (log level -1)')
   console.log()    
-  console.log('  stdout includes minimal info, just request and response messages')
-  console.log(`  node ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086`)
+  console.log(`  ${programName} --model=../models/vosk-model-en-us-aspire-0.2 --port=8086`)
+  console.log('  # stdout includes minimal info, just request and response messages')
   console.log()    
-  console.log('  stdout includes minimal info, default port number is 3000')
-  console.log(`  node ${programName} --model=../models/vosk-model-small-en-us-0.15`)
+  console.log(`  ${programName} --model=../models/vosk-model-small-en-us-0.15`)
+  console.log('  # stdout includes minimal info, default port number is 3000')
   console.log()
   console.log('Client requests examples:')
   console.log()
@@ -161,29 +162,6 @@ function validateArgs(args, programName) {
 
 
 /**
- * log
- *
- * @param {String} text
- * @param {String} type
- * @param {String} time
- * @return {Number} timestamp
- *
- */
-function log(text, type, time=unixTimeMsecs()) {
-
-  //const time = unixTimeMsecs()
-
-  if (type)
-    console.log(`${time} ${type} ${text}`)
-  else
-    console.log(`${time} ${text}`)
-
-  return time
-
-}
-
-
-/**
  * errorResponse
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
@@ -202,7 +180,7 @@ function responseJson(id, latency, result, res) {
     //... { request: JSON.stringify(queryObject) },
     ... { id },
     ... { latency },
-    ... { result } 
+    ... { vosk: result } 
     })
 }  
 
@@ -433,8 +411,7 @@ async function main() {
   // get command line arguments 
   const { args } = getArgs()
   
-  //const programName = path.basename(__filename, '.js')
-  const programName = 'voskjshttp' 
+  const programName = path.basename(__filename, '.js')
 
   const validatedArgs = validateArgs(args, programName )
   const { modelDirectory, serverPort, serverPath, debugLevel } = validatedArgs
@@ -445,14 +422,14 @@ async function main() {
   modelName = path.basename(modelDirectory, '/')
 
   // debug cli argument not set, 
-  // internal httpServer debug and Vosk log level are unset
+  // internal voskjshttp debug and Vosk log level are unset
   if ( ! debugLevel ) { 
     debug = false
     voskLogLevel = -1
     logLevel(voskLogLevel) 
   }  
   
-  // internal httpServer debug is set but Vosk log level is unset
+  // internal voskjshttp debug is set but Vosk log level is unset
   else if ( debugLevel === true ) {
     debug = true
     voskLogLevel = -1

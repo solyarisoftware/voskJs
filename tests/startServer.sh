@@ -1,2 +1,2 @@
 #!/bin/bash 
-node httpServer --model=../models/vosk-model-small-en-us-0.15
+node voskjshttp --model=../models/vosk-model-small-en-us-0.15

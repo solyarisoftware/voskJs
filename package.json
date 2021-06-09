@@ -1,6 +1,6 @@
 {
   "name": "@solyarisoftware/voskjs",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "NodeJs developers API for Vosk-api speech-to-text engine.",
   "main": "index.js",
   "repository": {
@@ -27,7 +27,7 @@
   "devDependencies": {},
   "bin": {
     "voskjs": "./voskjs.js",
-    "voskjshttp": "./examples/httpServer.js"
+    "voskjshttp": "./examples/voskjshttp.js"
   },
   "keywords": [
     "Vosk",

@@ -1,10 +1,12 @@
 # VoskJs
 
-VoskJs is a NodeJs developers toolkit to use [Vosk](https://alphacephei.com/vosk/) offline speech recognition engine. 
-It give you: 
-- simple sentence-based transcript APIs
-- command line utility `voskjs`
-- demo HTTP transcript server `voskjshttp`.
+VoskJs is a NodeJs developers toolkit to use [Vosk](https://alphacephei.com/vosk/) 
+offline speech recognition engine, including multithread (server) usage examples. 
+The project gives you: 
+
+- A simple sentence-based transcript APIs
+- The command line utility `voskjs`
+- A demo HTTP transcript server `voskjshttp`
 
 VoskJs can be used for speech recognition processing in different scenarios:
 
@@ -15,14 +17,12 @@ VoskJs can be used for speech recognition processing in different scenarios:
 ## What's Vosk?
 
 Vosk is an open source embedded (offline/on-prem) speech-to-text engine 
-which can run with very low latencies (`< 500`msecs on my PC).
-Vosk is based on a common DNN-HMM architecture. 
-Deep neural network is used for sound scoring (acoustic scoring), 
+which can run with very low latencies (`< 500`msecs on my [PC](tests/README.md#my-hardware--host-configuration)).
+Vosk is based on a common DNN-HMM architecture.  Deep neural network is used for sound scoring (acoustic scoring), 
 HMM and WFST frameworks are used for time models (language models).
-It's based on [Kaldi](https://github.com/kaldi-asr/kaldi), 
+It's based on [Kaldi](https://github.com/kaldi-asr/kaldi),
 but Nikolay V. Shmyrev's Vosk offers a smart, simplified and performant interface! 
-
-Vosk [home page](https://alphacephei.com/vosk/) and [github repo](https://github.com/alphacep/vosk-api).
+More details in the Vosk [home page](https://alphacephei.com/vosk/) and [github repo](https://github.com/alphacep/vosk-api).
 
 
 ## What's VoskJs?
@@ -47,14 +47,10 @@ The goal of the project is to:
    Using the simple transcript interface you can build your standalone custom application, 
    accessing async functions suitable to run on a usual single thread nodejs program.
 
-2. `voskjs` 
-
-   command line program to test Vosk transcript with specific models 
+2. `voskjs`: command line program to test Vosk transcript with specific models 
    (some tests and command line usage [here](tests/README.md)).
 
-3. `voskjshttp`
-
-   a simple demo HTTP server to transcript speech files. 
+3. `voskjshttp`: a simple demo HTTP server to transcript speech files. 
 
 4. Build your own server. Some usage examples [here](examples/).
 
@@ -131,7 +127,8 @@ All details [here](tests/README.md):
 
 ## 🎁 Bonus track
 
-[`toPcm`](lib/toPCM.js) fast transcoding to PCM, using ffmpeg process (install ffmpeg before). 
+[`audioutils`](lib/audioutils.js) some audio utility functions as `toPCM`, 
+a fast transcoding to PCM, using ffmpeg process (install ffmpeg before).
 
 
 ## To do
@@ -139,21 +136,22 @@ All details [here](tests/README.md):
 - To speedup latencies, rethink transcript interface, maybe with an initialization phases, 
   including Model and Recognizer(s) object creation.
   Possible architecture: [Stateful & low latency ASR architecture](https://github.com/alphacep/vosk-api/issues/553)
-- Implement interfaces for all [Vosk-api functions](https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js)
+- Complete API interface for all [Vosk-api functions](https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js)
 - Deepen grammar usage with examples
-- add to voskjs sampling rate parameter
-- Vosk-API errors catching
-- httpserver 
+- Deepen Vosk-API errors catching
+- voskjshttp: 
   - Review stress and performances tests (especially for the HTTP server)
   - HTTP POST management: set mandatory audio format mime type in the header request (`--header "Content-Type: audio/wav"`)
-  - HTTP POST management: audio-transcoding using `toPcm()` 
-    if input speech files are not specified as wav in header request (`--header "Content-Type: audio/webm"`)
+  - HTTP POST management: audio-transcoding using function `toPcm` 
+    if input speech files are not specified as wav in header request (e.g. `--header "Content-Type: audio/webm"`)
     see https://cloud.ibm.com/docs/speech-to-text?topic=speech-to-text-audio-formats#audio-formats-list
 
 
 ## How to contribute
 
-Any contribute is welcome. 
+If you like the project, please ⭐️ star this repository to show your support! 🙏
+
+Any contribute is welcome: 
 - [Discussions](https://github.com/solyarisoftware/voskJs/discussions). 
   Please open a new discussion (a publich chat on github) for any specific open topic, 
   for a clarification, change request proposals, etc.

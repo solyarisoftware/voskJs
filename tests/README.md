@@ -41,7 +41,7 @@ My laptop has weird cores usage I claimed here:
 ## Transcript using English language, large model
 
 ```
-$ /usr/bin/time --verbose node voskjs  --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2
+ /usr/bin/time --verbose node voskjs  --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2
 ```
 ```
 
@@ -102,7 +102,7 @@ transcript elapsed : 424ms
 ## Transcript using English language, small model
 
 ```bash
-$ /usr/bin/time --verbose node voskjs  --audio=audio/2830-3980-0043.wav --model=models/vosk-model-small-en-us-0.15
+/usr/bin/time --verbose node voskjs  --audio=audio/2830-3980-0043.wav --model=models/vosk-model-small-en-us-0.15
 ```
 ```
 load model elapsed : 292ms
@@ -151,7 +151,7 @@ transcript elapsed : 550ms
  I used the last DeepSpeech English model and I tested audio file `./audio/2830-3980-0043.wav`:
 
  ```bash
- $ node deepSpeechTranscriptNative ./models/deepspeech-0.9.3-models.pbmm ./models/deepspeech-0.9.3-models.scorer ./audio/2830-3980-0043.wav 
+ node deepSpeechTranscriptNative ./models/deepspeech-0.9.3-models.pbmm ./models/deepspeech-0.9.3-models.scorer ./audio/2830-3980-0043.wav 
  ```
  ```
  usage: node deepSpeechTranscriptNative [<model pbmm file>] [<model scorer file>] [<audio file>]
@@ -179,7 +179,7 @@ transcript elapsed : 550ms
 ## Multithread stress test (10 requests in parallel)
 
 ```bash
-$ /usr/bin/time -f "%e" pidstat 1 -u -e node parallelRequests 10
+/usr/bin/time -f "%e" pidstat 1 -u -e node parallelRequests 10
 ```
 ```
 Linux 5.8.0-50-generic (giorgio-HP-Laptop-17-by1xxx) 	29/04/2021 	_x86_64_	(8 CPU)
@@ -230,7 +230,7 @@ has workaround: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833
 ### 1. Run voskjshttp
 
 ```bash
-$ node --model=../models/vosk-model-en-us-aspire-0.2 > voskjshttp.log
+node --model=../models/vosk-model-en-us-aspire-0.2 > voskjshttp.log
 ```
 ```
 
@@ -264,10 +264,10 @@ Illegal instruction (core dumped)
 Test the server, using a GET request
 
 ```bash
-$ abtest.sh 
+abtest.sh 
 ```
 ```
-test httpServer using apache bench
+test voskjshttp using apache bench
   10 concurrent clients
   200 requests to run
 
@@ -343,7 +343,7 @@ using 'multithreading' `acceptWavefromAsync()` Vosk function,
 you get a value of **513 milliseconds**. Not bad!
 
 ```
-$ node transcodeToPCMAsyncOneBuffer.js 
+node transcodeToPCMAsyncOneBuffer.js 
 ```
 ```
 model directory         : ../models/vosk-model-small-en-us-0.15
@@ -377,7 +377,7 @@ slow down to a value of **56 milliseconds**. An order of magnitude smaller value
 
 
 ```
-$ node transcodeToPCMAsyncOneBuffer.js 
+node transcodeToPCMAsyncOneBuffer.js 
 ```
 ```
 model directory         : ../models/vosk-model-small-en-us-0.15

@@ -1,5 +1,5 @@
 const vosk = require('vosk')
-const { toPCM } = require('../lib/toPCM')
+const { toPCM } = require('../lib/audioutils')
 const { spellingEnglishCharacters } = require('../examples/spellingEnglishCharacters')
 
 // build a 'blended' grammar just for test
@@ -9,7 +9,7 @@ const grammar = spellingEnglishCharacters.concat([
   'your power is sufficient i said',
   'oh one two three four five six seven eight nine zero',
   //'Giorgio Robino'
-    '[unk]'
+  '[unk]'
   ])
 
 const SAMPLE_RATE = 16000
