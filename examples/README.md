@@ -251,28 +251,30 @@ The JSON returned by the transcript endpoint:
 ```
 {
     "id": "283039800043",
-    "latency": 574,
-    "result": [
-        {
-            "conf": 1,
-            "end": 1.02,
-            "start": 0.36,
-            "word": "experience"
-        },
-        {
-            "conf": 1,
-            "end": 1.35,
-            "start": 1.02,
-            "word": "proves"
-        },
-        {
-            "conf": 1,
-            "end": 1.74,
-            "start": 1.35,
-            "word": "this"
-        }
-    ],
-    "text": "experience proves this"
+    "latency": 575,
+    "vosk": {
+        "result": [
+            {
+                "conf": 1,
+                "end": 1.02,
+                "start": 0.36,
+                "word": "experience"
+            },
+            {
+                "conf": 1,
+                "end": 1.35,
+                "start": 1.02,
+                "word": "proves"
+            },
+            {
+                "conf": 1,
+                "end": 1.74,
+                "start": 1.35,
+                "word": "this"
+            }
+        ],
+        "text": "experience proves this"
+    }
 }
 ```
 

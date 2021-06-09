@@ -1,6 +1,6 @@
 # Change log
 
-- 1.1.0
+- 1.1.1
   - voskjshttp JSON response attribute *result* renamed *vosk*  
   - lib/audioutils.js substitute lib/toPCM.js
   - httpServer.js renamed voskjshttp.js
