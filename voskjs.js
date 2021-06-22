@@ -12,6 +12,7 @@
 -* @see VoskAPI https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js
  */
 
+const util = require('util')
 const fs = require('fs')
 const { Readable } = require('stream')
 
@@ -40,7 +41,8 @@ function helpAndExit() {
   console.log('    --audio=<audio file name> \\ ')
   console.log('    [--grammar=<list of comma-separated words or sentences>] \\ ')
   console.log('    [--samplerate=<Number, usually 16000 or 8000>] \\ ')
-  console.log('    [--alternatives=<number of max alternatives in text result>] ')
+  console.log('    [--alternatives=<number of max alternatives in text result>] \\ ')
+  console.log('    [--textonly] \\ ')
   console.log('    [--debug=<Vosk debug level>] ')
   console.log()    
   console.log('Examples')
@@ -119,13 +121,23 @@ function loadModel(modelDirectory) {
  * @property {Number}                  sampleRate   Default value: 16000
  * @property {String[]}                grammar      array of words, or sentences
  * @property {Number}                  alternatives maximum alternatives to return from recognition results
+ * @property {Boolean}                 words        if true, recognizer result will include word by word details
+ * @example
+ *   {
+ *     result: [
+ *       { conf: 1, end: 1.02, start: 0.36, word: 'experience' },
+ *         { conf: 1, end: 1.35, start: 1.02, word: 'proves' },
+ *        { conf: 1, end: 1.74, start: 1.35, word: 'this' }
+ *      ],
+ *      text: 'experience proves this'
+ *    }
  *
  * @param {ModelObject}                model        the Vosk model returned by InitModel()
  * @param {VoskRecognizerArgsObject}  [options]     Vosk Recognizer arguments setting. Optional
  * @return {VoskRecognizerObject}
  *
  */ 
-function createRecognizer(model, { sampleRate=SAMPLE_RATE, grammar=null, alternatives=0 } = {}) {
+function createRecognizer(model, { sampleRate=SAMPLE_RATE, grammar=null, alternatives=0, words=true } = {}) {
 
   // if a grammar is specified, pass it to the Vosk Recognizer
   const voskRecognizerArgs = grammar ? 
@@ -136,9 +148,10 @@ function createRecognizer(model, { sampleRate=SAMPLE_RATE, grammar=null, alterna
   // TODO try/catch?
   const recognizer = new vosk.Recognizer(voskRecognizerArgs)
 
-  // 
   if ( alternatives )
     recognizer.setMaxAlternatives(alternatives)
+
+  recognizer.setWords(words)
 
   return recognizer
 }
@@ -159,9 +172,9 @@ function createRecognizer(model, { sampleRate=SAMPLE_RATE, grammar=null, alterna
  * @return {Promise<VoskResultObject>} transcript object returned by Vosk engine
  *
  */ 
-async function transcriptFromFile(fileName, model, { multiThreads=true, sampleRate=SAMPLE_RATE, grammar=null, alternatives=0 } = {}) {
+async function transcriptFromFile(fileName, model, { multiThreads=true, sampleRate=SAMPLE_RATE, grammar=null, alternatives=0, words=true } = {}) {
 
-  const DEBUG = true
+  const DEBUG = false
 
   return new Promise( (resolve, reject) => {
 
@@ -174,7 +187,7 @@ async function transcriptFromFile(fileName, model, { multiThreads=true, sampleRa
     if (DEBUG)
       setTimer('createRecognizer')
 
-    const recognizer = createRecognizer(model, {sampleRate, grammar, alternatives})
+    const recognizer = createRecognizer( model, {sampleRate, grammar, alternatives, words} )
 
     if (DEBUG)
       console.log(`recognizer latency   : ${getTimer('createRecognizer')}ms`)
@@ -242,9 +255,9 @@ async function transcriptFromFile(fileName, model, { multiThreads=true, sampleRa
  * @return {Promise<VoskResultObject>} transcript object returned by Vosk engine
  *
  */ 
-async function transcriptFromBuffer(buffer, model, { multiThreads=true, sampleRate=SAMPLE_RATE, grammar=null, alternatives=0 } = {}) {
+async function transcriptFromBuffer(buffer, model, { multiThreads=true, sampleRate=SAMPLE_RATE, grammar=null, alternatives=0, words=true } = {}) {
 
-  const recognizer = createRecognizer(model, {sampleRate, grammar, alternatives})
+  const recognizer = createRecognizer( model, {sampleRate, grammar, alternatives, words} )
    
   // https://gist.github.com/wpscholar/270005d42b860b1c33cf5ab25b37928a
   // https://stackoverflow.com/questions/47089230/how-to-convert-buffer-to-stream-in-nodejs
@@ -308,6 +321,7 @@ function checkArgs(args) {
   const grammar = args.grammar 
   const sampleRate = args.samplerate 
   const alternatives = args.alternatives 
+  const textOnly = args.textonly 
 
   // if not specified, set default Vosk debug level to -1 (silent mode)
   const debug = args.debug ? args.debug : -1
@@ -330,6 +344,9 @@ function checkArgs(args) {
     sampleRate: sampleRate ? +sampleRate : undefined,
 
     alternatives,
+
+    textOnly, 
+
     debug
   }
 }
@@ -343,17 +360,21 @@ async function main() {
 
   // get command line arguments 
   const { args } = getArgs()
-  const { modelDirectory, audioFile, grammar, sampleRate, alternatives, debug } = checkArgs(args)
+  const { modelDirectory, audioFile, grammar, sampleRate, alternatives, textOnly, debug } = checkArgs(args)
+  const words = ! textOnly
 
-  info()
-  console.log()
-  console.log(`model directory      : ${modelDirectory}`)
-  console.log(`speech file name     : ${audioFile}`)
-  console.log(`grammar              : ${grammar ? grammar : 'not specified. Default: NO'}`)
-  console.log(`sample rate          : ${sampleRate ? sampleRate : 'not specified. Default: 16000'}`)
-  console.log(`max alternatives     : ${alternatives}`)
-  console.log(`Vosk debug level     : ${debug}`)
-  console.log()
+  if ( !textOnly ) {
+    info()
+    console.log()
+    console.log(`model directory      : ${modelDirectory}`)
+    console.log(`speech file name     : ${audioFile}`)
+    console.log(`grammar              : ${grammar ? grammar : 'not specified. Default: NO'}`)
+    console.log(`sample rate          : ${sampleRate ? sampleRate : 'not specified. Default: 16000'}`)
+    console.log(`max alternatives     : ${alternatives}`)
+    console.log(`text only / JSON     : ${textOnly ? 'text' : 'JSON'}`)
+    console.log(`Vosk debug level     : ${debug}`)
+    console.log()
+  }  
 
   // set the vosk log level to silence 
   logLevel(debug) 
@@ -363,19 +384,25 @@ async function main() {
   // load in memory a Vosk directory model
   const model = loadModel(modelDirectory)
 
-  console.log(`load model latency   : ${getTimer('loadModel')}ms`)
-  console.log()
+  if ( !textOnly ) {
+    console.log(`load model latency   : ${getTimer('loadModel')}ms`)
+    console.log()
+  }  
 
   // speech recognition from an audio file
   try {
     setTimer('transcript')
 
-    const result = await transcriptFromFile(audioFile, model, {grammar, sampleRate, alternatives})
+    const result = await transcriptFromFile(audioFile, model, {grammar, sampleRate, alternatives, words})
 
-    console.log(result)
-    console.log()
-    console.log(`transcript latency : ${getTimer('transcript')}ms`)
-    console.log()
+    if ( textOnly ) 
+      console.log(result.text)
+    else {
+      console.log(util.inspect(result, {showHidden: false, depth: null}))
+      console.log()
+      console.log(`transcript latency : ${getTimer('transcript')}ms`)
+      console.log()
+    }  
   }  
   catch(error) {
     console.error(error) 

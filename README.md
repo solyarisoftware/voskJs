@@ -61,13 +61,13 @@ The goal of the project is to:
 
 - Install vosk-api engine
   ```bash
-  pip3 install vosk 
+  pip3 install -U vosk 
   ```
   See also: https://alphacephei.com/vosk/install
 
 - Install this module, as global package if you want to use CLI command `voskjs` 
   ```bash
-  npm install -g @solyarisoftware/voskjs
+  npm install -g @solyarisoftware/voskjs@latest
   ```
 
 
