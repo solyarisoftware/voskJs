@@ -422,7 +422,7 @@ module.exports = {
   loadModel,
   transcriptFromBuffer,
   transcriptFromFile,
-  transcript: transcriptFromFile, // alias
+  //transcript: transcriptFromFile, // alias
   freeModel
 }
 

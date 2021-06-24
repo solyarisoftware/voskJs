@@ -1,4 +1,5 @@
-const { logLevel, loadModel, transcript, freeModel } = require('../voskjs')
+const util = require('util')
+const { logLevel, loadModel, transcriptFromFile, freeModel } = require('../voskjs')
 const { setTimer, getTimer } = require('../lib/chronos')
 
 const { spellingEnglishCharacters } = require('./spellingEnglishCharacters')
@@ -50,9 +51,9 @@ async function main() {
   // speech recognition of an audio file
   try {
     setTimer('transcript')
-    const result = await transcript(audioFile, model, {grammar})
+    const result = await transcriptFromFile(audioFile, model, {grammar, words:true})
 
-    console.log( result )
+    console.log(util.inspect(result, {showHidden: false, depth: null}))
     console.log(`transcript latency : ${getTimer('transcript')}ms`)
   }  
   catch (error) {

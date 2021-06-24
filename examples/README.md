@@ -21,17 +21,18 @@ voskjs
 ```
 ```
 voskjs is a CLI utility to test Vosk-api features
-package @solyarisoftware/voskjs version 1.0.3, Vosk-api version 0.3.27
+package @solyarisoftware/voskjs version 1.1.3, Vosk-api version 0.3.30
 
 Usage
 
-  voskjs \ 
-    --model=<model directory> \ 
-    --audio=<audio file name> \ 
-    [--grammar=<list of comma-separated words or sentences>] \ 
-    [--samplerate=<Number, usually 16000 or 8000>] \ 
-    [--alternatives=<number of max alternatives in text result>] 
-    [--debug=<Vosk debug level>] 
+  voskjs \
+    --model=<model directory> \
+    --audio=<audio file name> \
+    [--grammar=<list of comma-separated words or sentences>] \
+    [--samplerate=<Number, usually 16000 or 8000>] \
+    [--alternatives=<number of max alternatives in text result>] \
+    [--textonly] \
+    [--debug=<Vosk debug level>]
 
 Examples
 
@@ -41,9 +42,9 @@ Examples
 
   2. Recognize a speech file setting a grammar (with a dynamic graph model) and a number of alternative:
 
-     voskjs \ 
-       --audio=audio/2830-3980-0043.wav \ 
-       --model=models/vosk-model-small-en-us-0.15 \ 
+     voskjs \
+       --audio=audio/2830-3980-0043.wav \
+       --model=models/vosk-model-small-en-us-0.15 \
        --grammar="experience proves this, bla bla bla"
        --alternatives=3
 ```
@@ -65,7 +66,7 @@ That means that the nodejs main thread is not 'saturated' by the CPU-intensive t
 Latency performance will be optimal if your host has at least 2 cores.
 
 ```bash
-node simplest
+node simple
 ```
 ```
 model directory      : ../models/vosk-model-en-us-aspire-0.2
@@ -85,29 +86,36 @@ transcript latency : 471ms
 
 ## Sentence-based speech-to-text, specifyng a grammar   
 
-[`grammar.js`](grammar.js) is a basic demo using Vosk recognizer using grammars. 
+[`grammar.js`](grammar.js) is a basic demo using Vosk recognizer using a specified grammar.
+The output structure format now allows dofferent alternatives)  
 
 ```bash
 node grammar
 ```
 ```
+$ node grammar.js
 model directory      : ../models/vosk-model-small-en-us-0.15
 speech file name     : ../audio/2830-3980-0043.wav
-grammar              : experience,proves,this,experience proves that
-load model latency   : 1497ms
+grammar              : experience proves this,why should one hold on the way,your power is sufficient i said,oh one two three four five six seven eight nine zero,[unk]
+load model latency   : 328ms
 {
-  result: [
-    { conf: 1, end: 1.02, start: 0.36, word: 'experience' },
-    { conf: 1, end: 1.35, start: 1.02, word: 'proves' },
-    { conf: 1, end: 1.74, start: 1.35, word: 'this' }
-  ],
-  text: 'experience proves this'
+  alternatives: [
+    {
+      confidence: 197.583099,
+      result: [
+        { end: 1.02, start: 0.36, word: 'experience' },
+        { end: 1.35, start: 1.02, word: 'proves' },
+        { end: 1.98, start: 1.35, word: 'this' }
+      ],
+      text: ' experience proves this'
+    }
+  ]
 }
-transcript latency : 76ms
+transcript latency : 118ms
 ```
 
-Note: 
-latency is very low if grammar sentences are provided!
+IMPORTANT: 
+**latency is very low if grammar sentences are provided!**
 
 See details here: 
 - https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js#L198
@@ -139,7 +147,7 @@ voskjshttp
 ```
 ```
 Simple demo HTTP JSON server, loading a Vosk engine model to transcript speeches.
-package @solyarisoftware/voskjs version 1.1.0, Vosk-api version 0.3.27
+package @solyarisoftware/voskjs version 1.1.3, Vosk-api version 0.3.30
 
 The server has two endpoints:
 
@@ -153,9 +161,9 @@ The server has two endpoints:
 
 Usage:
 
-  voskjshttp --model=<model directory path> \
-                [--port=<server port number. Default: 3000>] \
-                [--path=<server endpoint path. Default: /transcript>] \
+  voskjshttp --model=<model directory path> \ 
+                [--port=<server port number. Default: 3000>] \ 
+                [--path=<server endpoint path. Default: /transcript>] \ 
                 [--no-threads]
                 [--debug[=<vosk log level>]]
 
@@ -177,53 +185,53 @@ Client requests examples:
 
   1. GET /transcript - query string includes just the speech file argument
 
-  curl -s \
-       -X GET \
-       -H "Accept: application/json" \
-       -G \
-       --data-urlencode speech="../audio/2830-3980-0043.wav" \
+  curl -s \ 
+       -X GET \ 
+       -H "Accept: application/json" \ 
+       -G \ 
+       --data-urlencode speech="../audio/2830-3980-0043.wav" \ 
        http://localhost:3000/transcript
 
   2. GET /transcript - query string includes arguments: speech, model
 
-  curl -s \
-       -X GET \
-       -H "Accept: application/json" \
-       -G \
-       --data-urlencode speech="../audio/2830-3980-0043.wav" \
-       --data-urlencode model="vosk-model-en-us-aspire-0.2" \
+  curl -s \ 
+       -X GET \ 
+       -H "Accept: application/json" \ 
+       -G \ 
+       --data-urlencode speech="../audio/2830-3980-0043.wav" \ 
+       --data-urlencode model="vosk-model-en-us-aspire-0.2" \ 
        http://localhost:3000/transcript
 
   3. GET /transcript - query string includes arguments: id, speech, model
 
-  curl -s \
-       -X GET \
-       -H "Accept: application/json" \
-       -G \
-       --data-urlencode id="1620060067830" \
-       --data-urlencode speech="../audio/2830-3980-0043.wav" \
-       --data-urlencode model="vosk-model-en-us-aspire-0.2" \
+  curl -s \ 
+       -X GET \ 
+       -H "Accept: application/json" \ 
+       -G \ 
+       --data-urlencode id="1620060067830" \ 
+       --data-urlencode speech="../audio/2830-3980-0043.wav" \ 
+       --data-urlencode model="vosk-model-en-us-aspire-0.2" \ 
        http://localhost:3000/transcript
 
   4. GET /transcript - includes arguments: id, speech, model, grammar
 
-  curl -s \
-       -X GET \
-       -H "Accept: application/json" \
-       -G \
-       --data-urlencode id="1620060067830" \
-       --data-urlencode speech="../audio/2830-3980-0043.wav" \
-       --data-urlencode model="vosk-model-en-us-aspire-0.2" \
-       --data-urlencode grammar="["experience proves this"]" \
+  curl -s \ 
+       -X GET \ 
+       -H "Accept: application/json" \ 
+       -G \ 
+       --data-urlencode id="1620060067830" \ 
+       --data-urlencode speech="../audio/2830-3980-0043.wav" \ 
+       --data-urlencode model="vosk-model-en-us-aspire-0.2" \ 
+       --data-urlencode grammar="["experience proves this"]" \ 
        http://localhost:3000/transcript
 
   5. POST /transcript - body includes the speech file
 
-  curl -s \
-       -X POST \
-       -H "Accept: application/json" \
-       -H "Content-Type: audio/wav" \
-       --data-binary="@../audio/2830-3980-0043.wav" \
+  curl -s \ 
+       -X POST \ 
+       -H "Accept: application/json" \ 
+       -H "Content-Type: audio/wav" \ 
+       --data-binary="@../audio/2830-3980-0043.wav" \ 
        "http://localhost:3000/transcript?id=1620060067830&model=vosk-model-en-us-aspire-0.2"
 ```
 

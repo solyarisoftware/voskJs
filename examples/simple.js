@@ -1,4 +1,5 @@
-const { logLevel, loadModel, transcript, freeModel } = require('../voskjs')
+const util = require('util')
+const { logLevel, loadModel, transcriptFromFile, freeModel } = require('../voskjs')
 const { setTimer, getTimer } = require('../lib/chronos')
 
 async function main() {
@@ -25,9 +26,9 @@ async function main() {
 
     setTimer('transcript')
 
-    const result = await transcript(audioFile, model)
+    const result = await transcriptFromFile(audioFile, model)
 
-    console.log( result )
+    console.log(util.inspect(result, {showHidden: false, depth: null}))
     console.log(`transcript latency : ${getTimer('transcript')}ms`)
   }  
   catch (error) {

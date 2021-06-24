@@ -1,7 +1,7 @@
 # Change log
 
-- 1.1.2
-  - updated to integrate vosk package 0.3.30 new functions (setAlternatives, setWords) 
+- 1.1.3
+  - updated to integrate vosk package 0.3.30 new functions (setAlternatives, setWords)
 
 - 1.1.1
   - voskjshttp JSON response attribute *result* renamed *vosk*
