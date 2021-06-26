@@ -1,7 +1,7 @@
 # Change log
 
-- 1.1.4
-  - docs update  
+- 1.1.5
+  - docs update
   - updated to integrate vosk package 0.3.30 new functions (setAlternatives, setWords)
 
 - 1.1.1

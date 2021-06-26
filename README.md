@@ -99,19 +99,19 @@ Source: [Mozilla DeepSpeech audio samples](https://github.com/mozilla/DeepSpeech
 These files are used for some tests and comparisons.
 
 
-## 🧐 Examples
+## 🧐 [Examples](examples/README.md)
 
 Some VoskJs usage examples:
 
-- [`voskjs` Command line utility](examples/README.md#voskjs-command-line-utility)
-- [`voskjshttp` demo spech-to-text HTTP server](examples/README.md#voskjshttpjs-demo-spech-to-text-http-server)
 - [Simple program for a sentence-based speech-to-text](examples/README.md#simple-program-for-a-sentence-based-speech-to-text)
-- [Sentence-based speech-to-text, specifyng a grammar](examples/README.md#sentence-based-speech-to-text-specifyng-a-grammar)
-- [SocketIO server pseudocode](examples/README.md#socketio-server-pseudocode)
-- [`voskjshttp` as RHASSPY speech-to-text remote HTTP Server](examples/README.md#voskjshttp-as-rhasspy-speech-to-text-remote-http-server)
+- [`voskjs` Command line utility](examples/README.md#voskjs-command-line-utility)
+- [`voskjshttp` demo spech-to-text HTTP server](examples/servers.md#voskjshttpjs-demo-spech-to-text-http-server)
+- [`voskjshttp` as RHASSPY speech-to-text remote HTTP Server](examples/servers.md#voskjshttp-as-rhasspy-speech-to-text-remote-http-server)
+- [Sentence-based speech-to-text, specifyng a grammar](examples/grammars.md#sentence-based-speech-to-text-specifyng-a-grammar)
+- [SocketIO server pseudocode](examples/servers.md#socketio-server-pseudocode)
 
 
-## 🛠 Tests
+## 🛠 [Tests](tests/README.md)
 
 Some tests/notes:
 
@@ -121,8 +121,6 @@ Some tests/notes:
 - Multithread stress test (10 requests in parallel)
 - HTTP Server benchmark test
 - Latency tests
-
-All details [here](tests/README.md):
 
 
 ## 🎁 Bonus track
