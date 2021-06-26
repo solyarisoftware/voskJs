@@ -133,13 +133,14 @@ a fast transcoding to PCM, using ffmpeg process (install ffmpeg before).
 
 ## To do
 
-- To speedup latencies, rethink transcript interface, maybe with an initialization phases, 
-  including Model and Recognizer(s) object creation.
-  Possible architecture: [Stateful & low latency ASR architecture](https://github.com/alphacep/vosk-api/issues/553)
-- Complete API interface for all [Vosk-api functions](https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js)
-- Deepen grammar usage with examples
-- Deepen Vosk-API errors catching
-- voskjshttp: 
+1. Review API interface for all [Vosk-api functions](https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js)
+   - To extend sentence-based transcript with a streaming-based interfaces, maybe based upon Nodejs events
+2. To speedup latencies, rethink transcript interface, maybe with an initialization phases, 
+   including Model and Recognizer(s) object creation.
+   Possible architecture: [Stateful & low latency ASR architecture](https://github.com/alphacep/vosk-api/issues/553)
+3. Deepen grammar usage with more examples
+4. Deepen Vosk-API errors catching
+5. `voskjshttp`: 
   - Review stress and performances tests (especially for the HTTP server)
   - HTTP POST management: set mandatory audio format mime type in the header request (`--header "Content-Type: audio/wav"`)
   - HTTP POST management: audio-transcoding using function `toPcm` 
