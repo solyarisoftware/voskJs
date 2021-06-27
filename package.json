@@ -1,6 +1,6 @@
 {
   "name": "@solyarisoftware/voskjs",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "NodeJs developers API for Vosk-api speech-to-text engine.",
   "main": "index.js",
   "repository": {

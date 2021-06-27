@@ -31,7 +31,6 @@ const { setTimer, getTimer } = require('./lib/chronos')
  * @constant
  */
 const SAMPLE_RATE = 16000
-const DEBUG_RESULTS = true
 
 
 function helpAndExit() {
@@ -191,9 +190,6 @@ async function transcriptFromFile(fileName, model, { multiThreads=true, sampleRa
     if (DEBUG)
       setTimer('createRecognizer')
 
-    // the function is enabled to emit events 
-    const event = new emitter()
-
     const recognizer = createRecognizer( model, {sampleRate, grammar, alternatives, words} )
 
     if (DEBUG)
@@ -228,27 +224,24 @@ async function transcriptFromFile(fileName, model, { multiThreads=true, sampleRa
           await recognizer.acceptWaveformAsync(data) : 
           recognizer.acceptWaveform(data)
 
-        // debug
-        if ( DEBUG_RESULTS ) {
+        //
+        // WARNING
+        // 1. AcceptWaveform returns true when silence is detected and you can retrieve the result with Result(). 
+        // 2. If silence is not detected you can retrieve PartialResult() only. 
+        // 3. FinalResult means the stream is ended, you flush the buffers and retrieve remaining result.
+        // By Nicolay Shmirev. See: https://github.com/alphacep/vosk-api/issues/590#issuecomment-863065813
+        //
+        if (end_of_speech) {
+          // End of speech means silence detected.
+          // We want to transcript all the audio so the processing continue until the end.
 
-          //
-          // Emit partial result events
-          //
-          // WARNING
-          // 1. AcceptWaveform returns true when silence is detected and you can retrieve the result with Result(). 
-          // 2. If silence is not detected you can retrieve PartialResult() only. 
-          // 3. FinalResult means the stream is ended, you flush the buffers and retrieve remaining result.
-          // By Nicolay Shmirev. See: https://github.com/alphacep/vosk-api/issues/590#issuecomment-863065813
-          //
-          if (end_of_speech)
-            event.emit('endOfSpeech', recognizer.result())
-            //console.log('endOfSpeech', recognizer.result())
-          else
-            //console.log('partialResult', recognizer.partialResult())
-            event.emit('partialResult', recognizer.partialResult())
+          //console.log('endOfSpeech', recognizer.result())
+          continue
+
+        }
+        //else
+        // console.log('partialResult', recognizer.partialResult())
         
-        }  
-      
       }
 
       // copy final Vosk engine result object
@@ -263,6 +256,8 @@ async function transcriptFromFile(fileName, model, { multiThreads=true, sampleRa
 
 }
 
+
+/////////////////////////////
 //TODO
 function transcriptEventsFromFile(fileName, model, { multiThreads=true, sampleRate=SAMPLE_RATE, grammar=null, alternatives=0, words=true } = {}) {
 
@@ -314,29 +309,24 @@ function transcriptEventsFromFile(fileName, model, { multiThreads=true, sampleRa
         await recognizer.acceptWaveformAsync(data) : 
         recognizer.acceptWaveform(data)
 
-      // debug
-      if ( DEBUG_RESULTS ) {
-
-        //
-        // Emit partial result events
-        //
-        // WARNING
-        // 1. AcceptWaveform returns true when silence is detected and you can retrieve the result with Result(). 
-        // 2. If silence is not detected you can retrieve PartialResult() only. 
-        // 3. FinalResult means the stream is ended, you flush the buffers and retrieve remaining result.
-        // By Nicolay Shmirev. See: https://github.com/alphacep/vosk-api/issues/590#issuecomment-863065813
-        //
-        if (end_of_speech)
-          event.emit('endOfSpeechResult', recognizer.result())
-          //console.log('endOfSpeech', recognizer.result())
-        else
-          //console.log('partialResult', recognizer.partialResult())
-          event.emit('partialResult', recognizer.partialResult())
-      
-      }  
+      //
+      // Emit partial result events
+      //
+      // WARNING
+      // 1. AcceptWaveform returns true when silence is detected and you can retrieve the result with Result(). 
+      // 2. If silence is not detected you can retrieve PartialResult() only. 
+      // 3. FinalResult means the stream is ended, you flush the buffers and retrieve remaining result.
+      // By Nicolay Shmirev. See: https://github.com/alphacep/vosk-api/issues/590#issuecomment-863065813
+      //
+      if (end_of_speech)
+        event.emit('endOfSpeechResult', recognizer.result())
+        //console.log('endOfSpeech', recognizer.result())
+      else
+        //console.log('partialResult', recognizer.partialResult())
+        event.emit('partialResult', recognizer.partialResult())
     
-    }
-
+    }  
+    
     // final result object
     event.emit('finalResult', recognizer.finalResult(recognizer)) 
 
