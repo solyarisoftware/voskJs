@@ -10,12 +10,16 @@
  * @function freeModel
  *
 -* @see VoskAPI https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js
- */
+ * @see https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js#L207
+ * @see https://www.tutorialsteacher.com/nodejs/nodejs-eventemitter
+ * util.inherits(vosk.Recognizer, emitter)
+ */ 
 
-const util = require('util')
 const fs = require('fs')
-const { Readable } = require('stream')
+const util = require('util')
+const emitter = require('events').EventEmitter
 
+const { Readable } = require('stream')
 const wav = require('wav')
 const vosk = require('vosk')
 
@@ -23,11 +27,11 @@ const { info } = require('./lib/info')
 const { getArgs } = require('./lib/getArgs')
 const { setTimer, getTimer } = require('./lib/chronos')
 
-
 /**
  * @constant
  */
 const SAMPLE_RATE = 16000
+const DEBUG_RESULTS = true
 
 
 function helpAndExit() {
@@ -187,6 +191,9 @@ async function transcriptFromFile(fileName, model, { multiThreads=true, sampleRa
     if (DEBUG)
       setTimer('createRecognizer')
 
+    // the function is enabled to emit events 
+    const event = new emitter()
+
     const recognizer = createRecognizer( model, {sampleRate, grammar, alternatives, words} )
 
     if (DEBUG)
@@ -211,7 +218,7 @@ async function transcriptFromFile(fileName, model, { multiThreads=true, sampleRa
         // WARNING
         // From vosk version 0.3.25
         // the acceptWaveformAsync function runs in a dedicated thread.
-        // That wold improve performances in case of cocurrent requests 
+        // That wold improve performances in case of concurrent requests 
         // from the caller (server) program  
         //
         // Previous vosk version 0.3.25
@@ -221,9 +228,26 @@ async function transcriptFromFile(fileName, model, { multiThreads=true, sampleRa
           await recognizer.acceptWaveformAsync(data) : 
           recognizer.acceptWaveform(data)
 
-        if (end_of_speech) {
-          console.log(recognizer.result())
-        }
+        // debug
+        if ( DEBUG_RESULTS ) {
+
+          //
+          // Emit partial result events
+          //
+          // WARNING
+          // 1. AcceptWaveform returns true when silence is detected and you can retrieve the result with Result(). 
+          // 2. If silence is not detected you can retrieve PartialResult() only. 
+          // 3. FinalResult means the stream is ended, you flush the buffers and retrieve remaining result.
+          // By Nicolay Shmirev. See: https://github.com/alphacep/vosk-api/issues/590#issuecomment-863065813
+          //
+          if (end_of_speech)
+            event.emit('endOfSpeech', recognizer.result())
+            //console.log('endOfSpeech', recognizer.result())
+          else
+            //console.log('partialResult', recognizer.partialResult())
+            event.emit('partialResult', recognizer.partialResult())
+        
+        }  
       
       }
 
@@ -236,6 +260,91 @@ async function transcriptFromFile(fileName, model, { multiThreads=true, sampleRa
 
     })
   })
+
+}
+
+//TODO
+function transcriptEventsFromFile(fileName, model, { multiThreads=true, sampleRate=SAMPLE_RATE, grammar=null, alternatives=0, words=true } = {}) {
+
+  const DEBUG = false
+
+  // validate audiofile existence, async
+  fs.access(fileName, (err) => {
+    if (err) 
+      throw (`${err}: file ${fileName} not found.`)
+  })
+
+  if (DEBUG)
+    setTimer('createRecognizer')
+
+  // the function is enabled to emit events 
+  const event = new emitter()
+
+  const recognizer = createRecognizer( model, {sampleRate, grammar, alternatives, words} )
+
+  if (DEBUG)
+    console.log(`recognizer latency   : ${getTimer('createRecognizer')}ms`)
+
+  const wfStream = fs.createReadStream(fileName, {'highWaterMark': 4096})
+  const wfReader = new wav.Reader()
+  
+  wfStream.pipe(wfReader)
+  
+  const pcmChunks = new Readable().wrap(wfReader)
+
+  wfReader.on('format', async ( { audioFormat, sampleRate, channels } ) => {
+      
+    if (audioFormat != 1 || channels != 1)
+      throw (`${fileName}: audio file (sample rate: ${sampleRate}) must be WAV format mono PCM.`)
+
+
+    for await (const data of pcmChunks) {
+
+      //
+      // WARNING
+      // From vosk version 0.3.25
+      // the acceptWaveformAsync function runs in a dedicated thread.
+      // That wold improve performances in case of concurrent requests 
+      // from the caller (server) program  
+      //
+      // Previous vosk version 0.3.25
+      // const end_of_speech = recognizer.acceptWaveform(data)
+      //
+      const end_of_speech = multiThreads ? 
+        await recognizer.acceptWaveformAsync(data) : 
+        recognizer.acceptWaveform(data)
+
+      // debug
+      if ( DEBUG_RESULTS ) {
+
+        //
+        // Emit partial result events
+        //
+        // WARNING
+        // 1. AcceptWaveform returns true when silence is detected and you can retrieve the result with Result(). 
+        // 2. If silence is not detected you can retrieve PartialResult() only. 
+        // 3. FinalResult means the stream is ended, you flush the buffers and retrieve remaining result.
+        // By Nicolay Shmirev. See: https://github.com/alphacep/vosk-api/issues/590#issuecomment-863065813
+        //
+        if (end_of_speech)
+          event.emit('endOfSpeechResult', recognizer.result())
+          //console.log('endOfSpeech', recognizer.result())
+        else
+          //console.log('partialResult', recognizer.partialResult())
+          event.emit('partialResult', recognizer.partialResult())
+      
+      }  
+    
+    }
+
+    // final result object
+    event.emit('finalResult', recognizer.finalResult(recognizer)) 
+
+    recognizer.free()
+    
+  })
+
+  return event
 
 }
 
@@ -352,6 +461,11 @@ function checkArgs(args) {
 }
 
 
+function inspect(object) {
+   return util.inspect(object, {showHidden: false, depth: null})
+}  
+
+
 /**
  * @function main
  * unit test
@@ -393,16 +507,29 @@ async function main() {
   try {
     setTimer('transcript')
 
-    const result = await transcriptFromFile(audioFile, model, {grammar, sampleRate, alternatives, words})
+    const transcriptEvents = transcriptEventsFromFile(audioFile, model, {grammar, sampleRate, alternatives, words})
 
-    if ( textOnly ) 
-      console.log(result.text)
-    else {
-      console.log(util.inspect(result, {showHidden: false, depth: null}))
-      console.log()
-      console.log(`transcript latency : ${getTimer('transcript')}ms`)
-      console.log()
-    }  
+    transcriptEvents.on('endOfSpeechResult', data => {
+      if ( !textOnly ) 
+        console.log('endOfSpeechResult', inspect(data))
+    })  
+
+    transcriptEvents.on('partialResult', data => {
+      if ( !textOnly ) 
+        console.log('partialResult', inspect(data))
+    })  
+    
+    transcriptEvents.on('finalResult', data => {
+      if ( textOnly ) 
+        console.log(data.text)
+      else {
+        console.log('finalResult', inspect(data))
+        console.log()
+        console.log(`transcript latency : ${getTimer('transcript')}ms`)
+        console.log()
+      }
+    })  
+
   }  
   catch(error) {
     console.error(error) 
