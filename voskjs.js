@@ -320,9 +320,7 @@ function transcriptEventsFromFile(fileName, model, { multiThreads=true, sampleRa
       //
       if (end_of_speech)
         event.emit('endOfSpeechResult', recognizer.result())
-        //console.log('endOfSpeech', recognizer.result())
       else
-        //console.log('partialResult', recognizer.partialResult())
         event.emit('partialResult', recognizer.partialResult())
     
     }  
