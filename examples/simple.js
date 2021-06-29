@@ -6,7 +6,8 @@ async function main() {
 
   //  const modelDirectory = '../models/vosk-model-en-us-aspire-0.2'
   const modelDirectory = '../models/vosk-model-small-en-us-0.15'
-  const audioFile = '../audio/2830-3980-0043.wav'
+  //const audioFile = '../audio/2830-3980-0043.wav'
+  const audioFile = '../audio/sentencesWithSilences.wav'
 
   console.log(`model directory      : ${modelDirectory}`)
   console.log(`speech file name     : ${audioFile}`)

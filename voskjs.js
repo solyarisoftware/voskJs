@@ -25,7 +25,8 @@ const vosk = require('vosk')
 
 const { info } = require('./lib/info')
 const { getArgs } = require('./lib/getArgs')
-const { setTimer, getTimer } = require('./lib/chronos')
+const { setTimer, getTimer, unixTimeMsecs } = require('./lib/chronos')
+
 
 /**
  * @constant
@@ -235,7 +236,8 @@ async function transcriptFromFile(fileName, model, { multiThreads=true, sampleRa
           // End of speech means silence detected.
           // We want to transcript all the audio so the processing continue until the end.
 
-          //console.log('endOfSpeech', recognizer.result())
+          // debug
+          //console.log('DEBUG', 'endOfSpeech', recognizer.result())
           continue
 
         }
@@ -257,8 +259,21 @@ async function transcriptFromFile(fileName, model, { multiThreads=true, sampleRa
 }
 
 
-/////////////////////////////
-//TODO
+/**
+ * @function transcriptEventsFromFile
+ *
+ * speech recognition into a text, from an audio file, given a specified Vosk model,
+ * return an events emitter
+ *
+ * @public
+ *
+ * @param {String}                     fileName     the name of speech file, in WAV format
+ * @param {ModelObject}                model        the Vosk model returned by InitModel()
+ * @param {VoskRecognizerArgsObject}   [options]    Vosk Recognizer arguments setting. Optional. 
+ *
+ * @return {Emitter}                   emit events
+ *
+ */ 
 function transcriptEventsFromFile(fileName, model, { multiThreads=true, sampleRate=SAMPLE_RATE, grammar=null, alternatives=0, words=true } = {}) {
 
   const DEBUG = false
@@ -310,9 +325,8 @@ function transcriptEventsFromFile(fileName, model, { multiThreads=true, sampleRa
         recognizer.acceptWaveform(data)
 
       //
-      // Emit partial result events
-      //
       // WARNING
+      // Emit partial result events
       // 1. AcceptWaveform returns true when silence is detected and you can retrieve the result with Result(). 
       // 2. If silence is not detected you can retrieve PartialResult() only. 
       // 3. FinalResult means the stream is ended, you flush the buffers and retrieve remaining result.
@@ -325,7 +339,14 @@ function transcriptEventsFromFile(fileName, model, { multiThreads=true, sampleRa
     
     }  
     
-    // final result object
+    //
+    // WARNING
+    // Emit partial result events
+    // 1. AcceptWaveform returns true when silence is detected and you can retrieve the result with Result(). 
+    // 2. If silence is not detected you can retrieve PartialResult() only. 
+    // 3. FinalResult means the stream is ended, you flush the buffers and retrieve remaining result.
+    // By Nicolay Shmirev. See: https://github.com/alphacep/vosk-api/issues/590#issuecomment-863065813
+    //
     event.emit('finalResult', recognizer.finalResult(recognizer)) 
 
     recognizer.free()
@@ -382,6 +403,84 @@ async function transcriptFromBuffer(buffer, model, { multiThreads=true, sampleRa
   return Promise.resolve(result)
 
 }
+
+
+/**
+ * @function transcriptEventsFromBuffer
+ * speech recognition into a text, from an audio file, given a specified Vosk model
+ *
+ * @alias transcript
+ * @public
+ * @async
+ *
+ * @param {Buffer}                     buffer       input buffer, in PCM format
+ * @param {ModelObject}                model        the Vosk model returned by InitModel()
+ * @param {VoskRecognizerArgsObject}   [options]    Vosk Recognizer arguments setting. Optional. 
+ *
+ * @return {Emitter}                                
+ *
+ */ 
+async function transcriptEventsFromBuffer(buffer, model, { multiThreads=true, sampleRate=SAMPLE_RATE, grammar=null, alternatives=0, words=true } = {}) {
+
+  // the function is enabled to emit events 
+  const event = new emitter()
+
+  const recognizer = createRecognizer( model, {sampleRate, grammar, alternatives, words} )
+   
+  // https://gist.github.com/wpscholar/270005d42b860b1c33cf5ab25b37928a
+  // https://stackoverflow.com/questions/47089230/how-to-convert-buffer-to-stream-in-nodejs
+  
+  for(;;) {
+
+    //
+    // WARNING
+    // From vosk version 0.3.25
+    // the acceptWaveformAsync function runs in a dedicated thread.
+    // That wold improve performances in case of cocurrent requests 
+    // from the caller (server) program  
+    //
+    // Previous vosk version 0.3.25
+    // const end_of_speech = recognizer.acceptWaveform(data)
+    //
+    const end_of_speech = multiThreads ? 
+      await recognizer.acceptWaveformAsync(buffer) : 
+      recognizer.acceptWaveform(buffer)
+
+    //
+    // WARNING
+    // Emit partial result events
+    // 1. AcceptWaveform returns true when silence is detected and you can retrieve the result with Result(). 
+    // 2. If silence is not detected you can retrieve PartialResult() only. 
+    // 3. FinalResult means the stream is ended, you flush the buffers and retrieve remaining result.
+    // By Nicolay Shmirev. See: https://github.com/alphacep/vosk-api/issues/590#issuecomment-863065813
+    //
+    if (end_of_speech)  {
+      event.emit('endOfSpeechResult', recognizer.result())
+      continue
+    }
+    else {
+      event.emit('partialResult', recognizer.partialResult())
+      break
+    }  
+
+  }
+
+
+  //
+  // WARNING
+  // if end_Of_Speech is detected (the buffere contains a sentence followed by a silence)
+  // and the result() function is called, so
+  // the finalResult() contains just the remaining (last) part of the sentence before the end of the audio.
+  // It's up to user to collect events data assempling the final textual (multisentence) result.
+  //
+  event.emit('finalResult', recognizer.finalResult())
+
+  recognizer.free()
+    
+  return event
+
+}
+
 
 
 /**
@@ -487,35 +586,56 @@ async function main() {
   const model = loadModel(modelDirectory)
 
   if ( !textOnly ) {
-    console.log(`load model latency   : ${getTimer('loadModel')}ms`)
+    console.log(`load model latency     : ${getTimer('loadModel')}ms`)
     console.log()
   }  
+
+  let text = ''
 
   // speech recognition from an audio file
   try {
     setTimer('transcript')
+    const startSentenceTimer = unixTimeMsecs()
 
     const transcriptEvents = transcriptEventsFromFile(audioFile, model, {grammar, sampleRate, alternatives, words})
 
-    transcriptEvents.on('endOfSpeechResult', data => {
+    transcriptEvents.on('partialResult', data => {
+      
       if ( !textOnly ) 
-        console.log('endOfSpeechResult', inspect(data))
+        console.log(`time: ${unixTimeMsecs()-startSentenceTimer} event: partialResult data: ${inspect(data)}`)
+    
     })  
 
-    transcriptEvents.on('partialResult', data => {
-      if ( !textOnly ) 
-        console.log('partialResult', inspect(data))
-    })  
+    transcriptEvents.on('endOfSpeechResult', data => {
+      
+      text += (data.text + ' ') 
+      
+      if ( ! textOnly ) {
+        console.log()
+        console.log(`time: ${unixTimeMsecs()-startSentenceTimer} event: endOfSpeechResult (end of sentence) data:`)
+        console.log(inspect(data))
+        console.log()
+      }  
+    
+  })  
     
     transcriptEvents.on('finalResult', data => {
-      if ( textOnly ) 
-        console.log(data.text)
+      
+      text += (data.text + ' ') 
+
+      if ( textOnly ) {
+        console.log(text)
+      }  
       else {
-        console.log('finalResult', inspect(data))
         console.log()
+        console.log(`time: ${unixTimeMsecs()-startSentenceTimer} event: finalResult data:`)
+        console.log(inspect(data))
+        console.log()
+        console.log(`transcript text    : ${text}`)
         console.log(`transcript latency : ${getTimer('transcript')}ms`)
         console.log()
       }
+    
     })  
 
   }  
@@ -536,7 +656,9 @@ module.exports = {
   logLevel,
   loadModel,
   transcriptFromBuffer,
+  transcriptEventsFromBuffer,
   transcriptFromFile,
+  transcriptEventsFromFile,
   //transcript: transcriptFromFile, // alias
   freeModel
 }
