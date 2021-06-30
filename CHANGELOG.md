@@ -1,6 +1,6 @@
 # Change log
 
-- 1.2.5 
+- 1.2.6 
   - voskjs new flags for pretty printing of streaming events: `tableevents`, `objectevents`
 
 - 1.2.4

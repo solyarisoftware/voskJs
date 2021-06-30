@@ -35,7 +35,6 @@ supplying both sentence-based and streaming-based speech-to-text functionalities
 
 In this mode, a file or a PCM buffer are processed asyncronously, 
 to get the full text transcript of the given speech. 
-
 Using the simple transcript interface you can build your standalone custom application, 
 accessing async functions suitable to run on a usual single thread nodejs program.
 
