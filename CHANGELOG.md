@@ -1,6 +1,7 @@
 # Change log
 
-- 1.2.3
+- 1.2.4
+  - voskjs.js modified to better manage streaming events `partial`, `endOfSpeech` and `final`
   - voskjs.js: added `transcriptEventsFromFile` to manage streaming transcript with events. Just a draft
   - Now voskjs prints partial results, end of speech results and final result.
   - new audio file for test: audio/sentencesWithSilences.wav

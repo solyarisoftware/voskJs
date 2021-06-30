@@ -33,6 +33,10 @@ const { setTimer, getTimer, unixTimeMsecs } = require('./lib/chronos')
  */
 const SAMPLE_RATE = 16000
 
+const PARTIAL_RESULT_EVENT = 'partial' 
+const END_OF_SPEECH_EVENT = 'endOfSpeech' 
+const FINAL_RESULT_EVENT = 'final' 
+
 
 function helpAndExit() {
   console.log('voskjs is a CLI utility to test Vosk-api features')
@@ -237,7 +241,7 @@ async function transcriptFromFile(fileName, model, { multiThreads=true, sampleRa
           // We want to transcript all the audio so the processing continue until the end.
 
           // debug
-          //console.log('DEBUG', 'endOfSpeech', recognizer.result())
+          //console.log('DEBUG', END_OF_SPEECH_EVENT, recognizer.result())
           continue
 
         }
@@ -333,9 +337,9 @@ function transcriptEventsFromFile(fileName, model, { multiThreads=true, sampleRa
       // By Nicolay Shmirev. See: https://github.com/alphacep/vosk-api/issues/590#issuecomment-863065813
       //
       if (end_of_speech)
-        event.emit('endOfSpeechResult', recognizer.result())
+        event.emit(END_OF_SPEECH_EVENT, recognizer.result())
       else
-        event.emit('partialResult', recognizer.partialResult())
+        event.emit(PARTIAL_RESULT_EVENT, recognizer.partialResult())
     
     }  
     
@@ -347,7 +351,7 @@ function transcriptEventsFromFile(fileName, model, { multiThreads=true, sampleRa
     // 3. FinalResult means the stream is ended, you flush the buffers and retrieve remaining result.
     // By Nicolay Shmirev. See: https://github.com/alphacep/vosk-api/issues/590#issuecomment-863065813
     //
-    event.emit('finalResult', recognizer.finalResult(recognizer)) 
+    event.emit(FINAL_RESULT_EVENT, recognizer.finalResult(recognizer)) 
 
     recognizer.free()
     
@@ -455,11 +459,11 @@ async function transcriptEventsFromBuffer(buffer, model, { multiThreads=true, sa
     // By Nicolay Shmirev. See: https://github.com/alphacep/vosk-api/issues/590#issuecomment-863065813
     //
     if (end_of_speech)  {
-      event.emit('endOfSpeechResult', recognizer.result())
+      event.emit(END_OF_SPEECH_EVENT, recognizer.result())
       continue
     }
     else {
-      event.emit('partialResult', recognizer.partialResult())
+      event.emit(PARTIAL_RESULT_EVENT, recognizer.partialResult())
       break
     }  
 
@@ -473,7 +477,7 @@ async function transcriptEventsFromBuffer(buffer, model, { multiThreads=true, sa
   // the finalResult() contains just the remaining (last) part of the sentence before the end of the audio.
   // It's up to user to collect events data assempling the final textual (multisentence) result.
   //
-  event.emit('finalResult', recognizer.finalResult())
+  event.emit(FINAL_RESULT_EVENT, recognizer.finalResult())
 
   recognizer.free()
     
@@ -548,8 +552,26 @@ function checkArgs(args) {
 }
 
 
-function inspect(object) {
-   return util.inspect(object, {showHidden: false, depth: null})
+function printObject(object) {
+   return util.inspect(object, {showHidden: false, breakLength: Infinity, depth: null, colors: true})
+}  
+
+
+function printResultsAsTable(results) {
+
+  console.log('TIME'.padStart(6), 'EVENT'.padEnd(11), 'VOSK RESULT OBJECT')
+  console.log('-'.repeat(6), '-'.repeat(11), '------------------')
+
+  for (const result of results) {
+  
+    console.log(
+      result.time.toString().padStart(6),
+      result.event.padEnd(11),
+      printObject(result.data).padStart(11+6+2+1)
+    )
+
+  }
+
 }  
 
 
@@ -574,7 +596,6 @@ async function main() {
     console.log(`max alternatives     : ${alternatives}`)
     console.log(`text only / JSON     : ${textOnly ? 'text' : 'JSON'}`)
     console.log(`Vosk debug level     : ${debug}`)
-    console.log()
   }  
 
   // set the vosk log level to silence 
@@ -586,11 +607,12 @@ async function main() {
   const model = loadModel(modelDirectory)
 
   if ( !textOnly ) {
-    console.log(`load model latency     : ${getTimer('loadModel')}ms`)
-    console.log()
+    console.log(`load model latency   : ${getTimer('loadModel')}ms`)
   }  
 
-  let text = ''
+  const sentences = [] 
+  const results = [] 
+
 
   // speech recognition from an audio file
   try {
@@ -599,41 +621,65 @@ async function main() {
 
     const transcriptEvents = transcriptEventsFromFile(audioFile, model, {grammar, sampleRate, alternatives, words})
 
-    transcriptEvents.on('partialResult', data => {
+    transcriptEvents.on(PARTIAL_RESULT_EVENT, data => {
       
-      if ( !textOnly ) 
-        console.log(`time: ${unixTimeMsecs()-startSentenceTimer} event: partialResult data: ${inspect(data)}`)
+      if ( !textOnly ) { 
+
+        const dataItem = { 
+          time: unixTimeMsecs() - startSentenceTimer,
+          event: PARTIAL_RESULT_EVENT,
+          data
+        }
+
+        results.push(dataItem) 
+
+      }  
     
     })  
 
-    transcriptEvents.on('endOfSpeechResult', data => {
+    transcriptEvents.on(END_OF_SPEECH_EVENT, data => {
       
-      text += (data.text + ' ') 
+      sentences.push(data.text) 
       
       if ( ! textOnly ) {
-        console.log()
-        console.log(`time: ${unixTimeMsecs()-startSentenceTimer} event: endOfSpeechResult (end of sentence) data:`)
-        console.log(inspect(data))
-        console.log()
+        
+        const dataItem = { 
+          time: unixTimeMsecs() - startSentenceTimer,
+          event: END_OF_SPEECH_EVENT,
+          data
+        }
+
+        results.push(dataItem) 
+
       }  
     
   })  
     
-    transcriptEvents.on('finalResult', data => {
+    transcriptEvents.on(FINAL_RESULT_EVENT, data => {
       
-      text += (data.text + ' ') 
+      sentences.push(data.text) 
 
       if ( textOnly ) {
-        console.log(text)
+        console.log(sentences.join(' '))
       }  
       else {
+ 
+        const dataItem = { 
+          time: unixTimeMsecs() - startSentenceTimer,
+          event: FINAL_RESULT_EVENT,
+          data
+        }
+
+        results.push(dataItem) 
+
+        //console.log(`all data results   : ${printObject(results)}`)
+        console.log(`transcript text      : ${sentences.join(' ')}`)
+        console.log(`transcript latency   : ${getTimer('transcript')}ms`)
         console.log()
-        console.log(`time: ${unixTimeMsecs()-startSentenceTimer} event: finalResult data:`)
-        console.log(inspect(data))
-        console.log()
-        console.log(`transcript text    : ${text}`)
-        console.log(`transcript latency : ${getTimer('transcript')}ms`)
-        console.log()
+
+        if ( !textOnly )
+          printResultsAsTable(results)
+
       }
     
     })  

@@ -4,7 +4,7 @@ VoskJs is a NodeJs developers toolkit to use [Vosk](https://alphacephei.com/vosk
 offline speech recognition engine, including multithread (server) usage examples. 
 The project gives you: 
 
-- A simple sentence-based transcript APIs
+- A simple sentence-based and streaming-based transcript APIs
 - The command line utility `voskjs`
 - A demo HTTP transcript server `voskjshttp`
 
@@ -27,32 +27,64 @@ More details in the Vosk [home page](https://alphacephei.com/vosk/) and [github 
 
 ## What's VoskJs?
 
-The goal of the project is to:
+The goal of the project is to create an simple function API layer 
+on top of already existing Vosk nodejs binding, 
+supplying both sentence-based and streaming-based speech-to-text functionalities.
 
-1. Create an simple function API layer on top of already existing Vosk nodejs binding, 
-   supplying main sentence-based speech-to-text functionalities: 
+### Sentence-based transcript API
 
-   - `const model = loadModel(modelDirectory)`
- 
-     Loads once in RAM memory a specific Vosk engine model from a model directory.
- 
-   - `transcriptFromFile(fileName, model, {options})` 
-   - `transcriptFromBuffer(buffer, model, {options})` 
+In this mode, a file or a PCM buffer are processed asyncronously, 
+to get the full text transcript of the given speech. 
 
-     At run-rime, transcripts a speech file or buffer (in WAV/PCM format), 
-     through the Vosk engine Recognizer. It supply speech-to-text transcript detailed info.
+Using the simple transcript interface you can build your standalone custom application, 
+accessing async functions suitable to run on a usual single thread nodejs program.
 
-   - `freeModel(mode)`
+```javascript
+//Loads once in RAM memory a specific Vosk engine model from a model directory.
+const model = loadModel(modelDirectory)
 
-   Using the simple transcript interface you can build your standalone custom application, 
-   accessing async functions suitable to run on a usual single thread nodejs program.
+// transcripts a speech file or buffer (in WAV/PCM format), using Vosk engine. 
+// It supply speech-to-text transcript detailed info.
+const result = await transcriptFromFile(fileName, model, {options}) 
 
-2. `voskjs`: command line program to test Vosk transcript with specific models 
-   (some tests and command line usage [here](tests/README.md)).
+// or 
+// const result = await transcriptFromBuffer(buffer, model, {options}) 
 
-3. `voskjshttp`: a simple demo HTTP server to transcript speech files. 
+freeModel(model)
+```
 
-4. Build your own server. Some usage examples [here](examples/).
+### Streaming-based transcript API
+
+In this mode, are generated nodejs events, following Vosk results.
+
+```javascript
+//Loads once in RAM memory a specific Vosk engine model from a model directory.
+const model = loadModel(modelDirectory)
+
+const transcriptEvents = transcriptEventsFromFile(fileName, model, {options}) 
+// or
+// const transcriptEvents = transcriptEventsFromBuffer(buffer, model, {options}) 
+
+// an new word is detected
+transcriptEvents.on('partial', data => console.log(data) ) 
+
+// a complete sentence (followed by silence) is detected 
+transcriptEvents.on('endOfSpeech', data => console.log(data) )
+
+// final (last) sentence is detected
+transcriptEvents.on('final', data => console.log(data) )
+
+freeModel(model)
+```
+
+
+### Command line tools
+
+- `voskjs`: command line program to test Vosk transcript with specific models 
+  (some tests and command line usage [here](tests/README.md)).
+
+- `voskjshttp`: a simple demo HTTP server to transcript speech files. 
+  Using above API you can build your own server. Some usage examples [here](examples/).
 
 
 ## 🛍 Install 
