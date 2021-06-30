@@ -38,39 +38,6 @@ const END_OF_SPEECH_EVENT = 'endOfSpeech'
 const FINAL_RESULT_EVENT = 'final' 
 
 
-function helpAndExit() {
-  console.log('voskjs is a CLI utility to test Vosk-api features')
-  console.log (info())
-  console.log()
-  console.log('Usage')
-  console.log()
-  console.log('  voskjs \\ ')
-  console.log('    --model=<model directory> \\ ')
-  console.log('    --audio=<audio file name> \\ ')
-  console.log('    [--grammar=<list of comma-separated words or sentences>] \\ ')
-  console.log('    [--samplerate=<Number, usually 16000 or 8000>] \\ ')
-  console.log('    [--alternatives=<number of max alternatives in text result>] \\ ')
-  console.log('    [--textonly] \\ ')
-  console.log('    [--debug=<Vosk debug level>] ')
-  console.log()    
-  console.log('Examples')
-  console.log()
-  console.log('  1. Recognize a speech file using a specific model directory:')
-  console.log()
-  console.log('     voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2')
-  console.log()
-  console.log('  2. Recognize a speech file setting a grammar (with a dynamic graph model) and a number of alternative:')
-  console.log()
-  console.log('     voskjs \\ ')
-  console.log('       --audio=audio/2830-3980-0043.wav \\ ')
-  console.log('       --model=models/vosk-model-small-en-us-0.15 \\ ')
-  console.log('       --grammar="experience proves this, bla bla bla"')
-  console.log('       --alternatives=3')
-  console.log()
-  process.exit(1)
-}  
-
-
 /**
  * @function logLevel
  * @public
@@ -503,6 +470,41 @@ function freeModel(model) {
  * test section
  */
 
+function helpAndExit() {
+  console.log('voskjs is a CLI utility to test Vosk-api features')
+  console.log (info())
+  console.log()
+  console.log('Usage')
+  console.log()
+  console.log('  voskjs \\ ')
+  console.log('    --model=<model directory> \\ ')
+  console.log('    --audio=<audio file name> \\ ')
+  console.log('    [--grammar=<list of comma-separated words or sentences>] \\ ')
+  console.log('    [--samplerate=<Number, usually 16000 or 8000>] \\ ')
+  console.log('    [--alternatives=<number of max alternatives in text result>] \\ ')
+  console.log('    [--textonly] \\ ')
+  console.log('    [--tableevents] \\ ')
+  console.log('    [--objectevents] \\ ')
+  console.log('    [--debug=<Vosk debug level>] ')
+  console.log()    
+  console.log('Examples')
+  console.log()
+  console.log('  1. Recognize a speech file using a specific model directory:')
+  console.log()
+  console.log('     voskjs --audio=audio/2830-3980-0043.wav --model=models/vosk-model-en-us-aspire-0.2')
+  console.log()
+  console.log('  2. Recognize a speech file setting a grammar (with a dynamic graph model) and a number of alternative:')
+  console.log()
+  console.log('     voskjs \\ ')
+  console.log('       --audio=audio/2830-3980-0043.wav \\ ')
+  console.log('       --model=models/vosk-model-small-en-us-0.15 \\ ')
+  console.log('       --grammar="experience proves this, bla bla bla"')
+  console.log('       --alternatives=3')
+  console.log()
+  process.exit(1)
+}  
+
+
 /**
  * @function checkArgs
  * command line parsing
@@ -516,12 +518,18 @@ function freeModel(model) {
  */
 function checkArgs(args) {
 
+  // mandatory arguments
   const modelDirectory = args.model 
   const audioFile = args.audio 
+
+  // optional arguments
   const grammar = args.grammar 
   const sampleRate = args.samplerate 
   const alternatives = args.alternatives 
   const textOnly = args.textonly 
+  const tableevents = args.tableevents 
+  const objectevents = args.objectevents 
+
 
   // if not specified, set default Vosk debug level to -1 (silent mode)
   const debug = args.debug ? args.debug : -1
@@ -544,16 +552,24 @@ function checkArgs(args) {
     sampleRate: sampleRate ? +sampleRate : undefined,
 
     alternatives,
-
     textOnly, 
-
+    tableevents, 
+    objectevents, 
     debug
   }
 }
 
 
+/*
 function printObject(object) {
    return util.inspect(object, {showHidden: false, breakLength: Infinity, depth: null, colors: true})
+}  
+*/
+
+
+function printObject(object, args) {
+   const defaultArgs = {showHidden:false, breakLength:Infinity, depth:null, colors:true}
+   return util.inspect(object,  {...defaultArgs, ...args } )
 }  
 
 
@@ -564,12 +580,25 @@ function printResultsAsTable(results) {
 
   for (const result of results) {
   
-    console.log(
-      result.time.toString().padStart(6),
-      result.event.padEnd(11),
-      printObject(result.data).padStart(11+6+2+1)
-    )
-
+    if ( result.event === PARTIAL_RESULT_EVENT )
+      console.log(
+        result.time.toString().padStart(6),
+        result.event.padEnd(11),
+        result.data.partial //.padStart(11+6+2+1)
+      )
+    if ( result.event === END_OF_SPEECH_EVENT )
+      console.log(
+        result.time.toString().padStart(6),
+        result.event.padEnd(11),
+        result.data.text //.padStart(11+6+2+1)
+      )
+    
+    if ( result.event === FINAL_RESULT_EVENT )
+      console.log(
+        result.time.toString().padStart(6),
+        result.event.padEnd(11),
+        result.data.text //.padStart(11+6+2+1)
+      )
   }
 
 }  
@@ -583,7 +612,7 @@ async function main() {
 
   // get command line arguments 
   const { args } = getArgs()
-  const { modelDirectory, audioFile, grammar, sampleRate, alternatives, textOnly, debug } = checkArgs(args)
+  const { modelDirectory, audioFile, grammar, sampleRate, alternatives, textOnly, tableevents, objectevents, debug } = checkArgs(args)
   const words = ! textOnly
 
   if ( !textOnly ) {
@@ -610,84 +639,86 @@ async function main() {
     console.log(`load model latency   : ${getTimer('loadModel')}ms`)
   }  
 
+  let transcriptEvents
   const sentences = [] 
   const results = [] 
 
+  setTimer('transcript')
+  const startSentenceTimer = unixTimeMsecs()
 
   // speech recognition from an audio file
   try {
-    setTimer('transcript')
-    const startSentenceTimer = unixTimeMsecs()
-
-    const transcriptEvents = transcriptEventsFromFile(audioFile, model, {grammar, sampleRate, alternatives, words})
-
-    transcriptEvents.on(PARTIAL_RESULT_EVENT, data => {
-      
-      if ( !textOnly ) { 
-
-        const dataItem = { 
-          time: unixTimeMsecs() - startSentenceTimer,
-          event: PARTIAL_RESULT_EVENT,
-          data
-        }
-
-        results.push(dataItem) 
-
-      }  
-    
-    })  
-
-    transcriptEvents.on(END_OF_SPEECH_EVENT, data => {
-      
-      sentences.push(data.text) 
-      
-      if ( ! textOnly ) {
-        
-        const dataItem = { 
-          time: unixTimeMsecs() - startSentenceTimer,
-          event: END_OF_SPEECH_EVENT,
-          data
-        }
-
-        results.push(dataItem) 
-
-      }  
-    
-  })  
-    
-    transcriptEvents.on(FINAL_RESULT_EVENT, data => {
-      
-      sentences.push(data.text) 
-
-      if ( textOnly ) {
-        console.log(sentences.join(' '))
-      }  
-      else {
- 
-        const dataItem = { 
-          time: unixTimeMsecs() - startSentenceTimer,
-          event: FINAL_RESULT_EVENT,
-          data
-        }
-
-        results.push(dataItem) 
-
-        //console.log(`all data results   : ${printObject(results)}`)
-        console.log(`transcript text      : ${sentences.join(' ')}`)
-        console.log(`transcript latency   : ${getTimer('transcript')}ms`)
-        console.log()
-
-        if ( !textOnly )
-          printResultsAsTable(results)
-
-      }
-    
-    })  
-
+    transcriptEvents = transcriptEventsFromFile(audioFile, model, {grammar, sampleRate, alternatives, words})
   }  
   catch(error) {
     console.error(error) 
   }  
+
+  transcriptEvents.on(PARTIAL_RESULT_EVENT, data => {
+    
+    if ( !textOnly ) { 
+
+      const dataItem = { 
+        time: unixTimeMsecs() - startSentenceTimer,
+        event: PARTIAL_RESULT_EVENT,
+        data
+      }
+
+      results.push(dataItem) 
+
+    }  
+  
+  })  
+
+  transcriptEvents.on(END_OF_SPEECH_EVENT, data => {
+    
+    sentences.push(data.text) 
+    
+    if ( ! textOnly ) {
+      
+      const dataItem = { 
+        time: unixTimeMsecs() - startSentenceTimer,
+        event: END_OF_SPEECH_EVENT,
+        data
+      }
+
+      results.push(dataItem) 
+
+    }  
+  
+  })  
+  
+  transcriptEvents.on(FINAL_RESULT_EVENT, data => {
+    
+    sentences.push(data.text) 
+
+    if ( textOnly ) {
+      console.log(sentences.join(' '))
+    }  
+    else {
+
+      const dataItem = { 
+        time: unixTimeMsecs() - startSentenceTimer,
+        event: FINAL_RESULT_EVENT,
+        data
+      }
+
+      results.push(dataItem) 
+
+      //console.log(`all data results   : ${printObject(results)}`)
+      console.log(`transcript text      : ${sentences.join(' ')}`)
+      console.log(`transcript latency   : ${getTimer('transcript')}ms`)
+      console.log()
+
+      if ( !textOnly && tableevents)
+        printResultsAsTable(results)
+
+      if ( !textOnly && objectevents)
+        console.log(printObject(results, {breakLength:80}))
+
+    }
+  
+  })  
 
   // free the runtime model
   freeModel(model)

@@ -1,5 +1,8 @@
 # Change log
 
+- 1.2.5 
+  - voskjs new flags for pretty printing of streaming events: `tableevents`, `objectevents`
+
 - 1.2.4
   - voskjs.js modified to better manage streaming events `partial`, `endOfSpeech` and `final`
   - voskjs.js: added `transcriptEventsFromFile` to manage streaming transcript with events. Just a draft
