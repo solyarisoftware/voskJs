@@ -278,6 +278,7 @@ function transcriptEventsFromFile(fileName, model, { multiThreads=true, sampleRa
     if (audioFormat != 1 || channels != 1)
       throw (`${fileName}: audio file (sample rate: ${sampleRate}) must be WAV format mono PCM.`)
 
+    const lastPartialResult = {}
 
     for await (const data of pcmChunks) {
 
@@ -305,9 +306,18 @@ function transcriptEventsFromFile(fileName, model, { multiThreads=true, sampleRa
       //
       if (end_of_speech)
         event.emit(END_OF_SPEECH_EVENT, recognizer.result())
-      else
-        event.emit(PARTIAL_RESULT_EVENT, recognizer.partialResult())
-    
+      else {
+        const partialResult = recognizer.partialResult()
+
+        // Doesn't emit duplicated events:
+        // Is the current partialResult different form the last one?
+        // If true a new event is emiitted.
+        // This avoid "duplicated" events to be emitted
+        if (partialResult.partial !== lastPartialResult.partial) {
+          event.emit(PARTIAL_RESULT_EVENT, partialResult)
+          lastPartialResult.partial = partialResult.partial
+        }
+      }
     }  
     
     //
@@ -401,6 +411,8 @@ async function transcriptEventsFromBuffer(buffer, model, { multiThreads=true, sa
   // https://gist.github.com/wpscholar/270005d42b860b1c33cf5ab25b37928a
   // https://stackoverflow.com/questions/47089230/how-to-convert-buffer-to-stream-in-nodejs
   
+  const lastPartialResult = {}
+
   for(;;) {
 
     //
@@ -430,12 +442,20 @@ async function transcriptEventsFromBuffer(buffer, model, { multiThreads=true, sa
       continue
     }
     else {
-      event.emit(PARTIAL_RESULT_EVENT, recognizer.partialResult())
+      const partialResult = recognizer.partialResult()
+
+      // Doesn't emit duplicated events:
+      // Is the current partialResult different form the last one?
+      // If true a new event is emiitted.
+      // This avoid "duplicated" events to be emitted
+      if (partialResult.partial !== lastPartialResult.partial) {
+        event.emit(PARTIAL_RESULT_EVENT, partialResult)
+        lastPartialResult.partial = partialResult.partial
+      }
+
       break
     }  
-
   }
-
 
   //
   // WARNING
@@ -575,31 +595,61 @@ function printObject(object, args) {
 
 function printResultsAsTable(results) {
 
-  console.log('TIME'.padStart(6), 'EVENT'.padEnd(11), 'VOSK RESULT OBJECT')
-  console.log('-'.repeat(6), '-'.repeat(11), '------------------')
+  console.log('| %s | %s | %s |',
+    'TIME'.padEnd(6), 
+    'EVENT'.padEnd(12), 
+    'VOSK RESULT TEXT'
+  )
+  console.log('| %s | %s | %s |',
+    '-'.repeat(6), 
+    '-'.repeat(12), 
+    '----------------'
+  )
 
   for (const result of results) {
   
     if ( result.event === PARTIAL_RESULT_EVENT )
-      console.log(
+      console.log('| %s | %s | %s',
         result.time.toString().padStart(6),
-        result.event.padEnd(11),
+        result.event.padEnd(12),
         result.data.partial //.padStart(11+6+2+1)
       )
+
     if ( result.event === END_OF_SPEECH_EVENT )
-      console.log(
+      console.log('| %s | %s | %s',
         result.time.toString().padStart(6),
-        result.event.padEnd(11),
+        result.event.padEnd(12),
         result.data.text //.padStart(11+6+2+1)
       )
     
     if ( result.event === FINAL_RESULT_EVENT )
-      console.log(
+      console.log('| %s | %s | %s',
         result.time.toString().padStart(6),
-        result.event.padEnd(11),
+        result.event.padEnd(12),
         result.data.text //.padStart(11+6+2+1)
       )
   }
+
+}  
+
+
+function summary(modelDirectory, audioFile, grammar, sampleRate, alternatives, textOnly, tableevents, objectevents, debug, sentences) {
+
+  info()
+  
+  console.log()
+  console.log(`model directory      : ${modelDirectory}`)
+  console.log(`speech file name     : ${audioFile}`)
+  console.log(`grammar              : ${grammar ? grammar : 'not specified. Default: NO'}`)
+  console.log(`sample rate          : ${sampleRate ? sampleRate : 'not specified. Default: 16000'}`)
+  console.log(`max alternatives     : ${alternatives}`)
+  console.log(`text only / JSON     : ${textOnly ? 'text' : 'JSON'}`)
+  console.log(`Vosk debug level     : ${debug}`)
+  console.log()
+  console.log(`load model latency   : ${getTimer('loadModel')}ms`)
+  console.log(`transcript latency   : ${getTimer('transcript')}ms`)
+  console.log(`transcript text      : ${sentences.join(' ')}`)
+  console.log()
 
 }  
 
@@ -615,18 +665,6 @@ async function main() {
   const { modelDirectory, audioFile, grammar, sampleRate, alternatives, textOnly, tableevents, objectevents, debug } = checkArgs(args)
   const words = ! textOnly
 
-  if ( !textOnly ) {
-    info()
-    console.log()
-    console.log(`model directory      : ${modelDirectory}`)
-    console.log(`speech file name     : ${audioFile}`)
-    console.log(`grammar              : ${grammar ? grammar : 'not specified. Default: NO'}`)
-    console.log(`sample rate          : ${sampleRate ? sampleRate : 'not specified. Default: 16000'}`)
-    console.log(`max alternatives     : ${alternatives}`)
-    console.log(`text only / JSON     : ${textOnly ? 'text' : 'JSON'}`)
-    console.log(`Vosk debug level     : ${debug}`)
-  }  
-
   // set the vosk log level to silence 
   logLevel(debug) 
 
@@ -635,16 +673,12 @@ async function main() {
   // load in memory a Vosk directory model
   const model = loadModel(modelDirectory)
 
-  if ( !textOnly ) {
-    console.log(`load model latency   : ${getTimer('loadModel')}ms`)
-  }  
+  setTimer('transcript')
+  const startSentenceTimer = unixTimeMsecs()
 
   let transcriptEvents
   const sentences = [] 
   const results = [] 
-
-  setTimer('transcript')
-  const startSentenceTimer = unixTimeMsecs()
 
   // speech recognition from an audio file
   try {
@@ -705,10 +739,8 @@ async function main() {
 
       results.push(dataItem) 
 
-      //console.log(`all data results   : ${printObject(results)}`)
-      console.log(`transcript text      : ${sentences.join(' ')}`)
-      console.log(`transcript latency   : ${getTimer('transcript')}ms`)
-      console.log()
+      if ( !textOnly )
+        summary(modelDirectory, audioFile, grammar, sampleRate, alternatives, textOnly, tableevents, objectevents, debug, sentences)
 
       if ( !textOnly && tableevents)
         printResultsAsTable(results)

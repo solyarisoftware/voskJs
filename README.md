@@ -1,7 +1,7 @@
 # VoskJs
 
 VoskJs is a NodeJs developers toolkit to use [Vosk](https://alphacephei.com/vosk/) 
-offline speech recognition engine, including multithread (server) usage examples. 
+offline speech recognition engine, including multi thread (server) usage examples. 
 The project gives you: 
 
 - A simple sentence-based and streaming-based transcript APIs
@@ -21,8 +21,9 @@ which can run with very low latencies (`< 500`msecs on my [PC](tests/README.md#m
 Vosk is based on a common DNN-HMM architecture.  Deep neural network is used for sound scoring (acoustic scoring), 
 HMM and WFST frameworks are used for time models (language models).
 It's based on [Kaldi](https://github.com/kaldi-asr/kaldi),
-but Nikolay V. Shmyrev's Vosk offers a smart, simplified and performant interface! 
-More details in the Vosk [home page](https://alphacephei.com/vosk/) and [github repo](https://github.com/alphacep/vosk-api).
+but Nikolay V. Shmyrev's Vosk offers a smart, simplified and performing interface! 
+More details in the [Vosk home page](https://alphacephei.com/vosk/) 
+and [github repo](https://github.com/alphacep/vosk-api).
 
 
 ## What's VoskJs?
@@ -33,10 +34,12 @@ supplying both sentence-based and streaming-based speech-to-text functionalities
 
 ### Sentence-based transcript API
 
-In this mode, a file or a PCM buffer are processed asyncronously, 
+In this mode, a file or a PCM buffer are processed asynchronously, 
 to get the full text transcript of the given speech. 
 Using the simple transcript interface you can build your standalone custom application, 
 accessing async functions suitable to run on a usual single thread nodejs program.
+
+Pseudo code:
 
 ```javascript
 //Loads once in RAM memory a specific Vosk engine model from a model directory.
@@ -52,9 +55,17 @@ const result = await transcriptFromFile(fileName, model, {options})
 freeModel(model)
 ```
 
-### Streaming-based transcript API
+### Streaming-based transcript API (DRAFT)
 
-In this mode, are generated nodejs events, following Vosk results.
+Following Vosk results, VoskJs emit these nodejs events:
+
+| name          | vosk-api Recognizer function | description                                 |
+| ------------- | ---------------------------- | ------------------------------------------- |
+| `partial`     | `recognizer.patialResult()`  | silent or new word                          |
+| `endOfSpeech` | `recognizer.result()`        | end of speech (words followed by a silence) |
+| `final`       | `recognizer.finalResult()`   | last part of the audio                      |
+
+Pseudo code:
 
 ```javascript
 //Loads once in RAM memory a specific Vosk engine model from a model directory.
@@ -81,6 +92,49 @@ freeModel(model)
 
 - `voskjs`: command line program to test Vosk transcript with specific models 
   (some tests and command line usage [here](tests/README.md)).
+
+  BTW the utility can be configured to tabularize events. By example:
+
+  ```
+  voskjs --audio=audio/sentencesWithSilences.wav --model=models/vosk-model-small-en-us-0.15 --tableevents
+  ```
+  ```
+  model directory      : models/vosk-model-small-en-us-0.15
+  speech file name     : audio/sentencesWithSilences.wav
+  grammar              : not specified. Default: NO
+  sample rate          : not specified. Default: 16000
+  max alternatives     : undefined
+  text only / JSON     : JSON
+  Vosk debug level     : -1
+
+  load model latency   : 2150ms
+  transcript latency   : 1841ms
+  transcript text      : one two three four five six seven eight nine zero one two three stop 
+
+  | TIME   | EVENT        | VOSK RESULT TEXT |
+  | ------ | ------------ | ---------------- |
+  |     69 | partial      | 
+  |    560 | partial      | one
+  |    615 | partial      | one two
+  |    676 | partial      | one two three
+  |    729 | endOfSpeech  | one two three
+  |    764 | partial      | 
+  |    955 | partial      | for
+  |    991 | partial      | four five six
+  |   1089 | partial      | four five six seven
+  |   1222 | partial      | four five six seven eight
+  |   1290 | endOfSpeech  | four five six seven eight
+  |   1314 | partial      | 
+  |   1452 | partial      | nine
+  |   1515 | partial      | nine zero
+  |   1589 | partial      | nine zero one
+  |   1631 | partial      | nine zero one two
+  |   1685 | partial      | nine zero one two three
+  |   1767 | partial      | nine zero one two three stop
+  |   1785 | endOfSpeech  | nine zero one two three stop
+  |   1812 | partial      | 
+  |   1840 | final        | 
+  ```
 
 - `voskjshttp`: a simple demo HTTP server to transcript speech files. 
   Using above API you can build your own server. Some usage examples [here](examples/).
@@ -136,9 +190,9 @@ Some VoskJs usage examples:
 
 - [Simple program for a sentence-based speech-to-text](examples/README.md#simple-program-for-a-sentence-based-speech-to-text)
 - [`voskjs` Command line utility](examples/README.md#voskjs-command-line-utility)
-- [`voskjshttp` demo spech-to-text HTTP server](examples/servers.md#voskjshttpjs-demo-spech-to-text-http-server)
+- [`voskjshttp` demo speech-to-text HTTP server](examples/servers.md#voskjshttpjs-demo-spech-to-text-http-server)
 - [`voskjshttp` as RHASSPY speech-to-text remote HTTP Server](examples/servers.md#voskjshttp-as-rhasspy-speech-to-text-remote-http-server)
-- [Sentence-based speech-to-text, specifyng a grammar](examples/grammars.md#sentence-based-speech-to-text-specifyng-a-grammar)
+- [Sentence-based speech-to-text, specifying a grammar](examples/grammars.md#sentence-based-speech-to-text-specifyng-a-grammar)
 - [SocketIO server pseudocode](examples/servers.md#socketio-server-pseudocode)
 
 
@@ -149,7 +203,7 @@ Some tests/notes:
 - Transcript using English language, large model
 - Transcript using English language, small model
 - Comparison between Vosk and Mozilla DeepSpeech (latencies)
-- Multithread stress test (10 requests in parallel)
+- Multi-thread stress test (10 requests in parallel)
 - HTTP Server benchmark test
 - Latency tests
 
@@ -162,19 +216,18 @@ a fast transcoding to PCM, using ffmpeg process (install ffmpeg before).
 
 ## To do
 
-1. Review API interface for all [Vosk-api functions](https://github.com/alphacep/vosk-api/blob/master/nodejs/index.js)
-   - To extend sentence-based transcript with a streaming-based interfaces, maybe based upon Nodejs events
-2. To speedup latencies, rethink transcript interface, maybe with an initialization phases, 
-   including Model and Recognizer(s) object creation.
-   Possible architecture: [Stateful & low latency ASR architecture](https://github.com/alphacep/vosk-api/issues/553)
-3. Deepen grammar usage with more examples
-4. Deepen Vosk-API errors catching
-5. `voskjshttp`: 
+- To speedup latencies, rethink transcript interface, maybe with an initialization phases, 
+  including Model and Recognizer(s) object creation.
+  Possible architecture: [Stateful & low latency ASR architecture](https://github.com/alphacep/vosk-api/issues/553)
+- Deepen grammar usage with more examples
+- Deepen Vosk-API errors catching
+- `voskjshttp`: 
   - Review stress and performances tests (especially for the HTTP server)
-  - HTTP POST management: set mandatory audio format mime type in the header request (`--header "Content-Type: audio/wav"`)
-  - HTTP POST management: audio-transcoding using function `toPcm` 
-    if input speech files are not specified as wav in header request (e.g. `--header "Content-Type: audio/webm"`)
-    see https://cloud.ibm.com/docs/speech-to-text?topic=speech-to-text-audio-formats#audio-formats-list
+  - HTTP POST management: 
+    - set mandatory audio format mime type in the header request (`--header "Content-Type: audio/wav"`)
+    - audio-transcoding using function `toPcm` 
+      if input speech files are not specified as wav in header request (e.g. `--header "Content-Type: audio/webm"`)
+      see https://cloud.ibm.com/docs/speech-to-text?topic=speech-to-text-audio-formats#audio-formats-list
 
 
 ## How to contribute
@@ -192,7 +245,7 @@ Any contribute is welcome:
 ## 💣 Status
 
 - Project is in a very draft stage
-- Warning: multithreading causes a crash: https://github.com/solyarisoftware/voskJs/issues/3
+- Warning: multi-threading causes a crash: https://github.com/solyarisoftware/voskJs/issues/3
   The issue has a temporary workaround: https://github.com/alphacep/vosk-api/issues/516#issuecomment-833462121
 
 

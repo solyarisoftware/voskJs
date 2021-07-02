@@ -1,5 +1,9 @@
 # Change log
 
+- 1.2.7 
+  - duplicated `partial` events are no more emitted
+  - README.md updated
+
 - 1.2.6 
   - voskjs new flags for pretty printing of streaming events: `tableevents`, `objectevents`
 
