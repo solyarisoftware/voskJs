@@ -1,6 +1,6 @@
 # Change log
 
-- 1.2.7 
+- 1.2.8 
   - duplicated `partial` events are no more emitted
   - README.md updated
 

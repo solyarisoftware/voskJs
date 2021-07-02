@@ -57,13 +57,13 @@ freeModel(model)
 
 ### Streaming-based transcript API (DRAFT)
 
-Following Vosk results, VoskJs emit these nodejs events:
+Following Vosk-api recognizer result functions, VoskJs emit these nodejs events:
 
-| name          | vosk-api Recognizer function | description                                 |
+| Event name    | Vosk-api recognizer function | description                                 |
 | ------------- | ---------------------------- | ------------------------------------------- |
-| `partial`     | `recognizer.patialResult()`  | silent or new word                          |
-| `endOfSpeech` | `recognizer.result()`        | end of speech (words followed by a silence) |
-| `final`       | `recognizer.finalResult()`   | last part of the audio                      |
+| `partial`     | recognizer.patialResult()    | silent (text = '') or new word or new words |
+| `endOfSpeech` | recognizer.result()          | end of speech (words followed by a silence) |
+| `final`       | recognizer.finalResult()     | last part of the audio                      |
 
 Pseudo code:
 
@@ -99,6 +99,11 @@ freeModel(model)
   voskjs --audio=audio/sentencesWithSilences.wav --model=models/vosk-model-small-en-us-0.15 --tableevents
   ```
   ```
+  voskjs is a CLI utility to test Vosk-api features
+  package @solyarisoftware/voskjs version 1.2.7, Vosk-api version 0.3.30
+
+  Statistics:
+
   model directory      : models/vosk-model-small-en-us-0.15
   speech file name     : audio/sentencesWithSilences.wav
   grammar              : not specified. Default: NO
@@ -107,33 +112,35 @@ freeModel(model)
   text only / JSON     : JSON
   Vosk debug level     : -1
 
-  load model latency   : 2150ms
-  transcript latency   : 1841ms
+  load model latency   : 2001ms
+  transcript latency   : 1707ms
   transcript text      : one two three four five six seven eight nine zero one two three stop 
 
-  | TIME   | EVENT        | VOSK RESULT TEXT |
-  | ------ | ------------ | ---------------- |
-  |     69 | partial      | 
-  |    560 | partial      | one
-  |    615 | partial      | one two
-  |    676 | partial      | one two three
-  |    729 | endOfSpeech  | one two three
-  |    764 | partial      | 
-  |    955 | partial      | for
-  |    991 | partial      | four five six
-  |   1089 | partial      | four five six seven
-  |   1222 | partial      | four five six seven eight
-  |   1290 | endOfSpeech  | four five six seven eight
-  |   1314 | partial      | 
-  |   1452 | partial      | nine
-  |   1515 | partial      | nine zero
-  |   1589 | partial      | nine zero one
-  |   1631 | partial      | nine zero one two
-  |   1685 | partial      | nine zero one two three
-  |   1767 | partial      | nine zero one two three stop
-  |   1785 | endOfSpeech  | nine zero one two three stop
-  |   1812 | partial      | 
-  |   1840 | final        | 
+  Events table:
+
+  | time   | event        | text                                     |
+  | ------ | ------------ | ---------------------------------------- |
+  |     66 | partial      | 
+  |    489 | partial      | one
+  |    538 | partial      | one two
+  |    592 | partial      | one two three
+  |    635 | endOfSpeech  | one two three
+  |    668 | partial      | 
+  |    847 | partial      | for
+  |    882 | partial      | four five six
+  |    977 | partial      | four five six seven
+  |   1099 | partial      | four five six seven eight
+  |   1169 | endOfSpeech  | four five six seven eight
+  |   1194 | partial      | 
+  |   1322 | partial      | nine
+  |   1381 | partial      | nine zero
+  |   1456 | partial      | nine zero one
+  |   1498 | partial      | nine zero one two
+  |   1550 | partial      | nine zero one two three
+  |   1630 | partial      | nine zero one two three stop
+  |   1649 | endOfSpeech  | nine zero one two three stop
+  |   1677 | partial      | 
+  |   1706 | final        | 
   ```
 
 - `voskjshttp`: a simple demo HTTP server to transcript speech files. 

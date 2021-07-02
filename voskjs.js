@@ -580,13 +580,6 @@ function checkArgs(args) {
 }
 
 
-/*
-function printObject(object) {
-   return util.inspect(object, {showHidden: false, breakLength: Infinity, depth: null, colors: true})
-}  
-*/
-
-
 function printObject(object, args) {
    const defaultArgs = {showHidden:false, breakLength:Infinity, depth:null, colors:true}
    return util.inspect(object,  {...defaultArgs, ...args } )
@@ -595,15 +588,18 @@ function printObject(object, args) {
 
 function printResultsAsTable(results) {
 
+  console.log ('Events table:')
+  console.log ()
+
   console.log('| %s | %s | %s |',
-    'TIME'.padEnd(6), 
-    'EVENT'.padEnd(12), 
-    'VOSK RESULT TEXT'
+    'time'.padEnd(6), 
+    'event'.padEnd(12), 
+    'text'.padEnd(40)
   )
   console.log('| %s | %s | %s |',
     '-'.repeat(6), 
     '-'.repeat(12), 
-    '----------------'
+    '-'.repeat(40)
   )
 
   for (const result of results) {
@@ -630,13 +626,17 @@ function printResultsAsTable(results) {
       )
   }
 
+  console.log()
+
 }  
 
 
-function summary(modelDirectory, audioFile, grammar, sampleRate, alternatives, textOnly, tableevents, objectevents, debug, sentences) {
+function statistics(modelDirectory, audioFile, grammar, sampleRate, alternatives, textOnly, tableevents, objectevents, debug, sentences) {
 
-  info()
-  
+  console.log('voskjs is a CLI utility to test Vosk-api features')
+  console.log (info())
+  console.log()
+  console.log('Statistics:')
   console.log()
   console.log(`model directory      : ${modelDirectory}`)
   console.log(`speech file name     : ${audioFile}`)
@@ -740,7 +740,7 @@ async function main() {
       results.push(dataItem) 
 
       if ( !textOnly )
-        summary(modelDirectory, audioFile, grammar, sampleRate, alternatives, textOnly, tableevents, objectevents, debug, sentences)
+        statistics(modelDirectory, audioFile, grammar, sampleRate, alternatives, textOnly, tableevents, objectevents, debug, sentences)
 
       if ( !textOnly && tableevents)
         printResultsAsTable(results)
